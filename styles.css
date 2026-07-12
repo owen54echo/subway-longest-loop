@@ -1,0 +1,1682 @@
+/* styles.css */
+
+:root {
+    /* Swiss Industrial Print: semantic tokens shared by the light theme and all floating controls. */
+    --bg-page: #f6f4ee;
+    --panel-bg: #faf8f5;
+    --border-color: #d5d3cc;
+    --border-focus: #0c0c0d;
+    --text-primary: #0c0c0d;
+    --text-secondary: #555450;
+    --text-muted: #9a9992;
+    --pill-bg: #faf8f5;
+    --input-bg: #fcfbf9;
+    --accent-color: #d92626; /* Aviation red */
+    
+    --base-line-color: #b5b3aa;    /* Darker grid line for drawing readability */
+    --base-station-color: #8c8a81; /* High contrast node ring */
+    
+    --state-start: #d92626;
+    --state-end: #00aa55;
+    --state-waypoint: #7a3beb;
+    --state-avoid: #ff5e00;
+
+    --neon-blue: #0066cc;
+    --neon-purple: #7a3beb;
+    --neon-pink: #d926b2;
+
+    --panel-shadow: 3px 3px 0px rgba(12, 12, 13, 0.15);
+    --glass-surface: rgba(250, 248, 245, 0.84);
+    --glass-surface-strong: rgba(250, 248, 245, 0.94);
+    --glass-highlight: rgba(255, 255, 255, 0.72);
+    --glass-edge: rgba(12, 12, 13, 0.12);
+    --glass-active: rgba(255, 255, 255, 0.62);
+}
+
+.theme-dark {
+    /* Tactical Telemetry: dark-theme values preserve the same semantic roles rather than redefining components. */
+    --bg-page: #0c0c0d;
+    --panel-bg: #121215;
+    --border-color: #26262c;
+    --border-focus: #eaeaea;
+    --text-primary: #eaeaea;
+    --text-secondary: #a0a0a5;
+    --text-muted: #505058;
+    --pill-bg: #121215;
+    --input-bg: #16161b;
+    --accent-color: #ff2a2a; /* CRT hazard red */
+    
+    --base-line-color: #3e3e46;    /* CRT phosphor dark grid */
+    --base-station-color: #64646e; /* CRT phosphor node ring */
+    
+    --state-start: #ff2a2a;
+    --state-end: #00ff88;
+    --state-waypoint: #b185ff;
+    --state-avoid: #ff8533;
+
+    --neon-blue: #00d2ff;
+    --neon-purple: #b185ff;
+    --neon-pink: #ff5ebc;
+
+    --panel-shadow: 3px 3px 0px rgba(0, 0, 0, 0.6);
+    --glass-surface: rgba(18, 18, 21, 0.82);
+    --glass-surface-strong: rgba(18, 18, 21, 0.94);
+    --glass-highlight: rgba(255, 255, 255, 0.16);
+    --glass-edge: rgba(255, 255, 255, 0.14);
+    --glass-active: rgba(255, 255, 255, 0.11);
+}
+
+* {
+    /* The map uses deliberately rigid geometry; individual glass controls opt into softer corners below. */
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border-radius: 0 !important; /* Hard rule: absolute geometric rigidity */
+}
+
+body {
+    /* This is a full-screen tool, not a scrolling document. Drawers and modals own their internal scrolling. */
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', 'SF Mono', Monaco, Consolas, monospace;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/*
+ * Precision liquid glass is reserved for controls that sit above the map.
+ * The map canvas intentionally stays opaque so lines and labels remain readable.
+ */
+.glass-panel {
+    background: var(--glass-surface-strong);
+    border: 1px solid var(--glass-edge);
+    border-radius: 8px !important;
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 8px 12px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(18px) saturate(130%);
+    -webkit-backdrop-filter: blur(18px) saturate(130%);
+    transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+/* App Fullscreen Map Layout */
+.app-container {
+    position: relative;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.map-section {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    background-color: var(--bg-page);
+}
+
+.map-svg-container {
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+    touch-action: none;
+}
+
+.map-svg-container:active {
+    cursor: grabbing;
+}
+
+.map-svg-container svg {
+    width: 100%;
+    height: 100%;
+    user-select: none;
+}
+
+/* Floating vertical controls: low-frequency global actions placed outside the map's primary viewing area. */
+.float-panel-left {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    display: flex;
+    flex-direction: column;
+    background: var(--glass-surface);
+    border: 1px solid var(--glass-edge);
+    border-radius: 8px !important;
+    padding: 4px;
+    gap: 4px;
+    z-index: 10;
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 8px 12px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(16px) saturate(125%);
+    -webkit-backdrop-filter: blur(16px) saturate(125%);
+}
+
+.float-panel-right {
+    position: absolute;
+    bottom: 110px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    background: var(--glass-surface);
+    border: 1px solid var(--glass-edge);
+    border-radius: 8px !important;
+    padding: 4px;
+    gap: 4px;
+    z-index: 10;
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 8px 12px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(16px) saturate(125%);
+    -webkit-backdrop-filter: blur(16px) saturate(125%);
+}
+
+.btn-float {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 6px !important;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease;
+    font-size: 14px;
+}
+
+.btn-float:hover {
+    color: var(--text-primary);
+    background: rgba(12, 12, 13, 0.05);
+    border-color: var(--border-color);
+}
+
+.theme-dark .btn-float:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-float:active {
+    transform: scale(0.95);
+}
+
+.btn-float.active {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+    background: var(--glass-active);
+    box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+}
+
+/* Shared keyboard focus treatment for controls layered over the map canvas. */
+button:focus-visible,
+.svg-station:focus-visible circle,
+.suggestion-item:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+}
+
+/* Bottom navigation groups planning and analysis panels while keeping the map canvas continuously visible. */
+.bottom-nav-bar {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    background: var(--glass-surface);
+    border: 1px solid var(--glass-edge);
+    border-radius: 10px !important;
+    padding: 4px;
+    gap: 4px;
+    z-index: 10;
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 8px 12px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(18px) saturate(130%);
+    -webkit-backdrop-filter: blur(18px) saturate(130%);
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 6px !important;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease;
+    border: 1px solid transparent;
+    background: transparent;
+    gap: 8px;
+}
+
+.nav-item-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-item-icon svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+}
+
+.nav-item-label {
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.nav-item:hover {
+    color: var(--text-primary);
+    background: rgba(12, 12, 13, 0.05);
+    border-color: var(--border-color);
+}
+
+.theme-dark .nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-item:active {
+    transform: scale(0.98);
+}
+
+.nav-item.active {
+    color: var(--text-primary);
+    border-color: var(--text-primary);
+    background: var(--glass-active);
+    box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+}
+
+.nav-item:disabled {
+    color: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.52;
+}
+
+.nav-item:disabled:hover {
+    background: transparent;
+    border-color: transparent;
+}
+
+.theme-dark .nav-item.active {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+/* Start/end search remains close to the primary action area without obscuring the map centre. */
+.search-pill-container {
+    position: absolute;
+    bottom: 96px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: 320px;
+}
+
+.search-pill {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--glass-surface-strong);
+    border: 1px solid var(--glass-edge);
+    border-radius: 8px !important;
+    padding: 8px 12px;
+    width: 100%;
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 8px 12px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(18px) saturate(130%);
+    -webkit-backdrop-filter: blur(18px) saturate(130%);
+    gap: 8px;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.search-pill-icon {
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+}
+
+.search-pill-icon svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+}
+
+.search-pill-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 12px;
+    flex: 1;
+}
+
+.search-pill-input::placeholder {
+    color: var(--text-muted);
+}
+
+/* Contextual drawer: one planning mode is exposed at a time to avoid competing control states. */
+.floating-drawer {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    bottom: 100px;
+    width: 380px;
+    z-index: 15;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    gap: 12px;
+    pointer-events: auto;
+    transform: translateX(-420px);
+    opacity: 0;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+
+.floating-drawer.open {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+.drawer-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-primary);
+}
+
+.drawer-close {
+    font-size: 16px;
+    color: var(--text-muted);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    transition: color 0.1s ease;
+}
+
+.drawer-close:hover {
+    color: var(--text-primary);
+}
+
+.drawer-content {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 2px;
+}
+
+.drawer-content::-webkit-scrollbar {
+    width: 3px;
+}
+.drawer-content::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+}
+
+.config-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.config-group-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 2px;
+}
+
+.form-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+/* Form controls use the same border-focused feedback across rules, waypoints and avoidance settings. */
+.input-text {
+    width: 100%;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    padding: 8px 10px;
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+.input-text:focus {
+    border-color: var(--border-focus);
+}
+
+/* Autocomplete suggestions */
+.autocomplete-container {
+    position: relative;
+    width: 100%;
+}
+
+.suggestions-box {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    max-height: 140px;
+    overflow-y: auto;
+    z-index: 60;
+    box-shadow: var(--panel-shadow);
+}
+
+.suggestion-item {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    text-align: left;
+    padding: 8px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    color: var(--text-secondary);
+}
+
+.suggestion-item:hover {
+    background: rgba(12, 12, 13, 0.04);
+    color: var(--text-primary);
+}
+
+.theme-dark .suggestion-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+/* Tab Switcher */
+.tab-switcher {
+    display: flex;
+    background: rgba(12, 12, 13, 0.02);
+    border: 1px solid var(--border-color);
+    padding: 1px;
+}
+
+.theme-dark .tab-switcher {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.tab-btn {
+    flex: 1;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-secondary);
+    padding: 5px 8px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.tab-btn.active {
+    background: var(--panel-bg);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+/* Sliders */
+.slider-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.slider-input {
+    flex: 1;
+    accent-color: var(--text-primary);
+    height: 2px;
+    cursor: pointer;
+    border: none !important;
+}
+
+.slider-val {
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+/* Custom Switches */
+.switch-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.switch-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 32px;
+    height: 16px;
+}
+
+.switch input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--input-bg);
+    border: 1px solid var(--border-color);
+    transition: .15s ease;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 8px;
+    width: 8px;
+    left: 3px;
+    bottom: 3px;
+    background-color: var(--text-secondary);
+    transition: .15s ease;
+}
+
+input:checked + .slider {
+    border-color: var(--border-focus);
+    background-color: var(--panel-bg);
+}
+
+input:checked + .slider:before {
+    transform: translateX(14px);
+    background-color: var(--text-primary);
+}
+
+/* Chips container */
+.chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    min-height: 32px;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    padding: 4px;
+    align-items: center;
+}
+
+.chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 2px 6px;
+    font-size: 11px;
+}
+
+.chip-close {
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--text-muted);
+}
+
+.chip-close:hover {
+    color: var(--text-primary);
+}
+
+.chips-placeholder {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* Analysis choices are explanatory actions, not another dense icon-only navigation layer. */
+.analysis-pane-intro {
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+.analysis-action {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    width: 100%;
+    padding: 12px;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px !important;
+    color: var(--text-primary);
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+.analysis-action:hover {
+    background: var(--glass-active);
+    border-color: var(--border-focus);
+    transform: translateY(-1px);
+}
+
+.analysis-action small {
+    color: var(--text-secondary);
+    font-size: 10px;
+}
+
+/* Buttons */
+.btn-primary {
+    width: 100%;
+    background: var(--text-primary);
+    border: 1px solid var(--text-primary);
+    padding: 10px;
+    color: var(--bg-page);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-primary:hover {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #ffffff;
+}
+
+.btn-primary:active {
+    transform: scale(0.98);
+}
+
+/* Result panel grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+}
+
+.stat-box {
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    padding: 6px 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 10px;
+    font-weight: bold;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.stat-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-top: 2px;
+}
+
+/* Roadbook steps scroll area */
+.roadbook-container {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    padding: 8px;
+}
+
+.roadbook-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.roadbook-list {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding-left: 8px;
+}
+
+/* Roadbook timeline: route output is grouped by line so transfers are readable without reopening the map. */
+.roadbook-segment {
+    position: relative;
+    padding-left: 20px;
+    margin-left: 6px;
+    margin-bottom: 16px;
+}
+
+.roadbook-segment::before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    bottom: 10px;
+    left: 4px;
+    width: 3px;
+    background-color: var(--segment-color, var(--border-color));
+    z-index: 1;
+}
+
+.segment-point {
+    position: relative;
+    padding: 6px 0 6px 20px;
+    min-height: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.point-marker {
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    border: 3.5px solid var(--segment-color, var(--border-color));
+    background: var(--input-bg);
+    box-sizing: border-box;
+    z-index: 2;
+}
+
+.point-marker.small {
+    left: 3px;
+    top: 13px;
+    width: 5px;
+    height: 5px;
+    border: none;
+    background: var(--text-muted);
+}
+
+.point-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.station-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.station-name {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.station-name-sub {
+    font-size: 9.5px;
+    color: var(--text-secondary);
+}
+
+.segment-line-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.line-badge, .next-line-badge {
+    font-size: 8.5px;
+    font-weight: bold;
+    color: white !important;
+    padding: 1px 5px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+/* Centrality rows use the same compact route cards as the route guide. */
+.centrality-line-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.centrality-line-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 20px;
+    padding-inline: 6px;
+    border-radius: 4px !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.segment-direction-info {
+    font-size: 9px;
+    color: var(--text-muted);
+}
+
+.transfer-action-info {
+    font-size: 9px;
+    color: var(--accent-color);
+    margin-top: 4px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge {
+    font-size: 8.5px;
+    font-weight: bold;
+    padding: 0 4px;
+    border-radius: 2px;
+    line-height: 1.3;
+}
+
+.badge-start {
+    background: rgba(30, 215, 96, 0.15);
+    color: var(--state-start);
+    border: 1px solid var(--state-start);
+}
+
+.badge-end {
+    background: rgba(255, 68, 68, 0.15);
+    color: var(--accent-color);
+    border: 1px solid var(--accent-color);
+}
+
+.badge-transfer {
+    background: rgba(255, 170, 0, 0.15);
+    color: var(--state-waypoint);
+    border: 1px solid var(--state-waypoint);
+}
+
+/* Intermediates Collapsible style */
+.intermediates-collapse {
+    margin: 4px 0 4px 20px;
+}
+
+.intermediates-toggle-btn {
+    cursor: pointer;
+    font-size: 9.5px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 0;
+    user-select: none;
+}
+
+.intermediates-toggle-btn:hover {
+    color: var(--text-primary);
+}
+
+.intermediates-list-content {
+    margin-top: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* Worker progress is a blocking state only for the solver, leaving the underlying map visually stable. */
+.loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(246, 244, 238, 0.9);
+    z-index: 100;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.theme-dark .loading-overlay {
+    background: rgba(12, 12, 13, 0.9);
+}
+
+.btn-cancel-solver {
+    margin-top: 12px;
+    padding: 8px 16px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: bold;
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-cancel-solver:hover {
+    background: var(--text-primary);
+    color: var(--bg-page);
+    border-color: var(--text-primary);
+}
+
+.btn-cancel-solver:active {
+    transform: scale(0.95);
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--border-color);
+    border-top-color: var(--accent-color);
+    animation: spin 0.8s linear infinite;
+}
+
+.loading-text {
+    font-size: 12px;
+    color: var(--text-primary);
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* SVG station affordances cover hover, keyboard focus and route-state overlays. */
+.svg-station {
+    cursor: pointer;
+}
+
+.svg-station circle {
+    transition: r 0.15s, stroke-width 0.15s, stroke 0.15s, opacity 0.15s;
+}
+
+.svg-station:hover circle {
+    r: 7.5px;
+    stroke-width: 2.2px;
+    stroke: var(--text-primary) !important;
+    opacity: 1.0 !important;
+}
+
+.svg-station:focus-visible circle {
+    r: 7.5px;
+    stroke: var(--text-primary) !important;
+    stroke-width: 2.2px;
+    opacity: 1 !important;
+}
+
+/* SVG Text Label Halo for Legibility */
+#labels-group text {
+    stroke: var(--bg-page);
+    stroke-width: 2px;
+    paint-order: stroke fill;
+    stroke-linejoin: round;
+    transition: font-size 0.15s, opacity 0.15s, fill 0.15s;
+}
+
+/* Tooltips popup */
+.map-popup {
+    position: absolute;
+    background: var(--glass-surface-strong);
+    border: 1px solid var(--glass-edge);
+    border-radius: 8px !important;
+    padding: 6px;
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 30;
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 8px 12px rgba(0, 0, 0, 0.14);
+    backdrop-filter: blur(18px) saturate(130%);
+    -webkit-backdrop-filter: blur(18px) saturate(130%);
+    min-width: 130px;
+}
+
+.map-popup-header {
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--text-primary);
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 4px;
+}
+
+.map-popup-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 4px 6px;
+    font-family: inherit;
+    font-size: 10px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.map-popup-btn:hover {
+    background: rgba(12, 12, 13, 0.04);
+    color: var(--text-primary);
+}
+
+.theme-dark .map-popup-btn:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.map-popup-btn.danger:hover {
+    color: var(--accent-color);
+    background: rgba(217, 38, 38, 0.05);
+}
+
+/* Status overlay */
+.map-status-overlay {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    background: var(--panel-bg);
+    pointer-events: none;
+    font-size: 10px;
+    font-weight: bold;
+    display: none;
+    z-index: 10;
+    box-shadow: var(--panel-shadow);
+}
+
+.map-status-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+}
+
+.map-status-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--accent-color);
+}
+
+/* Flow line animation */
+@keyframes flow {
+    to {
+        stroke-dashoffset: -120;
+    }
+}
+
+.animated-flow-line {
+    stroke-dasharray: 24 96;
+    stroke-linecap: round;
+    animation: flow 1.5s linear infinite;
+}
+
+/* Tablet and phone layouts move the drawer into the thumb-reachable lower half of the viewport. */
+@media (max-width: 1024px) {
+    .floating-drawer {
+        top: auto;
+        left: 12px;
+        right: 12px;
+        bottom: 96px;
+        width: calc(100% - 24px);
+        height: 40dvh;
+        transform: translateY(120%);
+    }
+
+    .floating-drawer.open {
+        transform: translateY(0);
+    }
+    
+    .float-panel-left {
+        top: 12px;
+        left: 12px;
+    }
+    
+    .float-panel-right {
+        bottom: 160px;
+        right: 12px;
+    }
+    
+    .search-pill-container {
+        width: calc(100% - 24px);
+        bottom: 156px;
+    }
+    
+    .bottom-nav-bar {
+        bottom: 12px;
+        width: calc(100% - 24px);
+        justify-content: space-around;
+        padding: 4px;
+    }
+    
+    .nav-item {
+        padding: 6px 12px;
+    }
+}
+
+.city-tab-container {
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    background: var(--glass-surface);
+    border: 1px solid var(--glass-edge);
+    padding: 4px;
+    border-radius: 10px !important;
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 8px 12px rgba(0, 0, 0, 0.12);
+    gap: 4px;
+    max-width: calc(100% - 360px); /* Avoid overlapping with floating side panels */
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+    backdrop-filter: blur(18px) saturate(130%);
+    -webkit-backdrop-filter: blur(18px) saturate(130%);
+}
+
+.city-tab-container::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.city-tab {
+    flex: 0 0 auto;
+    padding: 6px 12px;
+    font-family: 'Outfit', 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 7px !important;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+    border: 1px solid transparent;
+    background: transparent;
+}
+
+.city-tab:hover {
+    color: var(--text-primary);
+}
+
+.city-tab.active {
+    color: var(--text-primary);
+    border-color: var(--border-focus);
+    background: var(--glass-active);
+    box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+}
+
+.theme-dark .city-tab.active {
+    background: var(--glass-active);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .city-tab-container {
+        top: 12px;
+        width: calc(100% - 24px);
+        max-width: none;
+        overflow-x: auto;
+        white-space: nowrap;
+        justify-content: flex-start;
+        padding: 2px;
+    }
+    .city-tab {
+        min-height: 44px;
+        padding: 8px 12px;
+        font-size: 11px;
+        display: inline-block;
+    }
+
+    .btn-float {
+        width: 44px;
+        height: 44px;
+    }
+
+    .nav-item {
+        min-height: 44px;
+        padding: 8px;
+    }
+}
+
+/* Motion communicates state only; users requesting less motion keep the same information. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Browsers or users that reduce transparency receive the same hierarchy without blur. */
+@media (prefers-reduced-transparency: reduce) {
+    .glass-panel,
+    .float-panel-left,
+    .float-panel-right,
+    .bottom-nav-bar,
+    .search-pill,
+    .map-popup,
+    .city-tab-container {
+        background: var(--panel-bg);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+}
+
+/* Cruise controls are isolated from planning controls because they operate on an already solved route. */
+.cruise-panel {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    width: 300px;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    gap: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--panel-bg);
+    box-shadow: var(--panel-shadow);
+}
+
+.cruise-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 6px;
+    margin-bottom: 4px;
+}
+
+.cruise-title {
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--state-end);
+    letter-spacing: 0.5px;
+}
+
+.cruise-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 16px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.cruise-close:hover {
+    color: var(--text-primary);
+}
+
+.cruise-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cruise-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.cruise-info span {
+    font-family: inherit;
+}
+
+.cruise-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.cruise-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 6px 12px;
+    font-size: 10px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    min-width: 50px;
+    text-align: center;
+}
+
+.cruise-btn:hover {
+    background: rgba(12, 12, 13, 0.04);
+}
+
+.theme-dark .cruise-btn:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.cruise-speed-selector {
+    display: flex;
+    border: 1px solid var(--border-color);
+}
+
+.speed-btn {
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 6px 8px;
+    font-size: 9px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.speed-btn:last-child {
+    border-right: none;
+}
+
+.speed-btn:hover {
+    background: rgba(12, 12, 13, 0.04);
+    color: var(--text-primary);
+}
+
+.theme-dark .speed-btn:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.speed-btn.active {
+    background: var(--state-end);
+    color: black !important;
+    font-weight: bold;
+}
+
+.cruise-toggle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.cruise-toggle input {
+    cursor: pointer;
+}
+
+/* Analysis modals sit above the map and contain their own scrollable data tables. */
+.matrix-modal {
+    position: fixed;
+    top: 5%;
+    left: 5%;
+    width: 90%;
+    height: 90%;
+    z-index: 100;
+    display: none;
+    flex-direction: column;
+    padding: 20px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--panel-shadow);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.matrix-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.matrix-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--neon-blue);
+    letter-spacing: 0.5px;
+}
+
+.matrix-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.matrix-filter-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.matrix-filter-input {
+    width: 50px;
+    background: rgba(12, 12, 13, 0.03);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 4px 8px;
+    font-size: 11px;
+    font-family: inherit;
+    text-align: center;
+}
+
+.theme-dark .matrix-filter-input {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.matrix-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.matrix-close:hover {
+    color: var(--text-primary);
+}
+
+.matrix-body {
+    flex: 1;
+    overflow: auto;
+    border: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.02);
+}
+
+/* City-wide extremes is a guided analysis flow: choose scope, choose a rule, then inspect one result. */
+.city-extremes-modal {
+    max-width: 920px;
+    height: auto;
+    max-height: 90dvh;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.city-extremes-subtitle,
+.city-extremes-status {
+    margin-top: 4px;
+    color: var(--text-secondary);
+    font-size: 11px;
+}
+
+.city-extremes-controls {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+    padding-bottom: 16px;
+}
+
+.city-extremes-field,
+.city-extremes-rules {
+    display: grid;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 11px;
+}
+
+.city-extremes-field select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px !important;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font: inherit;
+}
+
+.city-extremes-rules {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border: 0;
+}
+
+.city-extremes-rules legend {
+    grid-column: 1 / -1;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.city-extremes-rules label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px !important;
+    cursor: pointer;
+}
+
+.city-extremes-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 8px;
+}
+
+.city-extremes-actions .btn-primary,
+.city-extremes-actions .btn-cancel-solver {
+    width: auto;
+    flex: 1;
+}
+
+.city-extremes-result {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-color);
+}
+
+.city-extremes-result-card {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.city-extremes-metric {
+    padding: 10px;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px !important;
+}
+
+.city-extremes-metric span {
+    display: block;
+    color: var(--text-muted);
+    font-size: 10px;
+}
+
+.city-extremes-metric strong {
+    display: block;
+    margin-top: 4px;
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+.city-extremes-result-card .btn-primary {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 768px) {
+    .city-extremes-modal {
+        width: calc(100% - 24px);
+        max-height: calc(100dvh - 24px);
+        padding: 14px;
+    }
+
+    .city-extremes-controls,
+    .city-extremes-rules,
+    .city-extremes-result-card {
+        grid-template-columns: 1fr;
+    }
+}
+
+.theme-dark .matrix-body {
+    background: rgba(255, 255, 255, 0.01);
+}
+
+/* Scrollable Table styles */
+.matrix-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.matrix-table th, .matrix-table td {
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.matrix-table th {
+    background: var(--panel-bg);
+    color: var(--text-primary);
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.matrix-cell-val {
+    cursor: pointer;
+    font-family: monospace;
+    font-weight: bold;
+    color: var(--neon-purple);
+    transition: all 0.1s ease;
+    text-align: center;
+}
+
+.matrix-cell-val:hover {
+    background: var(--state-end) !important;
+    color: black !important;
+}
+
+.matrix-warning {
+    font-size: 11px;
+    color: var(--state-avoid);
+    padding: 8px 12px;
+    background: rgba(255, 0, 0, 0.05);
+    border-bottom: 1px solid var(--border-color);
+    display: none;
+}

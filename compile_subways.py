@@ -1,0 +1,215 @@
+# compile_subways.py
+import urllib.request
+import json
+import ssl
+import time
+
+ssl._create_default_https_context = ssl._create_unverified_context
+
+CITIES = [
+    {"key": "beijing", "name": "北京市", "adcode": "1100", "pinyin": "beijing"},
+    {"key": "shanghai", "name": "上海市", "adcode": "3100", "pinyin": "shanghai"},
+    {"key": "guangzhou", "name": "广佛（广州+佛山）", "adcode": "4401", "pinyin": "guangzhou"},
+    {"key": "shenzhen", "name": "深圳市", "adcode": "4403", "pinyin": "shenzhen"},
+    {"key": "wuhan", "name": "武汉市", "adcode": "4201", "pinyin": "wuhan"},
+    {"key": "chengdu", "name": "成都市", "adcode": "5101", "pinyin": "chengdu"},
+    {"key": "chongqing", "name": "重庆市", "adcode": "5000", "pinyin": "chongqing"},
+    {"key": "hangzhou", "name": "杭州市（含绍兴、海宁）", "adcode": "3301", "pinyin": "hangzhou"},
+    {"key": "nanjing", "name": "南京市", "adcode": "3201", "pinyin": "nanjing"},
+    {"key": "xian", "name": "西安市", "adcode": "6101", "pinyin": "xian"},
+    {"key": "zhengzhou", "name": "郑州市", "adcode": "4101", "pinyin": "zhengzhou"},
+    {"key": "tianjin", "name": "天津市", "adcode": "1200", "pinyin": "tianjin"},
+    {"key": "suzhou", "name": "苏州市", "adcode": "3205", "pinyin": "suzhou"}
+]
+
+def fetch_subway_raw(adcode, pinyin):
+    url = f"http://map.amap.com/service/subway?srhdata={adcode}_drw_{pinyin}.json"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    req = urllib.request.Request(url, headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=10) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except Exception as e:
+        print(f"Error fetching {pinyin} ({adcode}): {e}")
+        return None
+
+def parse_city_raw(raw_data, line_rename_fn=None, station_rename_fn=None):
+    nodes = {}
+    edges = []
+    
+    for line in raw_data.get("l", []):
+        ln = line.get("ln")
+        if line_rename_fn:
+            ln = line_rename_fn(ln)
+            
+        color = line.get("cl")
+        if not color.startswith("#"):
+            color = "#" + color
+            
+        st_list = line.get("st", [])
+        
+        # Add nodes
+        for st in st_list:
+            name = st.get("n")
+            if station_rename_fn:
+                name = station_rename_fn(name, ln)
+                
+            p_str = st.get("p", "0 0")
+            try:
+                x, y = map(float, p_str.split())
+            except ValueError:
+                x, y = 0.0, 0.0
+                
+            if name not in nodes:
+                nodes[name] = {
+                    "name": name,
+                    "x": x,
+                    "y": y,
+                    "lines": [ln]
+                }
+            else:
+                if ln not in nodes[name]["lines"]:
+                    nodes[name]["lines"].append(ln)
+                    
+        # Add edges
+        for i in range(len(st_list) - 1):
+            u = st_list[i].get("n")
+            v = st_list[i+1].get("n")
+            if station_rename_fn:
+                u = station_rename_fn(u, ln)
+                v = station_rename_fn(v, ln)
+            edges.append({
+                "u": u,
+                "v": v,
+                "line": ln,
+                "color": color
+            })
+            
+    return nodes, edges
+
+def merge_cities(primary_nodes, primary_edges, secondary_raw, affine_params, line_rename_fn=None, station_rename_fn=None):
+    a, b, c, d = affine_params
+    sec_nodes, sec_edges = parse_city_raw(secondary_raw, line_rename_fn, station_rename_fn)
+    
+    # Merge nodes
+    for name, node in sec_nodes.items():
+        if name in primary_nodes:
+            for ln in node["lines"]:
+                if ln not in primary_nodes[name]["lines"]:
+                    primary_nodes[name]["lines"].append(ln)
+        else:
+            x_new = a * node["x"] + b
+            y_new = c * node["y"] + d
+            primary_nodes[name] = {
+                "name": name,
+                "x": round(x_new, 1),
+                "y": round(y_new, 1),
+                "lines": node["lines"]
+            }
+            
+    # Merge edges
+    for edge in sec_edges:
+        u, v, line = edge["u"], edge["v"], edge["line"]
+        exists = any((e["u"] == u and e["v"] == v and e["line"] == line) or 
+                     (e["u"] == v and e["v"] == u and e["line"] == line) 
+                     for e in primary_edges)
+        if not exists:
+            primary_edges.append(edge)
+
+def main():
+    compiled_data = {}
+    
+    # Fetch all cities raw data
+    raw_subways = {}
+    for c in CITIES:
+        print(f"Fetching raw data for {c['name']} ({c['key']})...")
+        raw = fetch_subway_raw(c["adcode"], c["pinyin"])
+        if raw:
+            raw_subways[c["key"]] = raw
+        time.sleep(0.2)
+        
+    # Fetch secondary cities raw data for merging
+    print("Fetching raw data for Foshan...")
+    foshan_raw = fetch_subway_raw("4406", "foshan")
+    print("Fetching raw data for Shaoxing...")
+    shaoxing_raw = fetch_subway_raw("3306", "shaoxing")
+    
+    # Process each city
+    for c in CITIES:
+        key = c["key"]
+        if key not in raw_subways:
+            print(f"Skipping {key} due to fetch failure.")
+            continue
+            
+        # Rename function for Hangzhou station collisions
+        if key == "hangzhou":
+            def station_rename_hangzhou(name, line_name):
+                if name == "奥体中心" and ("绍兴" in line_name or line_name in ["1号线", "1号线支线", "2号线", "绍兴1号线", "绍兴1号线支线", "绍兴2号线"]):
+                    return "绍兴奥体中心"
+                return name
+            nodes, edges = parse_city_raw(raw_subways[key], station_rename_fn=station_rename_hangzhou)
+        else:
+            nodes, edges = parse_city_raw(raw_subways[key])
+        
+        # Merge if necessary
+        if key == "guangzhou" and foshan_raw:
+            print("Merging Foshan into Guangzhou network...")
+            # Affine parameters Guangzhou-Foshan
+            affine_gz_fs = (0.964680, 170.26, 1.290174, 590.10)
+            
+            def line_rename_foshan(name):
+                if name == "3号线":
+                    return "佛山3号线"
+                return name
+                
+            merge_cities(nodes, edges, foshan_raw, affine_gz_fs, line_rename_foshan)
+            
+        elif key == "hangzhou" and shaoxing_raw:
+            print("Merging Shaoxing into Hangzhou network...")
+            # Affine parameters Hangzhou-Shaoxing
+            affine_hz_sx = (0.571376, 2081.34, 0.881112, 1146.63)
+            
+            def line_rename_shaoxing(name):
+                if name == "1号线":
+                    return "绍兴1号线"
+                if name == "1号线支线":
+                    return "绍兴1号线支线"
+                if name == "2号线":
+                    return "绍兴2号线"
+                return name
+                
+            def station_rename_hangzhou(name, line_name):
+                if name == "奥体中心" and ("绍兴" in line_name or line_name in ["1号线", "1号线支线", "2号线", "绍兴1号线", "绍兴1号线支线", "绍兴2号线"]):
+                    return "绍兴奥体中心"
+                return name
+
+            merge_cities(nodes, edges, shaoxing_raw, affine_hz_sx, line_rename_shaoxing, station_rename_hangzhou)
+            
+        compiled_data[key] = {
+            "city": c["name"],
+            "nodes": list(nodes.values()),
+            "edges": edges
+        }
+        print(f"[{c['name']}] Compiled: {len(nodes)} stations, {len(edges)} sections.")
+
+    # Write subway_data.js
+    output_js = "./subway_data.js"
+    
+    js_content = [
+        "// Consolidated subway data for multiple cities.",
+        f"// Generated automatically by compile_subways.py on {time.strftime('%Y-%m-%d %H:%M:%S')}.",
+        "",
+        "window.subwayDataMap = " + json.dumps(compiled_data, ensure_ascii=False, indent=2) + ";",
+        "",
+        "// Keep window.subwayData for backward compatibility (Guangzhou)",
+        "window.subwayData = window.subwayDataMap[\"guangzhou\"];"
+    ]
+    
+    with open(output_js, "w", encoding="utf-8") as f:
+        f.write("\n".join(js_content))
+    print(f"Successfully compiled all cities and saved to {output_js}!")
+
+if __name__ == '__main__':
+    main()

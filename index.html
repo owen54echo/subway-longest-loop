@@ -1,0 +1,2885 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地铁路网线路研究</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS Style -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-dark">
+    <div class="app-container">
+        
+        <!-- Fullscreen map canvas -->
+        <div class="map-section" id="map-section">
+            <div class="map-svg-container" id="map-container">
+                <!-- SVG map will be rendered dynamically here -->
+            </div>
+        </div>
+        
+        <!-- Top Left floating vertical pill (ref app theme/style panel) -->
+        <div class="float-panel-left">
+            <button class="btn-float" id="btn-theme" title="切换模式">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
+            <button class="btn-float" id="btn-reset-map" title="图表重置">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Floating city selector tabs -->
+        <div class="city-tab-container" id="city-tab-container" role="tablist" aria-label="选择城市地铁网络">
+            <button type="button" class="city-tab active" data-value="guangzhou" role="tab" aria-selected="true">广佛</button>
+            <button type="button" class="city-tab" data-value="beijing" role="tab" aria-selected="false">北京</button>
+            <button type="button" class="city-tab" data-value="shanghai" role="tab" aria-selected="false">上海</button>
+            <button type="button" class="city-tab" data-value="shenzhen" role="tab" aria-selected="false">深圳</button>
+            <button type="button" class="city-tab" data-value="wuhan" role="tab" aria-selected="false">武汉</button>
+            <button type="button" class="city-tab" data-value="chengdu" role="tab" aria-selected="false">成都</button>
+            <button type="button" class="city-tab" data-value="chongqing" role="tab" aria-selected="false">重庆</button>
+            <button type="button" class="city-tab" data-value="hangzhou" role="tab" aria-selected="false">杭州</button>
+            <button type="button" class="city-tab" data-value="nanjing" role="tab" aria-selected="false">南京</button>
+            <button type="button" class="city-tab" data-value="xian" role="tab" aria-selected="false">西安</button>
+            <button type="button" class="city-tab" data-value="zhengzhou" role="tab" aria-selected="false">郑州</button>
+            <button type="button" class="city-tab" data-value="tianjin" role="tab" aria-selected="false">天津</button>
+            <button type="button" class="city-tab" data-value="suzhou" role="tab" aria-selected="false">苏州</button>
+        </div>
+        
+        <!-- Bottom Right floating vertical zoom pill (ref app share/focus panel) -->
+        <div class="float-panel-right">
+            <button class="btn-float" id="btn-zoom-in" title="放大">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </button>
+            <button class="btn-float" id="btn-zoom-out" title="缩小">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Floating start/end station search pill -->
+        <div class="search-pill-container" id="search-pill-container">
+            <div class="search-pill" style="margin-bottom: 8px;">
+                <span class="search-pill-icon" style="color: var(--state-start);">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" fill="currentColor"></circle>
+                    </svg>
+                </span>
+                <input type="text" class="search-pill-input" id="search-start-input" placeholder="输入并设置起点..." autocomplete="off" aria-label="起点站">
+                <div class="suggestions-box" id="start-suggestions" role="listbox" aria-label="起点站建议" style="display:none; bottom:calc(100% + 8px); top:auto;"></div>
+            </div>
+            <div class="search-pill" id="search-end-pill">
+                <span class="search-pill-icon" style="color: var(--state-end);">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" fill="currentColor"></circle>
+                    </svg>
+                </span>
+                <input type="text" class="search-pill-input" id="search-end-input" placeholder="输入并设置终点(可选)..." autocomplete="off" aria-label="终点站">
+                <div class="suggestions-box" id="end-suggestions" role="listbox" aria-label="终点站建议" style="display:none; bottom:calc(100% + 8px); top:auto;"></div>
+            </div>
+        </div>
+        
+        <!-- Floating bottom navigation bar (ref main navigation bar) -->
+        <div class="bottom-nav-bar" id="bottom-nav-bar">
+            <button class="nav-item" id="nav-rules" data-target="drawer-rules">
+                <span class="nav-item-icon">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                </span>
+                <span class="nav-item-label">规划</span>
+            </button>
+            <button class="nav-item" id="nav-constraints" data-target="drawer-constraints">
+                <span class="nav-item-icon">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="4" y1="6" x2="20" y2="6"></line>
+                        <line x1="4" y1="12" x2="20" y2="12"></line>
+                        <line x1="4" y1="18" x2="20" y2="18"></line>
+                        <circle cx="9" cy="6" r="2"></circle>
+                        <circle cx="15" cy="12" r="2"></circle>
+                        <circle cx="11" cy="18" r="2"></circle>
+                    </svg>
+                </span>
+                <span class="nav-item-label">约束</span>
+            </button>
+            <button class="nav-item" id="nav-roadbook" data-target="drawer-roadbook" disabled aria-disabled="true">
+                <span class="nav-item-icon">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                    </svg>
+                </span>
+                <span class="nav-item-label">路书</span>
+            </button>
+            <button class="nav-item" id="nav-analysis" data-target="drawer-analysis">
+                <span class="nav-item-icon">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <line x1="12" y1="2" x2="12" y2="6"></line>
+                        <line x1="12" y1="18" x2="12" y2="22"></line>
+                        <line x1="4.22" y1="4.22" x2="7.05" y2="7.05"></line>
+                        <line x1="16.95" y1="16.95" x2="19.78" y2="19.78"></line>
+                        <line x1="2" y1="12" x2="6" y2="12"></line>
+                        <line x1="18" y1="12" x2="22" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="7.05" y2="16.95"></line>
+                        <line x1="16.95" y1="7.05" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </span>
+                <span class="nav-item-label">分析</span>
+            </button>
+        </div>
+        
+        <!-- Floating Glassmorphism Side Drawer (unified config dialog) -->
+        <div class="glass-panel floating-drawer" id="floating-drawer">
+            <div class="drawer-header">
+                <div class="drawer-title" id="drawer-title">规则设置</div>
+                <button class="drawer-close" id="btn-drawer-close">×</button>
+            </div>
+            
+            <!-- Floating helper tooltip box -->
+            <div class="glass-panel tooltip-box" id="mode-tooltip-box" style="display:none; position:absolute; z-index:200; left:16px; top:140px; width:calc(100% - 32px); padding:12px; font-size:11px; line-height:1.5; color:var(--text-secondary); border-radius:12px; pointer-events:auto; box-shadow:0 8px 32px rgba(0,0,0,0.85); background:var(--panel-bg); border:1px solid var(--border-color);">
+                <div style="font-weight:bold; color:var(--text-primary); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+                    <span>规划模式说明</span>
+                    <span id="btn-tooltip-close" style="cursor:pointer; font-size:14px; color:var(--text-muted);">×</span>
+                </div>
+                <div style="margin-bottom:8px;">
+                    <b style="color:var(--neon-blue);">● 单向路径</b>：从起点出发探索一条最长路线，终点站可以为任意其他车站（不要求返回起点）。
+                </div>
+                <div>
+                    <b style="color:var(--neon-pink);">● 闭环回路</b>：路径的终点必须重合回到起点站，形成一条完整的首尾相连的环状圈。
+                </div>
+            </div>
+            
+            <div class="drawer-content">
+                
+                <!-- Pane 1: Rules Config -->
+                <div class="config-pane" id="pane-rules" style="display:none; flex-direction:column; gap:14px;">
+                    <div class="switch-container">
+                        <span class="switch-label">允许重复经过车站</span>
+                        <label class="switch">
+                            <input type="checkbox" id="allow-station-reuse" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-item">
+                        <div class="switch-container">
+                            <span class="switch-label">限制最大换乘次数</span>
+                            <label class="switch">
+                                <input type="checkbox" id="limit-transfers-toggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="slider-wrapper" id="transfers-slider-container" style="display:none; margin-top:8px;">
+                            <input type="range" class="slider-input" id="max-transfers" min="0" max="20" value="5">
+                            <span class="slider-val" id="max-transfers-val">5</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-item">
+                        <div class="switch-container">
+                            <span class="switch-label">限制使用最多线路数</span>
+                            <label class="switch">
+                                <input type="checkbox" id="limit-lines-toggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="slider-wrapper" id="lines-slider-container" style="display:none; margin-top:8px;">
+                            <input type="range" class="slider-input" id="max-lines" min="1" max="23" value="5">
+                            <span class="slider-val" id="max-lines-val">5</span>
+                        </div>
+                    </div>
+
+                    
+                    <div class="form-item" style="position:relative;">
+                        <label class="form-label" style="display:flex; align-items:center; gap:4px;">
+                            规划模式
+                            <span class="info-icon" id="mode-info-icon" style="cursor:pointer; opacity:0.6; font-size:10px; font-weight:bold; border: 1px solid var(--border-color); padding: 0 4px; line-height:1.2;">i</span>
+                        </label>
+                        <div class="tab-switcher">
+                            <button class="tab-btn active" id="mode-path" data-mode="path">单向路径</button>
+                            <button class="tab-btn" id="mode-loop" data-mode="loop">闭环回路</button>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-primary" id="btn-run-solver" style="margin-top:10px;">
+                        <span>开始规划路线</span>
+                    </button>
+                </div>
+                
+                <!-- Pane 2: Waypoints Config -->
+                <div class="config-pane" id="pane-waypoints" style="display:none; flex-direction:column; gap:12px;">
+                    <div class="form-item">
+                        <label class="form-label">新增打卡站</label>
+                        <div class="autocomplete-container">
+                            <input type="text" class="input-text" id="waypoint-input" placeholder="输入并选择打卡站..." autocomplete="off">
+                            <div class="suggestions-box" id="waypoint-suggestions" style="display:none;"></div>
+                        </div>
+                    </div>
+                    <div class="form-item">
+                        <label class="form-label">当前打卡站列表</label>
+                        <div class="chips-container" id="waypoints-chips">
+                            <span class="chips-placeholder">暂未添加打卡站</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pane 3: Avoids Config -->
+                <div class="config-pane" id="pane-avoids" style="display:none; flex-direction:column; gap:12px;">
+                    <div class="form-item">
+                        <label class="form-label">新增避让车站或线路</label>
+                        <div class="autocomplete-container">
+                            <input type="text" class="input-text" id="avoid-input" placeholder="输入并选择车站/线路避开..." autocomplete="off">
+                            <div class="suggestions-box" id="avoid-suggestions" style="display:none;"></div>
+                        </div>
+                    </div>
+                    <div class="form-item">
+                        <label class="form-label">当前避让黑名单</label>
+                        <div class="chips-container" id="avoids-chips">
+                            <span class="chips-placeholder">暂未添加避让项</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pane 4: Roadbook Output -->
+                <div class="config-pane" id="pane-roadbook" style="display:none; flex-direction:column; gap:14px; height:100%;">
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <span class="stat-label">经过区间</span>
+                            <span class="stat-value" id="res-edges">0 个</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">途经车站</span>
+                            <span class="stat-value" id="res-stations" style="color:var(--neon-blue);">0 个</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-primary" id="btn-roadbook-cruise" style="background:var(--state-end); border-color:var(--state-end); color:black; font-weight:bold;">
+                        <span>开启路线巡游模拟</span>
+                    </button>
+                    
+                    <div class="roadbook-container">
+                        <div class="roadbook-title">行车路书</div>
+                        <div class="roadbook-list" id="roadbook-list">
+                            <div style="font-size:12px; color:var(--text-muted); text-align:center; padding:20px 0;">
+                                暂无规划路线，请先在“规则”面板中点击开始
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pane 5: Network analysis tools stay separate from the route-planning flow. -->
+                <div class="config-pane" id="pane-analysis" style="display:none; flex-direction:column; gap:12px;">
+                    <div class="analysis-pane-intro">探索网络结构，不会改变当前路线规划条件。</div>
+                    <button class="analysis-action" id="btn-open-matrix" type="button">
+                        <span>直达矩阵</span>
+                        <small>查看站点间最少经过站数</small>
+                    </button>
+                    <button class="analysis-action" id="btn-open-centrality" type="button">
+                        <span>中心性排行</span>
+                        <small>查看网络枢纽和覆盖能力</small>
+                    </button>
+                    <button class="analysis-action" id="btn-open-city-extremes" type="button">
+                        <span>城市线网之最</span>
+                        <small>扫描全城起点，寻找不同规则下的最长路线</small>
+                    </button>
+                </div>
+                
+                <!-- Pane 6: Station Wiki -->
+                <div class="config-pane" id="pane-wiki" style="display:none; flex-direction:column; gap:14px; height:100%; overflow-y:auto; padding-right:4px;">
+                    <div id="wiki-content" style="display:flex; flex-direction:column; gap:14px;">
+                        <!-- Wiki details dynamically populated here -->
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        
+        <!-- Floating interactive popup on map clicks -->
+        <div class="map-popup" id="map-popup">
+            <div class="map-popup-header" id="popup-station-name">车站名称</div>
+            <button class="map-popup-btn" id="popup-btn-start">设为起点</button>
+            <button class="map-popup-btn" id="popup-btn-end">设为终点</button>
+            <button class="map-popup-btn" id="popup-btn-waypoint">设为必经打卡站</button>
+            <button class="map-popup-btn" id="popup-btn-avoid">设为避让站</button>
+            <button class="map-popup-btn" id="popup-btn-cruise" style="display:none; color:var(--state-end); font-weight:bold;">开始巡游路线</button>
+            <button class="map-popup-btn" id="popup-btn-wiki" style="color:var(--neon-blue); font-weight:bold;">查看车站百科</button>
+            <button class="map-popup-btn danger" id="popup-btn-clear-status" style="display:none;">清除状态</button>
+        </div>
+        
+        <!-- Floating status overlay -->
+        <div class="map-status-overlay glass-panel" id="map-status-overlay">
+            <div class="map-status-row">
+                <span class="map-status-dot"></span>
+                <span id="map-status-text" aria-live="polite">未选起点</span>
+            </div>
+        </div>
+        
+        <!-- Loading spinner overlay -->
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="spinner"></div>
+            <div class="loading-text" id="loading-text">算法实时计算中...</div>
+            <div class="progress-container" style="width: 250px; height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; margin-top: 10px; border: 1px solid var(--border-color);">
+                <div class="progress-bar" id="solver-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)); box-shadow: 0 0 8px var(--neon-blue); transition: width 0.1s ease;"></div>
+            </div>
+            <div class="loading-subtext" id="solver-progress-text" style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">已探索 0 个状态 (0%)</div>
+            <button class="btn-cancel-solver" id="btn-cancel-solver">取消计算</button>
+        </div>
+
+        <!-- Floating Glassmorphism Cruise Control Panel -->
+        <div class="glass-panel cruise-panel" id="cruise-panel" style="display:none;">
+            <div class="cruise-header">
+                <span class="cruise-title">模拟地铁巡游中</span>
+                <button class="cruise-close" id="btn-cruise-stop">×</button>
+            </div>
+            <div class="cruise-body">
+                <div class="cruise-info">
+                    <span id="cruise-current-station">当前站: --</span>
+                    <span id="cruise-next-station">下一站: --</span>
+                </div>
+                <div class="cruise-controls">
+                    <button class="cruise-btn" id="btn-cruise-play-pause">暂停</button>
+                    <button class="cruise-btn" id="btn-cruise-replay" style="display:none;">重播</button>
+                    <div class="cruise-speed-selector">
+                        <button class="speed-btn active" data-speed="1">1x</button>
+                        <button class="speed-btn" data-speed="2">2x</button>
+                        <button class="speed-btn" data-speed="4">4x</button>
+                        <button class="speed-btn" data-speed="8">8x</button>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <label class="cruise-toggle">
+                            <input type="checkbox" id="cruise-track-toggle" checked>
+                            <span>视角追踪</span>
+                        </label>
+                        <label class="cruise-toggle">
+                            <input type="checkbox" id="cruise-loop-toggle">
+                            <span>循环播放</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Direct Shortest Path Matrix Modal -->
+        <div class="matrix-modal" id="matrix-modal">
+            <div class="matrix-header">
+                <span class="matrix-title">直达最少站数表 (按车站数倒序)</span>
+                <div class="matrix-header-right">
+                    <span class="matrix-filter-label">最少车站数 >=</span>
+                    <input type="number" class="matrix-filter-input" id="matrix-filter-input" value="25" min="1" max="100">
+                    <button class="matrix-close" id="btn-matrix-close">×</button>
+                </div>
+            </div>
+            <div class="matrix-warning" id="matrix-warning">
+                ⚠️ 满足条件的路线过多，已限流仅展示前 500 条最长直达路线。请输入更大的筛选值过滤。
+            </div>
+            <div class="matrix-body" id="matrix-body">
+                <!-- Dynamic list table populated by Javascript -->
+            </div>
+        </div>
+        </div>
+        
+        <!-- Centrality (Degree / Betweenness) Modal -->
+        <div class="matrix-modal" id="centrality-modal" style="display:none; flex-direction:column;">
+            <div class="matrix-header" style="flex-direction:row;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border-color);">
+                <span class="matrix-title" style="display:flex;align-items:center;gap:8px;">
+                    车站中心性排行榜
+                    <button id="btn-centrality-help-toggle" style="background:transparent;border:1px solid var(--border-color);border-radius:4px;color:var(--text-secondary);font-size:10px;padding:2px 8px;cursor:pointer;display:flex;align-items:center;gap:4px;">
+                        ❓ 指标说明
+                    </button>
+                </span>
+                <div style="display:flex;align-items:center;gap:16px;">
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <span style="font-size:10px;color:var(--text-muted);">图空间:</span>
+                        <label style="font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:3px;cursor:pointer;">
+                            <input type="radio" name="centrality-space" value="L" id="centrality-space-L" checked style="accent-color:var(--accent-color);">Space L
+                        </label>
+                        <label style="font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:3px;cursor:pointer;margin-left:8px;">
+                            <input type="radio" name="centrality-space" value="P" id="centrality-space-P" style="accent-color:var(--state-end);">Space P
+                        </label>
+                    </div>
+                    
+                    <div style="width:1px;height:14px;background:var(--border-color);"></div>
+
+                    <!-- Parameter n input -->
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <span style="font-size:10px;color:var(--text-muted);font-weight:bold;">乘坐站数 n (Space L):</span>
+                        <input type="number" id="centrality-n-val" min="1" step="1" placeholder="全部" aria-label="乘坐站数 n，留空表示全部" style="width:50px;background:rgba(255,255,255,0.03);border:1px solid var(--border-color);border-radius:4px;color:var(--text-primary);padding:2px 4px;font-size:10px;outline:none;text-align:center;">
+                    </div>
+
+                    <div style="width:1px;height:14px;background:var(--border-color);"></div>
+
+                    <!-- Filter for coverage >= value -->
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <span style="font-size:10px;color:var(--text-muted);font-weight:bold;">筛选覆盖车站数 ≥:</span>
+                        <input type="number" id="centrality-coverage-filter" min="0" placeholder="全部" aria-label="筛选覆盖车站数，留空表示全部" style="width:55px;background:rgba(255,255,255,0.03);border:1px solid var(--border-color);border-radius:4px;color:var(--text-primary);padding:2px 4px;font-size:10px;outline:none;text-align:center;">
+                    </div>
+
+                    <button class="matrix-close" id="btn-centrality-close">×</button>
+                </div>
+            </div>
+            
+            <!-- Collapsible Inline Help Card -->
+            <div id="centrality-help-card" style="display:none;margin-bottom:10px;background:rgba(255,255,255,0.03);border:1px solid var(--border-color);border-radius:8px;padding:12px;font-size:11px;line-height:1.6;color:var(--text-secondary);overflow-y:auto;max-height:260px;flex-shrink:0;">
+                <div style="font-weight:bold;color:var(--text-primary);margin-bottom:8px;font-size:12px;display:flex;align-items:center;gap:4px;">
+                    📖 地铁网络分析指标与空间使用指南
+                </div>
+                
+                <div style="margin-bottom:10px;">
+                    <span style="font-weight:bold;color:var(--accent-color);font-size:11.5px;">▸ Space L（拓扑空间）— “物理轨道几何”</span><br>
+                    <span style="color:var(--text-muted);">最接近地铁轨道真实地理排布的模型。只有相邻的物理车站之间有直接连线。</span>
+                    <div style="margin-left:8px;margin-top:4px;">
+                        • <b style="color:var(--neon-blue);">度数</b>：物理直达的相邻车站个数。即直接连接了几条轨道分支。<br>
+                        • <b style="color:var(--neon-purple);">介数</b>：控制物理轨道流向的交通咽喉。介数越高，说明越多的全网物理最短路径需要通过该物理站点。<br>
+                        • <b style="color:var(--neon-pink);">随机游走介数</b>：乘客乘车时“盲目游走”或在岔路口随机选择方向时通过该站的概率，有助于识别备用的物理中转站。<br>
+                        • <b style="color:var(--state-avoid);">N站覆盖数</b>：以该站为起点，在乘坐至多 n 个车站（n 步物理跳数）以内可以到达的非重复车站总数，反映了局部的物理辐射范围。
+                    </div>
+                </div>
+                
+                <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:8px;">
+                    <span style="font-weight:bold;color:var(--state-end);font-size:11.5px;">▸ Space P（乘客转乘空间）— “同线零换乘直达”</span><br>
+                    <span style="color:var(--text-muted);">最贴近乘客转乘体感的设计模型。同一条地铁线路上的所有车站之间均直接相连。</span>
+                    <div style="margin-left:8px;margin-top:4px;">
+                        • <b style="color:var(--neon-blue);">度数（直达辐射范围）</b>：从该站出发，在<b>不需要换乘</b>的情况下能坐一趟车直达的全城车站总数。<br>
+                        • <b style="color:var(--neon-purple);">介数（换乘最优咽喉）</b>：若全网乘客出行都选择<b>“换乘次数最少”</b>的路线，有多少条出行路径必须在这个车站换乘。代表了最核心的换乘中枢地位。<br>
+                        • <b style="color:var(--neon-pink);">随机游走介数（随缘中转枢纽）</b>：模拟乘客不看导航随缘坐车、换乘时随机选择线路时，作为中转站被途经的频次。能有效发现非最优解但高连通性的隐性换乘咽喉。
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="matrix-body" id="centrality-body" style="flex:1;overflow-y:auto;">
+                <!-- Dynamic table populated by JS -->
+            </div>
+        </div>
+
+    </div>
+
+        <!-- Subway Data Source -->
+        <!-- City-wide extremes use the existing solver with every station as a candidate start. -->
+        <div class="matrix-modal city-extremes-modal" id="city-extremes-modal">
+            <div class="matrix-header">
+                <div>
+                    <div class="matrix-title">城市线网之最</div>
+                    <div class="city-extremes-subtitle">按规则扫描全城起点，结果可直接回到地图与路书。</div>
+                </div>
+                <button class="matrix-close" id="btn-city-extremes-close" aria-label="关闭城市线网之最">×</button>
+            </div>
+            <div class="city-extremes-controls">
+                <label class="city-extremes-field">
+                    <span>城市</span>
+                    <select id="city-extremes-city"></select>
+                </label>
+                <fieldset class="city-extremes-rules">
+                    <legend>路线规则</legend>
+                    <label><input type="radio" name="city-extreme-rule" value="path-reuse" checked> 重复站点最长单向路线</label>
+                    <label><input type="radio" name="city-extreme-rule" value="loop-reuse"> 重复站点最长闭环路线</label>
+                    <label><input type="radio" name="city-extreme-rule" value="path-simple"> 不重复站点最长单向路线</label>
+                    <label><input type="radio" name="city-extreme-rule" value="loop-simple"> 不重复站点最长闭环路线</label>
+                </fieldset>
+                <div class="city-extremes-actions">
+                    <button class="btn-primary" id="btn-city-extremes-run" type="button">查看预计算结果</button>
+                    <button class="btn-cancel-solver" id="btn-city-extremes-cancel" type="button" style="display:none;">取消扫描</button>
+                </div>
+            </div>
+            <div class="city-extremes-status" id="city-extremes-status">选择城市和规则后查看预计算路线。</div>
+            <div class="city-extremes-result" id="city-extremes-result"></div>
+        </div>
+
+    <script src="subway_data.js"></script>
+    <script src="city_extremes_results.js"></script>
+    
+    <!-- Page Controller script -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            let selectedCity = "guangzhou";
+            let data = window.subwayDataMap ? window.subwayDataMap[selectedCity] : window.subwayData;
+            if (!data) {
+                alert("未能加载地铁数据，请检查 subway_data.js！");
+                return;
+            }
+            document.title = "地铁路网线路研究";
+
+            // Planning state is the single source of truth for every map marker, form control and solver request.
+            let selectedStartStation = "";
+            let selectedEndStation = "";
+            let routeMode = "path";
+            let optimizeMetric = "edges";
+            const selectedWaypoints = new Set();
+            const selectedAvoids = new Set();
+            let activeWorker = null;
+
+            // Cruise state is deliberately separate from route planning so pausing an animation never changes a route.
+            let cruiseIsPlaying = false;
+            let cruiseSpeedMultiplier = 1;
+            let cruiseLastTimestamp = null;
+            let cruisePathPoints = [];
+            let cruiseSegments = [];
+            let cruiseCurrentSegmentIndex = 0;
+            let cruiseCurrentSegmentProgress = 0.0;
+            const BASE_CRUISE_SPEED = 80.0;
+
+            // Zoom & Pan state
+            let scale = 1.0;
+            let translateX = 0;
+            let translateY = 0;
+            let isDragging = false;
+            let startDragX = 0;
+            let startDragY = 0;
+
+            // Cache stable DOM anchors once; dynamic SVG children are recreated by renderSvgMap().
+            const mapContainer = document.getElementById("map-container");
+            const mapSection = document.getElementById("map-section");
+            const mapPopup = document.getElementById("map-popup");
+            const popupStationName = document.getElementById("popup-station-name");
+            const mapStatusText = document.getElementById("map-status-text");
+            const mapStatusOverlay = document.getElementById("map-status-overlay");
+            const drawer = document.getElementById("floating-drawer");
+            const drawerTitle = document.getElementById("drawer-title");
+
+            let clickedStationName = "";
+
+            // Rebuild the SVG from the selected city's data, then project persistent planning state onto it.
+            function renderSvgMap() {
+                const nodes = data.nodes;
+                const edges = data.edges;
+
+                // Some source records omit one coordinate. Ignore those values while calculating the viewport bounds.
+                const xs = nodes.map(n => n.x).filter(x => x !== 0);
+                const ys = nodes.map(n => n.y).filter(y => y !== 0);
+                const minX = Math.min(...xs) - 50;
+                const maxX = Math.max(...xs) + 50;
+                const minY = Math.min(...ys) - 50;
+                const maxY = Math.max(...ys) + 50;
+                const w = maxX - minX;
+                const h = maxY - minY;
+
+                translateX = -minX;
+                translateY = -minY;
+                scale = 1.0;
+
+                let svgHtml = `
+                    <svg id="metro-svg" viewBox="0 0 ${w} ${h}">
+                        <g id="map-viewport-group">
+                            <g id="edges-group"></g>
+                            <g id="highlight-edges-group"></g>
+                            <g id="stations-group"></g>
+                            <g id="highlight-stations-group"></g>
+                            <g id="labels-group"></g>
+                        </g>
+                    </svg>
+                `;
+                mapContainer.innerHTML = svgHtml;
+
+                const edgesGroup = document.getElementById("edges-group");
+                const stationsGroup = document.getElementById("stations-group");
+                const labelsGroup = document.getElementById("labels-group");
+
+                function getLabelDefaultOpacity(nodeName, isTransfer) {
+                    if (nodeName === selectedStartStation || nodeName === selectedEndStation || selectedWaypoints.has(nodeName) || selectedAvoids.has(nodeName) || isStationTraversed(nodeName)) {
+                        return "1.0";
+                    }
+                    return isTransfer ? "0.65" : "0.0";
+                }
+
+                // Draw base lines in gray
+                edges.forEach((edge, idx) => {
+                    const uNode = nodes.find(n => n.name === edge.u);
+                    const vNode = nodes.find(n => n.name === edge.v);
+                    if (uNode && vNode) {
+                        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                        line.setAttribute("x1", uNode.x);
+                        line.setAttribute("y1", uNode.y);
+                        line.setAttribute("x2", vNode.x);
+                        line.setAttribute("y2", vNode.y);
+                        line.setAttribute("stroke", "var(--base-line-color)");
+                        line.setAttribute("stroke-width", "2.0");
+                        line.setAttribute("opacity", "0.55");
+                        line.setAttribute("id", `edge-base-${idx}`);
+                        edgesGroup.appendChild(line);
+                    }
+                });
+
+                // Draw base stations and bind tooltips/hovers
+                nodes.forEach(node => {
+                    const isTransfer = node.lines.length > 1;
+
+                    const stationGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                    stationGroup.setAttribute("class", "svg-station");
+                    stationGroup.setAttribute("id", `station-node-${node.name}`);
+                    stationGroup.setAttribute("role", "button");
+                    stationGroup.setAttribute("tabindex", "0");
+                    stationGroup.setAttribute("aria-label", `选择车站 ${node.name}`);
+                    
+                    // The SVG map remains directly operable without a mouse: keyboard users can
+                    // open the same station action menu with Enter or Space.
+                    stationGroup.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        showMapPopup(node.name, e.clientX, e.clientY);
+                    });
+                    stationGroup.addEventListener("keydown", (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            showMapPopup(node.name, window.innerWidth / 2, window.innerHeight / 2);
+                        }
+                    });
+
+                    // Interactive hover labels
+                    stationGroup.addEventListener("mouseover", () => {
+                        const lbl = document.getElementById(`label-text-${node.name}`);
+                        if (lbl) {
+                            lbl.setAttribute("opacity", "1.0");
+                            lbl.setAttribute("fill", "var(--text-primary)");
+                            lbl.setAttribute("font-weight", "bold");
+                            lbl.setAttribute("font-size", isTransfer ? "8.5" : "6.5");
+                        }
+                    });
+
+                    stationGroup.addEventListener("mouseout", () => {
+                        const lbl = document.getElementById(`label-text-${node.name}`);
+                        if (lbl) {
+                            if (!isStationTraversed(node.name)) {
+                                const baseOpacity = getLabelDefaultOpacity(node.name, isTransfer);
+                                lbl.setAttribute("opacity", baseOpacity);
+                                lbl.setAttribute("fill", isTransfer ? "var(--text-primary)" : "var(--text-secondary)");
+                                lbl.setAttribute("font-weight", isTransfer ? "bold" : "normal");
+                                lbl.setAttribute("font-size", isTransfer ? "6.5" : "4.5");
+                            }
+                        }
+                    });
+
+                    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    circle.setAttribute("cx", node.x);
+                    circle.setAttribute("cy", node.y);
+                    
+                    const isSelected = (node.name === selectedStartStation || 
+                                       (routeMode === "path" && node.name === selectedEndStation) || 
+                                       selectedWaypoints.has(node.name) || 
+                                       selectedAvoids.has(node.name));
+
+                    if (isTransfer) {
+                        circle.setAttribute("r", "5.0");
+                        circle.setAttribute("fill", "var(--bg-page)");
+                        circle.setAttribute("stroke-width", "2.0");
+                        
+                        let strokeColor = "var(--base-station-color)";
+                        if (node.name === selectedStartStation) {
+                            strokeColor = "var(--state-start)";
+                        } else if (routeMode === "path" && node.name === selectedEndStation) {
+                            strokeColor = "var(--state-end)";
+                        } else if (selectedWaypoints.has(node.name)) {
+                            strokeColor = "var(--state-waypoint)";
+                        } else if (selectedAvoids.has(node.name)) {
+                            strokeColor = "var(--state-avoid)";
+                        }
+                        circle.setAttribute("stroke", strokeColor);
+                    } else {
+                        circle.setAttribute("r", "2.8");
+                        if (isSelected) {
+                            circle.setAttribute("fill", "var(--bg-page)");
+                            circle.setAttribute("stroke-width", "2.0");
+                            
+                            let strokeColor = "var(--base-station-color)";
+                            if (node.name === selectedStartStation) {
+                                strokeColor = "var(--state-start)";
+                            } else if (routeMode === "path" && node.name === selectedEndStation) {
+                                strokeColor = "var(--state-end)";
+                            } else if (selectedWaypoints.has(node.name)) {
+                                strokeColor = "var(--state-waypoint)";
+                            } else if (selectedAvoids.has(node.name)) {
+                                strokeColor = "var(--state-avoid)";
+                            }
+                            circle.setAttribute("stroke", strokeColor);
+                        } else {
+                            circle.setAttribute("fill", "var(--base-station-color)");
+                            circle.setAttribute("stroke", "none");
+                        }
+                    }
+                    
+                    stationGroup.appendChild(circle);
+                    stationsGroup.appendChild(stationGroup);
+
+                    // Text label (dynamically shown/hidden)
+                    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    text.setAttribute("x", node.x);
+                    text.setAttribute("y", node.y - (isTransfer ? 8 : 6));
+                    text.setAttribute("fill", isTransfer ? "var(--text-primary)" : "var(--text-secondary)");
+                    text.setAttribute("font-size", isTransfer ? "6.5" : "4.5");
+                    text.setAttribute("font-family", "inherit");
+                    text.setAttribute("text-anchor", "middle");
+                    text.setAttribute("id", `label-text-${node.name}`);
+                    text.setAttribute("opacity", getLabelDefaultOpacity(node.name, isTransfer));
+                    text.setAttribute("pointer-events", "none");
+                    if (isTransfer) {
+                        text.setAttribute("font-weight", "bold");
+                    }
+                    text.textContent = node.name;
+                    labelsGroup.appendChild(text);
+                });
+
+                // Create and append train SVG group at the very end of the viewport
+                const trainGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                trainGroup.setAttribute("id", "train-group");
+                trainGroup.setAttribute("style", "display:none; pointer-events:none;");
+
+                const trainHalo = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                trainHalo.setAttribute("cx", "0");
+                trainHalo.setAttribute("cy", "0");
+                trainHalo.setAttribute("r", "10");
+                trainHalo.setAttribute("fill", "var(--state-end)");
+                trainHalo.setAttribute("opacity", "0.3");
+                trainGroup.appendChild(trainHalo);
+
+                const trainDot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                trainDot.setAttribute("cx", "0");
+                trainDot.setAttribute("cy", "0");
+                trainDot.setAttribute("r", "5");
+                trainDot.setAttribute("fill", "var(--state-end)");
+                trainGroup.appendChild(trainDot);
+
+                const trainLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                trainLabel.setAttribute("x", "0");
+                trainLabel.setAttribute("y", "-12");
+                trainLabel.setAttribute("fill", "var(--state-end)");
+                trainLabel.setAttribute("font-size", "7.5");
+                trainLabel.setAttribute("font-weight", "bold");
+                trainLabel.setAttribute("text-anchor", "middle");
+                trainLabel.setAttribute("font-family", "inherit");
+                trainLabel.textContent = "模拟地铁";
+                trainGroup.appendChild(trainLabel);
+
+                const viewport = document.getElementById("map-viewport-group");
+                if (viewport) {
+                    viewport.appendChild(trainGroup);
+                }
+
+                updateViewportTransform();
+            }
+
+            let lastResultStations = [];
+            function isStationTraversed(name) {
+                return lastResultStations.includes(name);
+            }
+
+            // Keep pan and zoom state in one transform so every input method updates the same view.
+            function updateViewportTransform() {
+                const viewport = document.getElementById("map-viewport-group");
+                if (viewport) {
+                    viewport.setAttribute("transform", `translate(${translateX}, ${translateY}) scale(${scale})`);
+                }
+            }
+
+            // Pointer Events unify mouse, trackpad and touch dragging without separate mobile code.
+            mapSection.addEventListener("pointerdown", (e) => {
+                // A station owns its press/click sequence so opening its action menu is never
+                // swallowed by the map's pointer capture used for panning.
+                if (e.target.closest(".svg-station") || e.target.closest(".float-panel-left") || e.target.closest(".float-panel-right") || 
+                    e.target.closest(".bottom-nav-bar") || e.target.closest(".search-pill-container") || e.target.closest(".city-tab-container") ||
+                    e.target.closest("#floating-drawer") || e.target.closest("#map-popup")) return;
+                isDragging = true;
+                startDragX = e.clientX - translateX;
+                startDragY = e.clientY - translateY;
+                mapSection.setPointerCapture(e.pointerId);
+                mapPopup.style.display = "none";
+            });
+
+            window.addEventListener("pointermove", (e) => {
+                if (!isDragging) return;
+                translateX = e.clientX - startDragX;
+                translateY = e.clientY - startDragY;
+                updateViewportTransform();
+            });
+
+            window.addEventListener("pointerup", () => {
+                isDragging = false;
+            });
+
+            // Zooming map
+            mapSection.addEventListener("wheel", (e) => {
+                e.preventDefault();
+                const zoomFactor = 1.15;
+                const rect = mapContainer.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+
+                const svgMouseX = (mouseX - translateX) / scale;
+                const svgMouseY = (mouseY - translateY) / scale;
+
+                if (e.deltaY < 0) {
+                    scale *= zoomFactor;
+                } else {
+                    scale /= zoomFactor;
+                }
+                scale = Math.max(0.1, Math.min(8, scale));
+                translateX = mouseX - svgMouseX * scale;
+                translateY = mouseY - svgMouseY * scale;
+
+                updateViewportTransform();
+                mapPopup.style.display = "none";
+            });
+
+            // Zoom buttons binding
+            document.getElementById("btn-zoom-in").addEventListener("click", () => {
+                scale = Math.min(8, scale * 1.3);
+                updateViewportTransform();
+            });
+            document.getElementById("btn-zoom-out").addEventListener("click", () => {
+                scale = Math.max(0.1, scale / 1.3);
+                updateViewportTransform();
+            });
+            document.getElementById("btn-reset-map").addEventListener("click", () => {
+                lastResultStations = [];
+                setRoadbookAvailability(false);
+                renderSvgMap();
+            });
+
+            // City switching resets planning state because station names and topology change together.
+            document.querySelectorAll(".city-tab").forEach(tab => {
+                tab.addEventListener("click", () => {
+                    const selected = tab.getAttribute("data-value");
+                    if (!window.subwayDataMap || !window.subwayDataMap[selected]) {
+                        alert("未能加载该城市的数据！");
+                        return;
+                    }
+                    
+                    // Highlight active tab
+                    document.querySelectorAll(".city-tab").forEach(t => {
+                        t.classList.remove("active");
+                        t.setAttribute("aria-selected", "false");
+                    });
+                    tab.classList.add("active");
+                    tab.setAttribute("aria-selected", "true");
+                    tab.scrollIntoView({ block: "nearest", inline: "center" });
+                    
+                    selectedCity = selected;
+                    data = window.subwayDataMap[selectedCity];
+                    document.title = "地铁路网线路研究";
+                    
+                    // Reset all states
+                    selectedStartStation = "";
+                    selectedEndStation = "";
+                    selectedWaypoints.clear();
+                    selectedAvoids.clear();
+                    lastResultStations = [];
+                    setRoadbookAvailability(false);
+                    stopCruise();
+                    document.getElementById("matrix-modal").style.display = "none";
+                    
+                    // Clear input values
+                    document.getElementById("search-start-input").value = "";
+                    const endInput = document.getElementById("search-end-input");
+                    if (endInput) endInput.value = "";
+                    const wpInput = document.getElementById("waypoint-input");
+                    if (wpInput) wpInput.value = "";
+                    const avoidInput = document.getElementById("avoid-input");
+                    if (avoidInput) avoidInput.value = "";
+                    
+                    // Update UI lists
+                    renderWaypointChips();
+                    renderAvoidChips();
+                    updateFloatingOverlay();
+                    
+                    // Clear active paths / maps
+                    mapStatusOverlay.style.display = "none";
+                    closeDrawer();
+                    
+                    // Re-initialize autocomplete variables
+                    stationNames = data.nodes.map(n => n.name);
+                    lineNames = [...new Set(data.edges.map(e => e.line))];
+                    searchAvoidItems = [...stationNames, ...lineNames];
+                    
+                    // Re-render map and auto-center
+                    renderSvgMap();
+                });
+                tab.addEventListener("keydown", (e) => {
+                    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+                    e.preventDefault();
+                    const tabs = [...document.querySelectorAll(".city-tab")];
+                    const index = tabs.indexOf(tab);
+                    const nextIndex = (index + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+                    tabs[nextIndex].focus();
+                });
+            });
+
+            // The bottom navigation opens one contextual drawer at a time; analysis modals are handled separately.
+            const navItems = document.querySelectorAll(".nav-item");
+            const roadbookNav = document.getElementById("nav-roadbook");
+            let activePaneId = "";
+
+            // Route results unlock the roadbook; a stale route is never presented as current after reset or city change.
+            function setRoadbookAvailability(hasRoute) {
+                roadbookNav.disabled = !hasRoute;
+                roadbookNav.setAttribute("aria-disabled", String(!hasRoute));
+            }
+
+            navItems.forEach(item => {
+                item.addEventListener("click", () => {
+                    const targetPaneId = item.getAttribute("data-target");
+                    const paneName = item.querySelector(".nav-item-label").textContent;
+                    
+                    if (drawer.classList.contains("open") && activePaneId === targetPaneId) {
+                        closeDrawer();
+                    } else {
+                        openDrawer(targetPaneId, paneName);
+                        navItems.forEach(n => n.classList.remove("active"));
+                        item.classList.add("active");
+                    }
+                });
+            });
+
+            function openDrawer(paneId, title) {
+                if (paneId === "drawer-wiki") {
+                    drawerTitle.textContent = title;
+                } else {
+                    drawerTitle.textContent = title + "设置";
+                }
+                document.querySelectorAll(".config-pane").forEach(p => p.style.display = "none");
+                
+                // Constraints combine waypoints and avoidance because both refine the same route request.
+                const paneIds = paneId === "drawer-constraints"
+                    ? ["pane-waypoints", "pane-avoids"]
+                    : [paneId.replace("drawer-", "pane-")];
+                paneIds.forEach(id => {
+                    const activePane = document.getElementById(id);
+                    if (activePane) activePane.style.display = "flex";
+                });
+                
+                activePaneId = paneId;
+                drawer.classList.add("open");
+            }
+
+            function closeDrawer() {
+                drawer.classList.remove("open");
+                activePaneId = "";
+                navItems.forEach(n => n.classList.remove("active"));
+            }
+
+            document.getElementById("btn-drawer-close").addEventListener("click", closeDrawer);
+
+            // Escape is the shared, predictable exit for transient UI layers.
+            document.addEventListener("keydown", (e) => {
+                if (e.key !== "Escape") return;
+                mapPopup.style.display = "none";
+                closeDrawer();
+                document.getElementById("matrix-modal").style.display = "none";
+                document.getElementById("centrality-modal").style.display = "none";
+            });
+
+            // A station menu is a transient editor for the current planning state, not a second data model.
+            function showMapPopup(stationName, clientX, clientY) {
+                clickedStationName = stationName;
+                popupStationName.textContent = stationName;
+                mapPopup.style.left = `${clientX + 12}px`;
+                mapPopup.style.top = `${clientY + 12}px`;
+                mapPopup.style.display = "flex";
+
+                const isStart = selectedStartStation === stationName;
+                const isEnd = selectedEndStation === stationName;
+                const isWaypoint = selectedWaypoints.has(stationName);
+                const isAvoid = selectedAvoids.has(stationName);
+                const isTraversed = lastResultStations.includes(stationName);
+                
+                const btnEnd = document.getElementById("popup-btn-end");
+                if (btnEnd) {
+                    btnEnd.style.display = routeMode === "path" ? "block" : "none";
+                }
+
+                const btnCruise = document.getElementById("popup-btn-cruise");
+                if (btnCruise) {
+                    btnCruise.style.display = (lastResultStations.length > 0 && isTraversed) ? "block" : "none";
+                }
+
+                const btnClear = document.getElementById("popup-btn-clear-status");
+                if (isStart || isEnd || isWaypoint || isAvoid) {
+                    btnClear.style.display = "block";
+                } else {
+                    btnClear.style.display = "none";
+                }
+
+                // Only show Wiki option if the station explicitly contains wiki metadata
+                const currentData = window.subwayDataMap[selectedCity];
+                const node = currentData ? currentData.nodes.find(n => n.name === stationName) : null;
+                const hasWiki = node && node.wiki;
+                const btnWiki = document.getElementById("popup-btn-wiki");
+                if (btnWiki) {
+                    btnWiki.style.display = hasWiki ? "block" : "none";
+                }
+            }
+
+            document.addEventListener("click", (e) => {
+                if (!e.target.closest("#map-popup") && !e.target.closest(".svg-station")) {
+                    mapPopup.style.display = "none";
+                }
+            });
+
+            document.getElementById("popup-btn-start").addEventListener("click", () => {
+                setStartStation(clickedStationName);
+                mapPopup.style.display = "none";
+            });
+
+            document.getElementById("popup-btn-end").addEventListener("click", () => {
+                setEndStation(clickedStationName);
+                mapPopup.style.display = "none";
+            });
+
+            document.getElementById("popup-btn-waypoint").addEventListener("click", () => {
+                addWaypoint(clickedStationName);
+                mapPopup.style.display = "none";
+            });
+
+            document.getElementById("popup-btn-avoid").addEventListener("click", () => {
+                addAvoid(clickedStationName);
+                mapPopup.style.display = "none";
+            });
+
+            document.getElementById("popup-btn-cruise").addEventListener("click", () => {
+                mapPopup.style.display = "none";
+                startCruise();
+            });
+
+            document.getElementById("popup-btn-wiki").addEventListener("click", () => {
+                mapPopup.style.display = "none";
+                showStationWiki(clickedStationName);
+            });
+
+            document.getElementById("popup-btn-clear-status").addEventListener("click", () => {
+                if (selectedStartStation === clickedStationName) {
+                    setStartStation("");
+                }
+                if (selectedEndStation === clickedStationName) {
+                    setEndStation("");
+                }
+                removeWaypoint(clickedStationName);
+                removeAvoid(clickedStationName);
+                mapPopup.style.display = "none";
+            });
+
+            // Helper to sanitize LaTeX mathematical notations for web browser view
+            function cleanLatexForWeb(str) {
+                if (typeof str !== 'string') return str;
+                let clean = str;
+                // Normalize multiple backslashes (like \\ or \\\\) to a single backslash
+                clean = clean.replace(/\\+/g, '\\');
+                // Replace standard LaTeX symbols with their unicode equivalents
+                clean = clean.replace(/\\approx/g, '≈');
+                clean = clean.replace(/\\ge/g, '≥');
+                clean = clean.replace(/\\le/g, '≤');
+                // Extract inner text from \text{...}
+                clean = clean.replace(/\\text\{([^}]+)\}/g, '$1');
+                // Remove the LaTeX $ delimiter
+                clean = clean.replace(/\$/g, '');
+                return clean;
+            }
+
+            // Renders the station wiki information inside the right drawer pane
+            function showStationWiki(stationName) {
+                const wikiContent = document.getElementById("wiki-content");
+                if (!wikiContent) return;
+                
+                const currentData = window.subwayDataMap[selectedCity];
+                const node = currentData.nodes.find(n => n.name === stationName);
+                if (!node) return;
+                
+                const wiki = node.wiki || {};
+                
+                // Helper to retrieve official color of a line
+                const getLineColor = (lineName) => {
+                    const edge = currentData.edges.find(e => e.line === lineName);
+                    return edge ? edge.color : 'var(--neon-blue)';
+                };
+                
+                // 1. Description fallback
+                const desc = wiki.desc || `${stationName}站是${currentData.city}地铁线网上的一座重要车站，目前服务于轨道交通线路：${node.lines.join("、")}。`;
+                
+                // 2. Platform configuration
+                const platformStr = wiki.platform || (node.lines.length > 1 ? "地下换乘站台" : "地下岛式站台");
+                
+                // 3. Passenger flow representation
+                let flowStr = wiki.flow;
+                if (!flowStr) {
+                    const lineCount = node.lines.length;
+                    if (lineCount >= 3) {
+                        flowStr = "超级核心枢纽（预估日均 $P \\ge 15.0\\text{ 万人次}$）";
+                    } else if (lineCount === 2) {
+                        flowStr = "重要换乘枢纽（预估日均 $P \\approx 6.5\\text{ 万人次}$）";
+                    } else {
+                        flowStr = "常规服务站点（预估日均 $P \\approx 1.2\\text{ 万人次}$）";
+                    }
+                }
+                
+                // 4. Surrounding features
+                const features = wiki.features || "本站交通组织有序，站内设有完备的安全设施，出入口可快捷直达周边主要街区。";
+                
+                // 5. Naming history - DO NOT FABRICATE (only show if explicitly provided)
+                let namingHtml = "";
+                if (wiki.history) {
+                    namingHtml = `
+                        <div class="stat-box" style="flex-direction:column; align-items:flex-start; text-align:left; padding:12px; gap:4px; border:1px solid rgba(255, 105, 180, 0.2); background:rgba(255, 105, 180, 0.02);">
+                            <span class="stat-label" style="font-weight:bold; color:var(--neon-pink);">命名历史渊源</span>
+                            <span style="font-size:12px; color:var(--text-secondary); line-height:1.6; margin-top:4px;">${cleanLatexForWeb(wiki.history)}</span>
+                        </div>
+                    `;
+                }
+                
+                wikiContent.innerHTML = `
+                    <div class="stat-box" style="flex-direction:column; align-items:flex-start; text-align:left; padding:12px; gap:4px;">
+                        <span class="stat-label" style="font-weight:bold; color:var(--neon-blue);">车站概述</span>
+                        <span style="font-size:12px; color:var(--text-primary); line-height:1.6; margin-top:4px;">${cleanLatexForWeb(desc)}</span>
+                    </div>
+                    
+                    <div class="stat-box" style="flex-direction:column; align-items:flex-start; text-align:left; padding:12px; gap:4px;">
+                        <span class="stat-label">站台形式</span>
+                        <span class="stat-value" style="font-size:13px; color:var(--neon-pink);">${cleanLatexForWeb(platformStr)}</span>
+                    </div>
+                    
+                    <div class="stat-box" style="flex-direction:column; align-items:flex-start; text-align:left; padding:12px; gap:4px;">
+                        <span class="stat-label">客流量级</span>
+                        <span class="stat-value" style="font-size:13px; color:var(--text-primary);">${cleanLatexForWeb(flowStr)}</span>
+                    </div>
+                    
+                    <div class="stat-box" style="flex-direction:column; align-items:flex-start; text-align:left; padding:12px; gap:4px;">
+                        <span class="stat-label">途经线路</span>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
+                            ${node.lines.map(line => `<span class="line-badge" style="background-color:${getLineColor(line)};">${line}</span>`).join("")}
+                        </div>
+                    </div>
+                    
+                    <div class="stat-box" style="flex-direction:column; align-items:flex-start; text-align:left; padding:12px; gap:4px;">
+                        <span class="stat-label">设施与周边</span>
+                        <span style="font-size:12px; color:var(--text-secondary); line-height:1.5; margin-top:4px;">${cleanLatexForWeb(features)}</span>
+                    </div>
+                    
+                    ${namingHtml}
+                `;
+                
+                openDrawer("drawer-wiki", stationName);
+            }
+
+            // Selection helpers update both the visual marker and the matching text input.
+            function setStartStation(name) {
+                if (selectedStartStation) {
+                    const prevNode = document.getElementById(`station-node-${selectedStartStation}`);
+                    if (prevNode) {
+                        const circle = prevNode.querySelector("circle");
+                        let strokeColor = "var(--border-color)";
+                        if (selectedEndStation === selectedStartStation) {
+                            strokeColor = "var(--state-end)";
+                        } else if (selectedWaypoints.has(selectedStartStation)) {
+                            strokeColor = "var(--state-waypoint)";
+                        } else if (selectedAvoids.has(selectedStartStation)) {
+                            strokeColor = "var(--state-avoid)";
+                        }
+                        circle.setAttribute("stroke", strokeColor);
+                    }
+                }
+
+                selectedStartStation = name;
+                document.getElementById("search-start-input").value = name;
+
+                if (name) {
+                    const currNode = document.getElementById(`station-node-${name}`);
+                    if (currNode) {
+                        const circle = currNode.querySelector("circle");
+                        circle.setAttribute("stroke", "var(--state-start)");
+                    }
+                }
+                updateFloatingOverlay();
+            }
+
+            // End Station setups
+            function setEndStation(name) {
+                if (selectedEndStation) {
+                    const prevNode = document.getElementById(`station-node-${selectedEndStation}`);
+                    if (prevNode) {
+                        const circle = prevNode.querySelector("circle");
+                        let strokeColor = "var(--border-color)";
+                        if (selectedStartStation === selectedEndStation) {
+                            strokeColor = "var(--state-start)";
+                        } else if (selectedWaypoints.has(selectedEndStation)) {
+                            strokeColor = "var(--state-waypoint)";
+                        } else if (selectedAvoids.has(selectedEndStation)) {
+                            strokeColor = "var(--state-avoid)";
+                        }
+                        circle.setAttribute("stroke", strokeColor);
+                    }
+                }
+
+                selectedEndStation = name;
+                document.getElementById("search-end-input").value = name;
+
+                if (name) {
+                    const currNode = document.getElementById(`station-node-${name}`);
+                    if (currNode) {
+                        const circle = currNode.querySelector("circle");
+                        circle.setAttribute("stroke", "var(--state-end)");
+                    }
+                }
+                updateFloatingOverlay();
+            }
+
+            // Waypoints logic
+            function addWaypoint(name) {
+                if (selectedAvoids.has(name)) {
+                    alert("此站已在避让黑名单中！");
+                    return;
+                }
+                selectedWaypoints.add(name);
+                renderWaypointChips();
+                
+                const node = document.getElementById(`station-node-${name}`);
+                if (node) {
+                    const circle = node.querySelector("circle");
+                    circle.setAttribute("stroke", "var(--state-waypoint)");
+                }
+                updateFloatingOverlay();
+            }
+
+            function removeWaypoint(name) {
+                selectedWaypoints.delete(name);
+                renderWaypointChips();
+                
+                const node = document.getElementById(`station-node-${name}`);
+                if (node) {
+                    const circle = node.querySelector("circle");
+                    circle.setAttribute("stroke", "var(--border-color)");
+                }
+                updateFloatingOverlay();
+            }
+
+            // Avoid list logic
+            function addAvoid(nameOrLine) {
+                if (selectedWaypoints.has(nameOrLine)) {
+                    alert("此项目已被设定为必经站点！");
+                    return;
+                }
+                selectedAvoids.add(nameOrLine);
+                renderAvoidChips();
+
+                const node = document.getElementById(`station-node-${nameOrLine}`);
+                if (node) {
+                    const circle = node.querySelector("circle");
+                    circle.setAttribute("stroke", "var(--state-avoid)");
+                    circle.setAttribute("opacity", "0.35");
+                }
+                updateFloatingOverlay();
+            }
+
+            function removeAvoid(nameOrLine) {
+                selectedAvoids.delete(nameOrLine);
+                renderAvoidChips();
+
+                const node = document.getElementById(`station-node-${nameOrLine}`);
+                if (node) {
+                    const circle = node.querySelector("circle");
+                    circle.setAttribute("stroke", "var(--border-color)");
+                    circle.setAttribute("opacity", "1.0");
+                }
+                updateFloatingOverlay();
+            }
+
+            // Chips renderings
+            function renderWaypointChips() {
+                const container = document.getElementById("waypoints-chips");
+                if (selectedWaypoints.size === 0) {
+                    container.innerHTML = `<span class="chips-placeholder">暂未添加打卡站</span>`;
+                    return;
+                }
+                let chipsHtml = "";
+                selectedWaypoints.forEach(wp => {
+                    chipsHtml += `
+                        <div class="chip">
+                            <span>${wp}</span>
+                            <button type="button" class="chip-close" data-name="${wp}" aria-label="移除打卡站 ${wp}">×</button>
+                        </div>
+                    `;
+                });
+                container.innerHTML = chipsHtml;
+                container.querySelectorAll(".chip-close").forEach(btn => {
+                    btn.addEventListener("click", () => removeWaypoint(btn.getAttribute("data-name")));
+                });
+            }
+
+            function renderAvoidChips() {
+                const container = document.getElementById("avoids-chips");
+                if (selectedAvoids.size === 0) {
+                    container.innerHTML = `<span class="chips-placeholder">暂未添加避让项</span>`;
+                    return;
+                }
+                let chipsHtml = "";
+                selectedAvoids.forEach(av => {
+                    chipsHtml += `
+                        <div class="chip">
+                            <span>${av}</span>
+                            <button type="button" class="chip-close" data-name="${av}" aria-label="移除避让项 ${av}">×</button>
+                        </div>
+                    `;
+                });
+                container.innerHTML = chipsHtml;
+                container.querySelectorAll(".chip-close").forEach(btn => {
+                    btn.addEventListener("click", () => removeAvoid(btn.getAttribute("data-name")));
+                });
+            }
+
+            // Autocomplete is shared by starts, ends, waypoints and avoids; callers provide the current searchable universe.
+            function setupAutocomplete(inputId, boxId, getSearchItemsFn, selectCallback) {
+                const input = document.getElementById(inputId);
+                const box = document.getElementById(boxId);
+
+                input.addEventListener("input", () => {
+                    const query = input.value.trim().toLowerCase();
+                    if (!query) {
+                        box.style.display = "none";
+                        return;
+                    }
+
+                    const searchItems = getSearchItemsFn();
+                    const filtered = searchItems.filter(item => item.toLowerCase().includes(query)).slice(0, 10);
+                    if (filtered.length === 0) {
+                        box.style.display = "none";
+                        return;
+                    }
+
+                    box.innerHTML = filtered.map(item => `<button type="button" class="suggestion-item" role="option">${item}</button>`).join("");
+                    box.style.display = "block";
+
+                    box.querySelectorAll(".suggestion-item").forEach(itemDiv => {
+                        itemDiv.addEventListener("click", () => {
+                            selectCallback(itemDiv.textContent);
+                            input.value = "";
+                            box.style.display = "none";
+                        });
+                    });
+                });
+
+                document.addEventListener("click", (e) => {
+                    if (!e.target.closest(`#${inputId}`) && !e.target.closest(`#${boxId}`)) {
+                        box.style.display = "none";
+                    }
+                });
+            }
+
+            let stationNames = data.nodes.map(n => n.name);
+            let lineNames = [...new Set(data.edges.map(e => e.line))];
+            let searchAvoidItems = [...stationNames, ...lineNames];
+
+            setupAutocomplete("search-start-input", "start-suggestions", () => stationNames, setStartStation);
+            setupAutocomplete("search-end-input", "end-suggestions", () => stationNames, setEndStation);
+            setupAutocomplete("waypoint-input", "waypoint-suggestions", () => stationNames, addWaypoint);
+            setupAutocomplete("avoid-input", "avoid-suggestions", () => searchAvoidItems, addAvoid);
+
+            // Config tab switchers
+            function setupTabSwitcher(tabIds, activeId, callback) {
+                tabIds.forEach(id => {
+                    const btn = document.getElementById(id);
+                    btn.addEventListener("click", () => {
+                        tabIds.forEach(currId => document.getElementById(currId).classList.remove("active"));
+                        btn.classList.add("active");
+                        callback(btn);
+                    });
+                });
+            }
+
+            setupTabSwitcher(["mode-path", "mode-loop"], "mode-path", (btn) => {
+                routeMode = btn.getAttribute("data-mode");
+                const endPill = document.getElementById("search-end-pill");
+                if (endPill) {
+                    endPill.style.display = routeMode === "path" ? "flex" : "none";
+                }
+                if (routeMode === "loop" && selectedEndStation) {
+                    setEndStation("");
+                }
+                stopCruise();
+            });
+
+
+
+            // Sliders toggling
+            function setupToggleSlider(toggleId, containerId, sliderId, valId) {
+                const toggle = document.getElementById(toggleId);
+                const container = document.getElementById(containerId);
+                const slider = document.getElementById(sliderId);
+                const val = document.getElementById(valId);
+
+                toggle.addEventListener("change", () => {
+                    container.style.display = toggle.checked ? "flex" : "none";
+                });
+
+                slider.addEventListener("input", () => {
+                    val.textContent = slider.value;
+                });
+            }
+
+            setupToggleSlider("limit-transfers-toggle", "transfers-slider-container", "max-transfers", "max-transfers-val");
+            setupToggleSlider("limit-lines-toggle", "lines-slider-container", "max-lines", "max-lines-val");
+
+            // Waypoints & avoids inputs enter keys
+            document.getElementById("waypoint-input").addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    const val = e.target.value.trim();
+                    if (stationNames.includes(val)) {
+                        addWaypoint(val);
+                        e.target.value = "";
+                        document.getElementById("waypoint-suggestions").style.display = "none";
+                    }
+                }
+            });
+
+            document.getElementById("avoid-input").addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    const val = e.target.value.trim();
+                    if (searchAvoidItems.includes(val)) {
+                        addAvoid(val);
+                        e.target.value = "";
+                        document.getElementById("avoid-suggestions").style.display = "none";
+                    }
+                }
+            });
+
+            // Overlay status texts
+            function updateFloatingOverlay() {
+                if (!selectedStartStation) {
+                    mapStatusText.textContent = "未选起点";
+                    mapStatusOverlay.style.display = "flex";
+                    return;
+                }
+                let status = `起点: ${selectedStartStation}`;
+                if (routeMode === "path" && selectedEndStation) {
+                    status += ` | 终点: ${selectedEndStation}`;
+                }
+                if (selectedWaypoints.size > 0) status += ` | 打卡: ${selectedWaypoints.size}个`;
+                if (selectedAvoids.size > 0) status += ` | 避让: ${selectedAvoids.size}项`;
+                mapStatusText.textContent = status;
+                mapStatusOverlay.style.display = "flex";
+            }
+
+            // Solver work runs in a Web Worker so an expensive longest-path search never freezes map interaction.
+            document.getElementById("btn-run-solver").addEventListener("click", () => {
+                if (!selectedStartStation) {
+                    alert("请先指定起点车站！");
+                    return;
+                }
+
+                stopCruise();
+
+                // If there's an active worker, terminate it first to avoid concurrency
+                if (activeWorker) {
+                    console.log("%c🛑 [Solver] Terminating previous running calculation...", "color: #ff007f;");
+                    activeWorker.terminate();
+                    activeWorker = null;
+                }
+
+                // Show spinner
+                const loadingOverlay = document.getElementById("loading-overlay");
+                loadingOverlay.style.display = "flex";
+
+                const limitTransfers = document.getElementById("limit-transfers-toggle").checked;
+                const limitLines = document.getElementById("limit-lines-toggle").checked;
+
+                const solverConfig = {
+                    start_station: selectedStartStation,
+                    end_station: (routeMode === "path" && selectedEndStation) ? selectedEndStation : null,
+                    mode: routeMode,
+                    allow_station_reuse: document.getElementById("allow-station-reuse").checked,
+                    max_transfers: limitTransfers ? parseInt(document.getElementById("max-transfers").value) : null,
+                    max_lines: limitLines ? parseInt(document.getElementById("max-lines").value) : null,
+                    waypoints: Array.from(selectedWaypoints),
+                    optimize_metric: optimizeMetric,
+                    nodes: data.nodes,
+                    edges: data.edges.filter(edge => {
+                        const isAvoidedLine = selectedAvoids.has(edge.line);
+                        const isAvoidedU = selectedAvoids.has(edge.u);
+                        const isAvoidedV = selectedAvoids.has(edge.v);
+                        return !isAvoidedLine && !isAvoidedU && !isAvoidedV;
+                    }),
+                    timeout: 10
+                };
+
+                console.log("%c🚀 [Solver] Starting path planning with config:", "color: #00f0ff; font-weight: bold;", solverConfig);
+                const startTime = Date.now();
+
+                try {
+                    activeWorker = new Worker("solver-worker.js");
+                } catch (err) {
+                    console.error("%c❌ [Solver] Failed to construct Web Worker:", "color: #ff007f; font-weight: bold;", err);
+                    loadingOverlay.style.display = "none";
+                    alert("⚠️ 浏览器本地安全限制：\n由于浏览器的安全策略（CORS 限制），直接双击运行本地 HTML 文件（file:// 协议）无法加载后台 Web Worker 线程。\n\n请在当前项目目录下运行以下命令启动本地服务，然后访问 http://localhost:8000 查看：\npython3 -m http.server 8000");
+                    return;
+                }
+                
+                // Reset progress UI
+                document.getElementById("solver-progress-bar").style.width = "0%";
+                document.getElementById("solver-progress-text").textContent = "已探索 0 个状态 (0%)";
+                
+                activeWorker.postMessage(solverConfig);
+
+                activeWorker.onmessage = function(e) {
+                    const msg = e.data;
+                    if (msg.type === "progress") {
+                        document.getElementById("solver-progress-bar").style.width = `${msg.percent}%`;
+                        document.getElementById("solver-progress-text").textContent = `已探索 ${msg.step_count.toLocaleString()} 个状态 (${msg.percent}%)`;
+                        console.log(`%c⏳ [Solver] Progress: ${msg.step_count.toLocaleString()} states explored (${msg.percent}%)`, "color: #bd00ff;");
+                    } else if (msg.type === "result") {
+                        loadingOverlay.style.display = "none";
+                        const result = msg;
+                        const duration = Date.now() - startTime;
+                        
+                        if (result && result.weight > -1) {
+                            console.log(`%c✅ [Solver] Completed in ${duration}ms! Path weight: ${result.weight}, Stations: ${result.path_stations.length}, Timeout reached: ${result.timeout_reached}`, "color: #39ff14; font-weight: bold;");
+                            console.log("%c🔗 Traversed Route:", "color: #fff30a;", result.path_stations.join(" -> "));
+                            
+                            // Auto-open Roadbook drawer
+                            openDrawer("drawer-roadbook", "路书");
+                            displayResults(result, solverConfig.edges);
+                        } else {
+                            console.log("%c⚠️ [Solver] No valid path found matching constraints.", "color: #fff30a;");
+                            alert("该过滤条件下未找到任何可行路径，请调整后重试！");
+                        }
+                        if (activeWorker) {
+                            activeWorker.terminate();
+                            activeWorker = null;
+                        }
+                    }
+                };
+
+                activeWorker.onerror = function(err) {
+                    loadingOverlay.style.display = "none";
+                    console.error("%c❌ [Solver] Worker Thread Error:", "color: #ff007f; font-weight: bold;", err);
+                    alert("算法求解线程发生异常！");
+                    if (activeWorker) {
+                        activeWorker.terminate();
+                        activeWorker = null;
+                    }
+                };
+            });
+
+            // Cancel Solver Trigger
+            document.getElementById("btn-cancel-solver").addEventListener("click", () => {
+                if (activeWorker) {
+                    console.log("%c🛑 [Solver] Calculation cancelled by user.", "color: #ff007f; font-weight: bold;");
+                    activeWorker.terminate();
+                    activeWorker = null;
+                }
+                document.getElementById("loading-overlay").style.display = "none";
+            });
+
+            // Results are translated once into route segments, then reused by the roadbook, SVG highlight and cruise mode.
+            function displayResults(result, filteredEdges) {
+                lastResultStations = result.path_stations;
+                setRoadbookAvailability(true);
+
+                document.getElementById("res-edges").textContent = `${result.path_edges.length} 个`;
+                document.getElementById("res-stations").textContent = `${result.path_stations.length} 个`;
+
+
+
+                // Render roadbook steps with high-end subway segment timeline
+                const roadbookList = document.getElementById("roadbook-list");
+                const stations = result.path_stations;
+                const pathEdges = result.path_edges;
+
+                // Group into subway line segments
+                const segments = [];
+                let currentSegment = null;
+
+                for (let i = 0; i < pathEdges.length; i++) {
+                    const edge = filteredEdges[pathEdges[i]];
+                    if (!edge) continue;
+                    const startStation = stations[i];
+                    const endStation = stations[i+1];
+                    const lineName = edge.line;
+                    const lineColor = edge.color || 'var(--neon-blue)';
+                    
+                    if (!currentSegment || currentSegment.line !== lineName) {
+                        if (currentSegment) {
+                            segments.push(currentSegment);
+                        }
+                        currentSegment = {
+                            line: lineName,
+                            color: lineColor,
+                            stations: [startStation, endStation]
+                        };
+                    } else {
+                        currentSegment.stations.push(endStation);
+                    }
+                }
+                if (currentSegment) {
+                    segments.push(currentSegment);
+                }
+
+                let roadbookHtml = "";
+                segments.forEach((seg, sIdx) => {
+                    const isFirst = sIdx === 0;
+                    const isLast = sIdx === segments.length - 1;
+                    const startStation = seg.stations[0];
+                    const endStation = seg.stations[seg.stations.length - 1];
+                    const intermediateStations = seg.stations.slice(1, -1);
+                    
+                    let nextSegLine = "";
+                    let nextSegColor = "";
+                    if (!isLast) {
+                        const nextSeg = segments[sIdx + 1];
+                        nextSegLine = nextSeg.line;
+                        nextSegColor = nextSeg.color;
+                    }
+
+                    let intermediatesHtml = "";
+                    if (intermediateStations.length > 0) {
+                        intermediatesHtml = `
+                            <div class="intermediates-collapse">
+                                <div class="intermediates-toggle-btn" onclick="toggleRoadbookCollapse(this)">
+                                    <span class="arrow-icon">▼</span>
+                                    <span class="toggle-text">乘坐 ${intermediateStations.length} 站</span>
+                                </div>
+                                <div class="intermediates-list-content" style="display: none;">
+                                    ${intermediateStations.map(stName => `
+                                        <div class="segment-point intermediate-point">
+                                            <div class="point-marker small"></div>
+                                            <div class="point-info">
+                                                <span class="station-name-sub">${stName}</span>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    roadbookHtml += `
+                        <div class="roadbook-segment" style="--segment-color: ${seg.color};">
+                            <!-- Start Station of Segment -->
+                            <div class="segment-point start-point">
+                                <div class="point-marker"></div>
+                                <div class="point-info">
+                                    <div class="station-name-row">
+                                        <span class="station-name">${startStation}</span>
+                                        ${isFirst ? '<span class="badge badge-start">起点</span>' : ''}
+                                    </div>
+                                    <div class="segment-line-info">
+                                        <span class="line-badge" style="background-color: ${seg.color};">${seg.line}</span>
+                                        <span class="segment-direction-info">开往 ${endStation} 方向</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Intermediates -->
+                            ${intermediatesHtml}
+
+                            <!-- End Station of Segment -->
+                            <div class="segment-point end-point">
+                                <div class="point-marker"></div>
+                                <div class="point-info">
+                                    <div class="station-name-row">
+                                        <span class="station-name">${endStation}</span>
+                                        ${isLast ? '<span class="badge badge-end">终点</span>' : '<span class="badge badge-transfer">换乘站</span>'}
+                                    </div>
+                                    ${!isLast ? `
+                                        <div class="transfer-action-info">
+                                            请换乘 <span class="next-line-badge" style="background-color: ${nextSegColor};">${nextSegLine}</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                roadbookList.innerHTML = roadbookHtml || `<div style="font-size:12px; color:var(--text-muted); text-align:center; padding:20px 0;">暂无路线</div>`;
+
+                highlightPathOnSvgMap(result, filteredEdges);
+            }
+
+            // Highlighting decorates the freshly rendered base map; it never mutates the network source data.
+            function highlightPathOnSvgMap(result, filteredEdges) {
+                const hlEdgesGroup = document.getElementById("highlight-edges-group");
+                const hlStationsGroup = document.getElementById("highlight-stations-group");
+                
+                hlEdgesGroup.innerHTML = "";
+                hlStationsGroup.innerHTML = "";
+
+                const traversedStationSeq = {};
+                result.path_stations.forEach((name, idx) => {
+                    if (!traversedStationSeq[name]) {
+                        traversedStationSeq[name] = [];
+                    }
+                    traversedStationSeq[name].push(idx + 1);
+                });
+
+                // Fade base lines further
+                data.edges.forEach((edge, idx) => {
+                    const lineEl = document.getElementById(`edge-base-${idx}`);
+                    if (lineEl) {
+                        const isTraversed = result.path_edges.some(solverEdgeIdx => {
+                            const solverEdge = filteredEdges[solverEdgeIdx];
+                            return solverEdge && 
+                                   ((solverEdge.u === edge.u && solverEdge.v === edge.v) || (solverEdge.u === edge.v && solverEdge.v === edge.u)) &&
+                                   solverEdge.line === edge.line;
+                        });
+
+                        if (isTraversed) {
+                            lineEl.setAttribute("opacity", "0.0");
+                        } else {
+                            lineEl.setAttribute("stroke", "var(--base-line-color)");
+                            lineEl.setAttribute("opacity", "0.22"); // Dimmed but legible
+                            lineEl.setAttribute("stroke-width", "1.0");
+                        }
+                    }
+                });
+
+                // Fade base stations and highlight traversed labels
+                data.nodes.forEach(node => {
+                    const nodeEl = document.getElementById(`station-node-${node.name}`);
+                    const labelEl = document.getElementById(`label-text-${node.name}`);
+                    const isTraversed = node.name in traversedStationSeq;
+                    
+                    if (nodeEl) {
+                        const circle = nodeEl.querySelector("circle");
+                        circle.setAttribute("stroke", "var(--base-station-color)");
+                        circle.setAttribute("opacity", isTraversed ? "0.0" : "0.35"); // Dimmed but visible
+                    }
+                    
+                    if (labelEl) {
+                        if (!isTraversed) {
+                            labelEl.setAttribute("opacity", "0.0"); // Hide non-traversed labels
+                        } else {
+                            labelEl.setAttribute("fill", "var(--text-primary)");
+                            labelEl.setAttribute("font-weight", "bold");
+                            labelEl.setAttribute("font-size", node.lines.length > 1 ? "8.5" : "6.5");
+                            labelEl.setAttribute("opacity", "1.0");
+                        }
+                    }
+                });
+
+                // Draw highlight edges (curves) with original line color
+                result.path_edges.forEach(solverEdgeIdx => {
+                    const edge = filteredEdges[solverEdgeIdx];
+                    if (edge) {
+                        const uNode = data.nodes.find(n => n.name === edge.u);
+                        const vNode = data.nodes.find(n => n.name === edge.v);
+                        if (uNode && vNode) {
+                            // Backing line instead of neon blur glow
+                            const backingLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                            backingLine.setAttribute("x1", uNode.x);
+                            backingLine.setAttribute("y1", uNode.y);
+                            backingLine.setAttribute("x2", vNode.x);
+                            backingLine.setAttribute("y2", vNode.y);
+                            backingLine.setAttribute("stroke", edge.color);
+                            backingLine.setAttribute("stroke-width", "4.5");
+                            backingLine.setAttribute("opacity", "0.22");
+                            hlEdgesGroup.appendChild(backingLine);
+
+                            // Active flow line
+                            const flowLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                            flowLine.setAttribute("x1", uNode.x);
+                            flowLine.setAttribute("y1", uNode.y);
+                            flowLine.setAttribute("x2", vNode.x);
+                            flowLine.setAttribute("y2", vNode.y);
+                            flowLine.setAttribute("stroke", edge.color);
+                            flowLine.setAttribute("stroke-width", "3.0");
+                            flowLine.setAttribute("opacity", "0.9");
+                            flowLine.setAttribute("class", "animated-flow-line");
+                            hlEdgesGroup.appendChild(flowLine);
+                        }
+                    }
+                });
+
+                // Draw concentric circle indicators matching respective subway line color
+                Object.keys(traversedStationSeq).forEach(name => {
+                    const node = data.nodes.find(n => n.name === name);
+                    if (node) {
+                        const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+                        // Find first traversed edge color
+                        const firstEdgeIdx = result.path_edges.find(solverEdgeIdx => {
+                            const edge = filteredEdges[solverEdgeIdx];
+                            return edge && (edge.u === name || edge.v === name);
+                        });
+                        const firstEdge = firstEdgeIdx !== undefined ? filteredEdges[firstEdgeIdx] : null;
+                        const lineStrokeColor = firstEdge ? firstEdge.color : "var(--accent-color)";
+
+                        const outer = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                        outer.setAttribute("cx", node.x);
+                        outer.setAttribute("cy", node.y);
+                        outer.setAttribute("r", "6.5");
+                        outer.setAttribute("fill", "var(--bg-page)");
+                        outer.setAttribute("stroke", lineStrokeColor);
+                        outer.setAttribute("stroke-width", "1.8");
+                        group.appendChild(outer);
+
+                        const inner = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                        inner.setAttribute("cx", node.x);
+                        inner.setAttribute("cy", node.y);
+                        inner.setAttribute("r", "2.0");
+                        inner.setAttribute("fill", lineStrokeColor);
+                        group.appendChild(inner);
+
+                        const steps = traversedStationSeq[name];
+                        const stepText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                        stepText.setAttribute("x", node.x);
+                        stepText.setAttribute("y", node.y + 12);
+                        stepText.setAttribute("fill", "var(--accent-color)");
+                        stepText.setAttribute("font-size", "5.5");
+                        stepText.setAttribute("font-weight", "bold");
+                        stepText.setAttribute("font-family", "inherit");
+                        stepText.setAttribute("text-anchor", "middle");
+                        stepText.textContent = `#${steps.join(",")}`;
+                        group.appendChild(stepText);
+
+                        hlStationsGroup.appendChild(group);
+                    }
+                });
+            }
+
+            // --- Cruising Simulation Logic ---
+            // Cruise interpolates over the solved station sequence and is safe to stop or replay independently.
+            function focusMapOn(tx, ty) {
+                const rect = mapContainer.getBoundingClientRect();
+                const containerWidth = rect.width;
+                const containerHeight = rect.height;
+                translateX = containerWidth / 2 - tx * scale;
+                translateY = containerHeight / 2 - ty * scale;
+                updateViewportTransform();
+            }
+
+            function stopCruise() {
+                cruiseIsPlaying = false;
+                const trainGroup = document.getElementById("train-group");
+                if (trainGroup) {
+                    trainGroup.style.display = "none";
+                }
+                const cruisePanel = document.getElementById("cruise-panel");
+                if (cruisePanel) {
+                    cruisePanel.style.display = "none";
+                }
+                cruiseLastTimestamp = null;
+            }
+
+            function completeCruise() {
+                cruiseIsPlaying = false;
+                cruiseLastTimestamp = null;
+                
+                if (cruiseSegments.length > 0) {
+                    const lastSeg = cruiseSegments[cruiseSegments.length - 1];
+                    const trainX = lastSeg.to.x;
+                    const trainY = lastSeg.to.y;
+                    const trainGroup = document.getElementById("train-group");
+                    if (trainGroup) {
+                        trainGroup.setAttribute("transform", `translate(${trainX}, ${trainY})`);
+                        trainGroup.style.display = "block";
+                    }
+                    document.getElementById("cruise-current-station").textContent = `当前站: ${lastSeg.to.name}`;
+                    document.getElementById("cruise-next-station").textContent = `已到达终点站`;
+                }
+
+                const playPauseBtn = document.getElementById("btn-cruise-play-pause");
+                const replayBtn = document.getElementById("btn-cruise-replay");
+                if (playPauseBtn) playPauseBtn.style.display = "none";
+                if (replayBtn) replayBtn.style.display = "inline-block";
+            }
+
+            function cruiseFrame(timestamp) {
+                if (!cruiseIsPlaying) {
+                    cruiseLastTimestamp = null;
+                    return;
+                }
+                if (!cruiseLastTimestamp) {
+                    cruiseLastTimestamp = timestamp;
+                    requestAnimationFrame(cruiseFrame);
+                    return;
+                }
+
+                const elapsedSeconds = (timestamp - cruiseLastTimestamp) / 1000.0;
+                cruiseLastTimestamp = timestamp;
+
+                const speedMultiplier = parseFloat(cruiseSpeedMultiplier);
+                const distanceRatio = (BASE_CRUISE_SPEED * speedMultiplier * elapsedSeconds);
+                
+                if (cruiseSegments.length === 0) {
+                    stopCruise();
+                    return;
+                }
+
+                const segment = cruiseSegments[cruiseCurrentSegmentIndex];
+                if (!segment) {
+                    stopCruise();
+                    return;
+                }
+
+                cruiseCurrentSegmentProgress += distanceRatio / segment.length;
+
+                while (cruiseCurrentSegmentProgress >= 1.0) {
+                    cruiseCurrentSegmentProgress -= 1.0;
+                    cruiseCurrentSegmentIndex++;
+                    if (cruiseCurrentSegmentIndex >= cruiseSegments.length) {
+                        const loopToggle = document.getElementById("cruise-loop-toggle");
+                        if (loopToggle && loopToggle.checked) {
+                            cruiseCurrentSegmentIndex = 0;
+                            cruiseCurrentSegmentProgress = 0.0;
+                        } else {
+                            completeCruise();
+                            return;
+                        }
+                    }
+                }
+
+                const currentSegment = cruiseSegments[cruiseCurrentSegmentIndex];
+                const trainX = currentSegment.from.x + currentSegment.dx * cruiseCurrentSegmentProgress;
+                const trainY = currentSegment.from.y + currentSegment.dy * cruiseCurrentSegmentProgress;
+
+                const trainGroup = document.getElementById("train-group");
+                if (trainGroup) {
+                    trainGroup.setAttribute("transform", `translate(${trainX}, ${trainY})`);
+                    trainGroup.style.display = "block";
+                }
+
+                document.getElementById("cruise-current-station").textContent = `当前站: ${currentSegment.from.name}`;
+                document.getElementById("cruise-next-station").textContent = `下一站: ${currentSegment.to.name}`;
+
+                const trackToggle = document.getElementById("cruise-track-toggle");
+                if (trackToggle && trackToggle.checked) {
+                    focusMapOn(trainX, trainY);
+                }
+
+                requestAnimationFrame(cruiseFrame);
+            }
+
+            function startCruise() {
+                if (lastResultStations.length < 2) {
+                    alert("请先生成一条有效的路径！");
+                    return;
+                }
+
+                cruisePathPoints = lastResultStations.map(name => {
+                    const node = data.nodes.find(n => n.name === name);
+                    return node ? { x: node.x, y: node.y, name: name } : null;
+                }).filter(p => p !== null);
+
+                if (cruisePathPoints.length < 2) return;
+
+                cruiseSegments = [];
+                for (let i = 0; i < cruisePathPoints.length - 1; i++) {
+                    const p1 = cruisePathPoints[i];
+                    const p2 = cruisePathPoints[i+1];
+                    const dx = p2.x - p1.x;
+                    const dy = p2.y - p1.y;
+                    const len = Math.sqrt(dx * dx + dy * dy);
+                    cruiseSegments.push({
+                        from: p1,
+                        to: p2,
+                        dx: dx,
+                        dy: dy,
+                        length: len || 1.0
+                    });
+                }
+
+                cruiseCurrentSegmentIndex = 0;
+                cruiseCurrentSegmentProgress = 0;
+                cruiseIsPlaying = true;
+                cruiseSpeedMultiplier = 1;
+                
+                const cruisePanel = document.getElementById("cruise-panel");
+                if (cruisePanel) {
+                    cruisePanel.style.display = "flex";
+                }
+
+                document.querySelectorAll(".speed-btn").forEach(btn => {
+                    btn.classList.remove("active");
+                    if (btn.getAttribute("data-speed") === "1") {
+                        btn.classList.add("active");
+                    }
+                });
+
+                const playPauseBtn = document.getElementById("btn-cruise-play-pause");
+                const replayBtn = document.getElementById("btn-cruise-replay");
+                if (playPauseBtn) {
+                    playPauseBtn.textContent = "暂停";
+                    playPauseBtn.style.display = "inline-block";
+                }
+                if (replayBtn) {
+                    replayBtn.style.display = "none";
+                }
+
+                closeDrawer();
+
+                cruiseLastTimestamp = null;
+                requestAnimationFrame(cruiseFrame);
+            }
+
+            // Bind Cruise Panel Controls
+            document.getElementById("btn-cruise-stop").addEventListener("click", stopCruise);
+            
+            document.getElementById("btn-cruise-replay").addEventListener("click", () => {
+                startCruise();
+            });
+            
+            document.getElementById("btn-cruise-play-pause").addEventListener("click", () => {
+                const btn = document.getElementById("btn-cruise-play-pause");
+                if (cruiseIsPlaying) {
+                    cruiseIsPlaying = false;
+                    btn.textContent = "播放";
+                } else {
+                    cruiseIsPlaying = true;
+                    btn.textContent = "暂停";
+                    cruiseLastTimestamp = null;
+                    requestAnimationFrame(cruiseFrame);
+                }
+            });
+
+            document.querySelectorAll(".speed-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    document.querySelectorAll(".speed-btn").forEach(b => b.classList.remove("active"));
+                    btn.classList.add("active");
+                    cruiseSpeedMultiplier = parseFloat(btn.getAttribute("data-speed"));
+                });
+            });
+
+            document.getElementById("btn-roadbook-cruise").addEventListener("click", () => {
+                startCruise();
+            });
+
+            // --- Centrality Analysis Logic ---
+            // Centrality has two graph models: Space L uses physical adjacent stations, while Space P connects same-line stations.
+            const centralityResultCache = {};
+
+            function buildSpaceLAdj() {
+                const nodes = data.nodes;
+                const edges = data.edges;
+                const nameToIdx = {};
+                nodes.forEach((n, i) => nameToIdx[n.name] = i);
+                const adj = Array.from({ length: nodes.length }, () => new Set());
+                edges.forEach(e => {
+                    const u = nameToIdx[e.u], v = nameToIdx[e.v];
+                    if (u !== undefined && v !== undefined) { adj[u].add(v); adj[v].add(u); }
+                });
+                return { adj: adj.map(s => [...s]), nameToIdx, nodes };
+            }
+
+            function buildSpacePAdj() {
+                const nodes = data.nodes;
+                const edges = data.edges;
+                const nameToIdx = {};
+                nodes.forEach((n, i) => nameToIdx[n.name] = i);
+                const lineStations = {};
+                edges.forEach(e => {
+                    if (!lineStations[e.line]) lineStations[e.line] = new Set();
+                    lineStations[e.line].add(e.u);
+                    lineStations[e.line].add(e.v);
+                });
+                const adj = Array.from({ length: nodes.length }, () => new Set());
+                Object.values(lineStations).forEach(stSet => {
+                    const arr = [...stSet].map(n => nameToIdx[n]).filter(i => i !== undefined);
+                    for (let a = 0; a < arr.length; a++) {
+                        for (let b = a + 1; b < arr.length; b++) {
+                            adj[arr[a]].add(arr[b]);
+                            adj[arr[b]].add(arr[a]);
+                        }
+                    }
+                });
+                return { adj: adj.map(s => [...s]), nameToIdx, nodes };
+            }
+
+            function getAdjForSpace(space) {
+                return space === 'P' ? buildSpacePAdj() : buildSpaceLAdj();
+            }
+
+            function _calcDegree(adjData) {
+                const result = {};
+                adjData.nodes.forEach((n, i) => result[n.name] = adjData.adj[i].length);
+                return result;
+            }
+
+            function _calcBetweenness(adjData) {
+                const { adj, nodes } = adjData;
+                const V = nodes.length;
+                const cb = new Float64Array(V);
+                for (let s = 0; s < V; s++) {
+                    const stack = [];
+                    const pred = Array.from({ length: V }, () => []);
+                    const sigma = new Float64Array(V);
+                    sigma[s] = 1;
+                    const dist = new Int32Array(V).fill(-1);
+                    dist[s] = 0;
+                    const queue = [s]; let head = 0;
+                    while (head < queue.length) {
+                        const v = queue[head++];
+                        stack.push(v);
+                        for (const w of adj[v]) {
+                            if (dist[w] < 0) { dist[w] = dist[v] + 1; queue.push(w); }
+                            if (dist[w] === dist[v] + 1) { sigma[w] += sigma[v]; pred[w].push(v); }
+                        }
+                    }
+                    const delta = new Float64Array(V);
+                    while (stack.length) {
+                        const w = stack.pop();
+                        for (const v of pred[w]) delta[v] += (sigma[v] / sigma[w]) * (1 + delta[w]);
+                        if (w !== s) cb[w] += delta[w];
+                    }
+                }
+                const norm = V > 2 ? 1.0 / ((V - 1) * (V - 2)) : 1;
+                const result = {};
+                adjData.nodes.forEach((n, i) => result[n.name] = cb[i] * norm);
+                return result;
+            }
+
+            function _calcRWBetweenness(adjData) {
+                const { adj, nodes } = adjData;
+                const V = nodes.length;
+                const visits = new Float64Array(V);
+                const SAMPLES = Math.min(400, Math.ceil(V * (V - 1) / 2));
+                const MAX_STEPS = V * 5;
+                for (let k = 0; k < SAMPLES; k++) {
+                    let s = Math.floor(Math.random() * V);
+                    let t = Math.floor(Math.random() * V);
+                    let tries = 0;
+                    while ((t === s || adj[s].length === 0 || adj[t].length === 0) && tries++ < 20) {
+                        s = Math.floor(Math.random() * V);
+                        t = Math.floor(Math.random() * V);
+                    }
+                    let cur = s;
+                    for (let step = 0; step < MAX_STEPS; step++) {
+                        const nbrs = adj[cur];
+                        if (!nbrs.length) break;
+                        cur = nbrs[Math.floor(Math.random() * nbrs.length)];
+                        if (cur === t) break;
+                        visits[cur]++;
+                    }
+                }
+                const maxV = Math.max(...visits) || 1;
+                const result = {};
+                nodes.forEach((n, i) => result[n.name] = visits[i] / maxV);
+                return result;
+            }
+
+            function _calcNHopCoverage(adjData, n) {
+                const { adj, nodes } = adjData;
+                const V = nodes.length;
+                const result = {};
+                for (let s = 0; s < V; s++) {
+                    const visited = new Set();
+                    visited.add(s);
+                    const queue = [{ node: s, depth: 0 }];
+                    let head = 0;
+                    while (head < queue.length) {
+                        const { node, depth } = queue[head++];
+                        if (depth >= n) continue;
+                        for (const neighbor of adj[node]) {
+                            if (!visited.has(neighbor)) {
+                                visited.add(neighbor);
+                                queue.push({ node: neighbor, depth: depth + 1 });
+                            }
+                        }
+                    }
+                    result[nodes[s].name] = visited.size - 1;
+                }
+                return result;
+            }
+
+            let centralitySortCol = "value";
+            let centralitySortAsc = false;
+
+            function getStationLines(stationName) {
+                const node = data.nodes.find(n => n.name === stationName);
+                if (node && node.lines && node.lines.length > 0) return node.lines;
+                const edge = data.edges.find(e => e.u === stationName || e.v === stationName);
+                return edge ? [edge.line] : [];
+            }
+
+            // Reuse the roadbook's color language so line membership is scannable at a glance.
+            function renderCentralityLineBadges(lines) {
+                return lines.map(line => {
+                    const color = data.edges.find(edge => edge.line === line)?.color || "var(--border-color)";
+                    return `<span class="line-badge centrality-line-badge" style="background-color:${color};">${line}</span>`;
+                }).join("");
+            }
+
+
+
+            function renderCentralityTable() {
+                const space = document.querySelector('input[name="centrality-space"]:checked').value;
+                
+                const nValInput = document.getElementById("centrality-n-val");
+                // An empty n intentionally means all reachable stations in the selected city's network.
+                const selectedN = nValInput ? parseInt(nValInput.value, 10) : NaN;
+                const nVal = !isNaN(selectedN) && selectedN >= 1 ? selectedN : data.nodes.length;
+                const coverageLabel = !isNaN(selectedN) && selectedN >= 1 ? `${nVal}站覆盖数` : "全部站覆盖数";
+                
+                const keyDeg = `${selectedCity}|${space}|degree`;
+                const keyBet = `${selectedCity}|${space}|betweenness`;
+                const keyRW = `${selectedCity}|${space}|rw-betweenness`;
+                const keyNHop = `${selectedCity}|L|nhop-${nVal}`;
+
+                // If any of the metrics is missing from the cache, trigger a single unified calculation step
+                if (!centralityResultCache[keyDeg] || !centralityResultCache[keyBet] || !centralityResultCache[keyRW] || !centralityResultCache[keyNHop]) {
+                    document.getElementById("centrality-body").innerHTML =
+                        `<div style="padding:40px;text-align:center;color:var(--text-muted);font-size:12px;">正在计算车站度数、介数、随机游走介数及覆盖指标，请稍候...</div>`;
+                    setTimeout(() => {
+                        const adjData = getAdjForSpace(space);
+                        const adjDataL = getAdjForSpace('L');
+                        if (!centralityResultCache[keyDeg]) {
+                            centralityResultCache[keyDeg] = _calcDegree(adjData);
+                        }
+                        if (!centralityResultCache[keyBet]) {
+                            centralityResultCache[keyBet] = _calcBetweenness(adjData);
+                        }
+                        if (!centralityResultCache[keyRW]) {
+                            centralityResultCache[keyRW] = _calcRWBetweenness(adjData);
+                        }
+                        if (!centralityResultCache[keyNHop]) {
+                            centralityResultCache[keyNHop] = _calcNHopCoverage(adjDataL, nVal);
+                        }
+                        renderCentralityTable();
+                    }, 30);
+                    return;
+                }
+
+                const degMap = centralityResultCache[keyDeg];
+                const betMap = centralityResultCache[keyBet];
+                const rwMap = centralityResultCache[keyRW];
+                const nHopMap = centralityResultCache[keyNHop];
+
+                let rows = data.nodes.map(n => ({
+                    name: n.name,
+                    line: getStationLines(n.name),
+                    deg: degMap[n.name] ?? 0,
+                    bet: betMap[n.name] ?? 0,
+                    rw: rwMap[n.name] ?? 0,
+                    cov: nHopMap[n.name] ?? 0
+                }));
+
+                // Apply coverage filter if set
+                const filterInput = document.getElementById("centrality-coverage-filter");
+                const filterVal = filterInput ? parseInt(filterInput.value, 10) : NaN;
+                if (!isNaN(filterVal) && filterVal >= 0) {
+                    rows = rows.filter(r => r.cov >= filterVal);
+                }
+
+                // Sort based on chosen column
+                rows.sort((a, b) => {
+                    let cmp;
+                    if (centralitySortCol === "name") cmp = a.name.localeCompare(b.name, 'zh');
+                    else if (centralitySortCol === "line") cmp = a.line.join("/").localeCompare(b.line.join("/"), 'zh');
+                    else if (centralitySortCol === "deg") cmp = a.deg - b.deg;
+                    else if (centralitySortCol === "bet") cmp = a.bet - b.bet;
+                    else if (centralitySortCol === "rw") cmp = a.rw - b.rw;
+                    else if (centralitySortCol === "cov") cmp = a.cov - b.cov;
+                    else cmp = a.bet - b.bet;
+                    return centralitySortAsc ? cmp : -cmp;
+                });
+
+                const arrow = col => centralitySortCol === col ? (centralitySortAsc ? " ▲" : " ▼") : "";
+                const rankColors = ["var(--state-end)", "var(--neon-purple)", "var(--neon-blue)"];
+
+                let html = `<table class="matrix-table" style="width:100%;min-width:auto;"><tr>
+                    <th class="centrality-th" data-col="name" style="padding-left:16px;cursor:pointer;user-select:none;">车站名称${arrow("name")}</th>
+                    <th class="centrality-th" data-col="line" style="padding-left:12px;cursor:pointer;user-select:none;">归属路线${arrow("line")}</th>
+                    <th class="centrality-th" data-col="deg" style="width:85px;text-align:center;cursor:pointer;user-select:none;color:var(--text-primary);">度数${arrow("deg")}</th>
+                    <th class="centrality-th" data-col="bet" style="width:115px;text-align:center;cursor:pointer;user-select:none;color:var(--text-primary);">介数${arrow("bet")}</th>
+                    <th class="centrality-th" data-col="rw" style="width:145px;text-align:center;cursor:pointer;user-select:none;color:var(--text-primary);">随机游走介数${arrow("rw")}</th>
+                    <th class="centrality-th" data-col="cov" style="width:115px;text-align:center;cursor:pointer;user-select:none;color:var(--text-primary);">${coverageLabel}${arrow("cov")}</th>
+                </tr>`;
+
+                if (rows.length === 0) {
+                    html += `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted);">无符合过滤条件的车站</td></tr>`;
+                } else {
+                    rows.forEach((r, idx) => {
+                        const displayBet = r.bet.toFixed(5);
+                        const displayRW = r.rw.toFixed(5);
+                        const rankBadge = idx < 3
+                            ? `<span style="color:${rankColors[idx]};margin-right:5px;font-size:10px;">#${idx+1}</span>`
+                            : '';
+                        html += `<tr class="centrality-row" data-station="${r.name}" style="cursor:pointer;">
+                            <td style="padding:8px 12px 8px 16px;font-weight:bold;color:var(--text-primary);">${rankBadge}${r.name}</td>
+                            <td style="padding:8px 12px;"><div class="centrality-line-badges">${renderCentralityLineBadges(r.line)}</div></td>
+                            <td style="text-align:center;padding:8px;font-weight:bold;color:var(--text-primary);font-variant-numeric:tabular-nums;">${r.deg}</td>
+                            <td style="text-align:center;padding:8px;font-weight:bold;color:var(--text-primary);font-variant-numeric:tabular-nums;">${displayBet}</td>
+                            <td style="text-align:center;padding:8px;font-weight:bold;color:var(--text-primary);font-variant-numeric:tabular-nums;">${displayRW}</td>
+                            <td style="text-align:center;padding:8px;font-weight:bold;color:var(--text-primary);font-variant-numeric:tabular-nums;">${r.cov}</td>
+                        </tr>`;
+                    });
+                }
+                html += `</table>`;
+
+                const body = document.getElementById("centrality-body");
+                body.innerHTML = html;
+
+                body.querySelectorAll(".centrality-th").forEach(th => {
+                    th.addEventListener("click", () => {
+                        const col = th.getAttribute("data-col");
+                        // Numeric columns sort desc by default on first click, text columns sort asc
+                        const isNumeric = ["deg", "bet", "rw", "cov"].includes(col);
+                        if (centralitySortCol === col) {
+                            centralitySortAsc = !centralitySortAsc;
+                        } else {
+                            centralitySortCol = col;
+                            centralitySortAsc = !isNumeric;
+                        }
+                        renderCentralityTable();
+                    });
+                });
+
+                body.querySelectorAll(".centrality-row").forEach(row => {
+                    row.addEventListener("click", () => {
+                        const stName = row.getAttribute("data-station");
+                        document.getElementById("centrality-modal").style.display = "none";
+                        highlightSingleStation(stName);
+                    });
+                });
+            }
+
+            function highlightSingleStation(stationName) {
+                const node = data.nodes.find(n => n.name === stationName);
+                if (!node) return;
+                const rect = mapContainer.getBoundingClientRect();
+                translateX = rect.width / 2 - node.x * scale;
+                translateY = rect.height / 2 - node.y * scale;
+                updateViewportTransform();
+                const stEl = document.getElementById(`station-node-${stationName}`);
+                if (stEl) {
+                    const circle = stEl.querySelector("circle");
+                    const origStroke = circle.getAttribute("stroke");
+                    const origR = circle.getAttribute("r");
+                    let flashes = 0;
+                    const flash = setInterval(() => {
+                        flashes++;
+                        if (flashes % 2 === 1) {
+                            circle.setAttribute("stroke", "var(--neon-purple)");
+                            circle.setAttribute("r", String(parseFloat(origR) * 2.8));
+                            circle.setAttribute("stroke-width", "3");
+                        } else {
+                            circle.setAttribute("stroke", origStroke);
+                            circle.setAttribute("r", origR);
+                            circle.setAttribute("stroke-width", "2");
+                        }
+                        if (flashes >= 6) { clearInterval(flash); circle.setAttribute("stroke", origStroke); circle.setAttribute("r", origR); }
+                    }, 220);
+                }
+                showMapPopup(stationName, window.innerWidth / 2 + 20, window.innerHeight / 2 - 60);
+            }
+
+            function openCentralityModal() {
+                closeDrawer();
+                // Default sorting to betweenness descending
+                centralitySortCol = "bet";
+                centralitySortAsc = false;
+                document.getElementById("centrality-modal").style.display = "flex";
+                renderCentralityTable();
+            }
+
+            document.getElementById("btn-centrality-close").addEventListener("click", () => {
+                document.getElementById("centrality-modal").style.display = "none";
+            });
+
+            document.querySelectorAll('input[name="centrality-space"]').forEach(radio => {
+                radio.addEventListener("change", () => {
+                    centralitySortCol = "bet";
+                    centralitySortAsc = false;
+                    renderCentralityTable();
+                });
+            });
+
+            // Listeners for centrality controls
+            const nValInput = document.getElementById("centrality-n-val");
+            if (nValInput) {
+                nValInput.addEventListener("change", () => {
+                    if (nValInput.value === "") {
+                        renderCentralityTable();
+                        return;
+                    }
+                    let val = parseInt(nValInput.value, 10);
+                    if (isNaN(val) || val < 1) {
+                        val = 1;
+                        nValInput.value = 1;
+                    }
+                    renderCentralityTable();
+                });
+                nValInput.addEventListener("input", () => {
+                    const val = parseInt(nValInput.value, 10);
+                    if (nValInput.value === "" || (!isNaN(val) && val >= 1)) {
+                        renderCentralityTable();
+                    }
+                });
+            }
+
+            const covFilterInput = document.getElementById("centrality-coverage-filter");
+            if (covFilterInput) {
+                covFilterInput.addEventListener("input", () => {
+                    renderCentralityTable();
+                });
+            }
+
+            // Inline Collapsible Help toggle listener
+            const helpBtn = document.getElementById("btn-centrality-help-toggle");
+            const helpCard = document.getElementById("centrality-help-card");
+            if (helpBtn && helpCard) {
+                helpBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const isHidden = helpCard.style.display === "none";
+                    helpCard.style.display = isHidden ? "block" : "none";
+                });
+            }
+
+            document.getElementById("btn-open-centrality").addEventListener("click", openCentralityModal);
+
+            // --- Direct (Shortest) Path Matrix Logic ---
+            // This analysis is intentionally separate from the longest-path worker: it computes all-pairs shortest paths on demand.
+            function computeShortestPaths() {
+                const nodes = data.nodes;
+                const edges = data.edges;
+                const V = nodes.length;
+
+                const adj = Array.from({ length: V }, () => []);
+                const nodeNameToId = {};
+                nodes.forEach((node, idx) => {
+                    nodeNameToId[node.name] = idx;
+                });
+
+                edges.forEach(edge => {
+                    const isAvoidedLine = selectedAvoids.has(edge.line);
+                    const isAvoidedU = selectedAvoids.has(edge.u);
+                    const isAvoidedV = selectedAvoids.has(edge.v);
+                    if (!isAvoidedLine && !isAvoidedU && !isAvoidedV) {
+                        const uId = nodeNameToId[edge.u];
+                        const vId = nodeNameToId[edge.v];
+                        if (uId !== undefined && vId !== undefined) {
+                            adj[uId].push({ to: vId, edge: edge });
+                            adj[vId].push({ to: uId, edge: edge });
+                        }
+                    }
+                });
+
+                const dist = Array.from({ length: V }, () => new Array(V).fill(Infinity));
+                const parent = Array.from({ length: V }, () => new Array(V).fill(-1));
+
+                for (let start = 0; start < V; start++) {
+                    const queue = [start];
+                    dist[start][start] = 0;
+                    let head = 0;
+                    while (head < queue.length) {
+                        const u = queue[head++];
+                        const neighbors = adj[u];
+                        for (let i = 0; i < neighbors.length; i++) {
+                            const v = neighbors[i].to;
+                            if (dist[start][v] === Infinity) {
+                                dist[start][v] = dist[start][u] + 1;
+                                parent[start][v] = u;
+                                queue.push(v);
+                            }
+                        }
+                    }
+                }
+
+                return { dist, parent, nodeNameToId };
+            }
+
+            function reconstructShortestPath(startId, endId, parent, nodeNameToId) {
+                if (parent[startId][endId] === -1 && startId !== endId) {
+                    return null;
+                }
+
+                const stationsPath = [];
+                let curr = endId;
+                while (curr !== -1) {
+                    stationsPath.push(data.nodes[curr].name);
+                    curr = parent[startId][curr];
+                }
+                stationsPath.reverse();
+
+                const pathEdges = [];
+                for (let i = 0; i < stationsPath.length - 1; i++) {
+                    const uName = stationsPath[i];
+                    const vName = stationsPath[i+1];
+                    const edgeIdx = data.edges.findIndex(edge => {
+                        const matches = (edge.u === uName && edge.v === vName) || (edge.u === vName && edge.v === uName);
+                        if (!matches) return false;
+                        const isAvoidedLine = selectedAvoids.has(edge.line);
+                        const isAvoidedU = selectedAvoids.has(edge.u);
+                        const isAvoidedV = selectedAvoids.has(edge.v);
+                        return !isAvoidedLine && !isAvoidedU && !isAvoidedV;
+                    });
+                    if (edgeIdx !== -1) {
+                        pathEdges.push(edgeIdx);
+                    }
+                }
+
+                return {
+                    path_stations: stationsPath,
+                    path_edges: pathEdges,
+                    weight: stationsPath.length - 1
+                };
+            }
+
+            function renderMatrix() {
+                const filterInput = document.getElementById("matrix-filter-input");
+                let filterVal = parseInt(filterInput.value);
+                if (isNaN(filterVal) || filterVal < 1) {
+                    filterVal = 1;
+                    filterInput.value = 1;
+                }
+
+                const { dist, parent, nodeNameToId } = computeShortestPaths();
+                const nodes = data.nodes;
+                const V = nodes.length;
+
+                // Collect all valid station pairs
+                const pairs = [];
+                for (let i = 0; i < V; i++) {
+                    for (let j = i + 1; j < V; j++) {
+                        const d = dist[i][j];
+                        if (d !== Infinity) {
+                            const val = d + 1; // including start and end stations
+                            if (val >= filterVal) {
+                                pairs.push({
+                                    start: nodes[i].name,
+                                    end: nodes[j].name,
+                                    val: val,
+                                    startId: i,
+                                    endId: j
+                                });
+                            }
+                        }
+                    }
+                }
+
+                // Sort descending by station count, then alphabetically
+                pairs.sort((a, b) => {
+                    if (b.val !== a.val) {
+                        return b.val - a.val;
+                    }
+                    return a.start.localeCompare(b.start);
+                });
+
+                // Display warning banner or limit rows
+                const warningBanner = document.getElementById("matrix-warning");
+                let displayedPairs = pairs;
+                if (pairs.length > 500) {
+                    warningBanner.style.display = "block";
+                    displayedPairs = pairs.slice(0, 500);
+                } else {
+                    warningBanner.style.display = "none";
+                }
+
+                if (displayedPairs.length === 0) {
+                    document.getElementById("matrix-body").innerHTML = `<div style="padding:40px; text-align:center; color:var(--text-muted); font-size:12px;">在该过滤条件下无满足条件的直达路线。请降低筛选值。</div>`;
+                    return;
+                }
+
+                let tableHtml = `<table class="matrix-table" style="width: 100%; min-width: auto;">`;
+                tableHtml += `
+                    <tr>
+                        <th style="padding-left:16px;">起始站</th>
+                        <th style="padding-left:16px;">终点站</th>
+                        <th style="width:140px; text-align:center;">经过最少车站数</th>
+                    </tr>
+                `;
+
+                displayedPairs.forEach(p => {
+                    tableHtml += `
+                        <tr>
+                            <td style="padding-left:16px; font-weight:bold; color:var(--text-primary);">${p.start}</td>
+                            <td style="padding-left:16px; font-weight:bold; color:var(--text-primary);">${p.end}</td>
+                            <td class="matrix-cell-val" data-start="${p.start}" data-end="${p.end}">${p.val}</td>
+                        </tr>
+                    `;
+                });
+                tableHtml += `</table>`;
+
+                const bodyContainer = document.getElementById("matrix-body");
+                bodyContainer.innerHTML = tableHtml;
+
+                bodyContainer.querySelectorAll(".matrix-cell-val").forEach(cell => {
+                    cell.addEventListener("click", () => {
+                        const startName = cell.getAttribute("data-start");
+                        const endName = cell.getAttribute("data-end");
+                        const startId = nodeNameToId[startName];
+                        const endId = nodeNameToId[endName];
+
+                        const shortestPathResult = reconstructShortestPath(startId, endId, parent, nodeNameToId);
+                        if (shortestPathResult) {
+                            selectedStartStation = startName;
+                            selectedEndStation = endName;
+                            updateFloatingOverlay();
+
+                            renderSvgMap();
+                            
+                            openDrawer("drawer-roadbook", "路书");
+                            displayResults(shortestPathResult, data.edges);
+
+                            document.getElementById("matrix-modal").style.display = "none";
+                        }
+                    });
+                });
+            }
+
+            function openMatrixModal() {
+                closeDrawer();
+                document.getElementById("matrix-modal").style.display = "flex";
+                renderMatrix();
+            }
+
+            document.getElementById("btn-matrix-close").addEventListener("click", () => {
+                document.getElementById("matrix-modal").style.display = "none";
+            });
+
+            document.getElementById("btn-open-matrix").addEventListener("click", openMatrixModal);
+
+            document.getElementById("matrix-filter-input").addEventListener("input", renderMatrix);
+
+            // --- City-wide extremes ---
+            // The solver itself accepts one start station. This coordinator scans every start in
+            // the selected city, retains the best route and caches it by city + rule combination.
+            let cityExtremeRun = null;
+            const CITY_EXTREME_CONCURRENCY = Math.min(4, Math.max(1, navigator.hardwareConcurrency || 2));
+            const CITY_EXTREME_TIMEOUT_SECONDS = 0.25;
+            const cityExtremeRules = {
+                "path-reuse": { label: "重复站点最长单向路线", mode: "path", allowStationReuse: true },
+                "loop-reuse": { label: "重复站点最长闭环路线", mode: "loop", allowStationReuse: true },
+                "path-simple": { label: "不重复站点最长单向路线", mode: "path", allowStationReuse: false },
+                "loop-simple": { label: "不重复站点最长闭环路线", mode: "loop", allowStationReuse: false }
+            };
+            // Static results are loaded with the page; browser-side scans are only a development fallback.
+            const cityExtremeCache = new Map(Object.entries(window.cityExtremeResults || {}).flatMap(([cityKey, results]) =>
+                Object.entries(results).map(([ruleKey, entry]) => [`${cityKey}|${ruleKey}`, {
+                    ...entry,
+                    cityKey,
+                    city: window.subwayDataMap[cityKey],
+                    rule: { key: ruleKey, ...cityExtremeRules[ruleKey] },
+                    completed: entry.total,
+                    precomputed: true
+                }])
+            ));
+
+            const cityExtremesModal = document.getElementById("city-extremes-modal");
+            const cityExtremesCitySelect = document.getElementById("city-extremes-city");
+            const cityExtremesStatus = document.getElementById("city-extremes-status");
+            const cityExtremesResult = document.getElementById("city-extremes-result");
+            const cityExtremesRunButton = document.getElementById("btn-city-extremes-run");
+            const cityExtremesCancelButton = document.getElementById("btn-city-extremes-cancel");
+
+            function populateCityExtremesCities() {
+                cityExtremesCitySelect.innerHTML = Object.entries(window.subwayDataMap || {})
+                    .map(([key, city]) => `<option value="${key}">${city.city}</option>`)
+                    .join("");
+                cityExtremesCitySelect.value = selectedCity;
+            }
+
+            function getSelectedCityExtremeRule() {
+                const key = document.querySelector('input[name="city-extreme-rule"]:checked').value;
+                return { key, ...cityExtremeRules[key] };
+            }
+
+            function countRouteTransfers(result, edges) {
+                return result.path_edges.reduce((count, edgeIndex, index) => {
+                    if (index === 0) return count;
+                    return count + (edges[edgeIndex]?.line !== edges[result.path_edges[index - 1]]?.line ? 1 : 0);
+                }, 0);
+            }
+
+            function renderCityExtremeResult(entry) {
+                const result = entry.result;
+                const stations = result.path_stations;
+                const start = stations[0] || "-";
+                const end = entry.rule.mode === "loop" ? start : (stations[stations.length - 1] || "-");
+                const sourceNote = entry.precomputed ? "已载入预计算结果；" : "";
+                const completionNote = entry.timedOutStarts > 0
+                    ? `${sourceNote}已扫描 ${entry.completed}/${entry.total} 个起点；部分起点受时间预算限制，展示当前最佳路线。`
+                    : `${sourceNote}已完成 ${entry.total} 个起点扫描。`;
+
+                cityExtremesStatus.textContent = completionNote;
+                cityExtremesResult.innerHTML = `
+                    <div class="city-extremes-result-card">
+                        <div class="city-extremes-metric"><span>规则</span><strong>${entry.rule.label}</strong></div>
+                        <div class="city-extremes-metric"><span>起点</span><strong>${start}</strong></div>
+                        <div class="city-extremes-metric"><span>${entry.rule.mode === "loop" ? "闭环站点" : "终点"}</span><strong>${end}</strong></div>
+                        <div class="city-extremes-metric"><span>经过区间 / 换乘</span><strong>${result.path_edges.length} / ${countRouteTransfers(result, entry.city.edges)}</strong></div>
+                        <div class="city-extremes-metric"><span>途经车站</span><strong>${stations.length}</strong></div>
+                        <div class="city-extremes-metric"><span>涉及线路</span><strong>${new Set(result.path_edges.map(id => entry.city.edges[id]?.line)).size}</strong></div>
+                        <button class="btn-primary" id="btn-view-city-extreme" type="button">在地图查看并打开路书</button>
+                    </div>`;
+                document.getElementById("btn-view-city-extreme").addEventListener("click", () => viewCityExtremeOnMap(entry));
+            }
+
+            function cancelCityExtremeRun() {
+                if (!cityExtremeRun) return;
+                cityExtremeRun.cancelled = true;
+                cityExtremeRun.workers.forEach(worker => worker.terminate());
+                cityExtremeRun = null;
+                cityExtremesRunButton.disabled = false;
+                cityExtremesCancelButton.style.display = "none";
+                cityExtremesStatus.textContent = "扫描已取消。";
+            }
+
+            function runCityExtremeSearch() {
+                cancelCityExtremeRun();
+                const cityKey = cityExtremesCitySelect.value;
+                const city = window.subwayDataMap[cityKey];
+                const rule = getSelectedCityExtremeRule();
+                const cacheKey = `${cityKey}|${rule.key}`;
+                const cached = cityExtremeCache.get(cacheKey);
+                if (cached) {
+                    renderCityExtremeResult(cached);
+                    return;
+                }
+
+                const run = {
+                    cancelled: false,
+                    workers: new Set(),
+                    city,
+                    cityKey,
+                    rule,
+                    starts: city.nodes.map(node => node.name),
+                    nextStart: 0,
+                    completed: 0,
+                    timedOutStarts: 0,
+                    bestResult: null
+                };
+                cityExtremeRun = run;
+                cityExtremesResult.innerHTML = "";
+                cityExtremesRunButton.disabled = true;
+                cityExtremesCancelButton.style.display = "block";
+
+                const finishWorker = (worker, result) => {
+                    if (run.cancelled || cityExtremeRun !== run) return;
+                    run.workers.delete(worker);
+                    worker.terminate();
+                    run.completed++;
+                    if (result?.timeout_reached) run.timedOutStarts++;
+                    if (result?.weight > -1 && (!run.bestResult || result.weight > run.bestResult.weight)) {
+                        run.bestResult = result;
+                    }
+                    cityExtremesStatus.textContent = `正在扫描 ${city.city}：${run.completed}/${run.starts.length} 个起点。`;
+                    if (run.completed === run.starts.length) {
+                        cityExtremeRun = null;
+                        cityExtremesRunButton.disabled = false;
+                        cityExtremesCancelButton.style.display = "none";
+                        if (!run.bestResult) {
+                            cityExtremesStatus.textContent = "没有找到满足规则的路线。";
+                            return;
+                        }
+                        const entry = { ...run, total: run.starts.length, result: run.bestResult };
+                        cityExtremeCache.set(cacheKey, entry);
+                        renderCityExtremeResult(entry);
+                        return;
+                    }
+                    launchNext();
+                };
+
+                const launchNext = () => {
+                    if (run.cancelled || cityExtremeRun !== run) return;
+                    while (run.workers.size < CITY_EXTREME_CONCURRENCY && run.nextStart < run.starts.length) {
+                        const worker = new Worker("solver-worker.js");
+                        const startStation = run.starts[run.nextStart++];
+                        run.workers.add(worker);
+                        worker.onmessage = event => {
+                            if (event.data.type === "result") finishWorker(worker, event.data);
+                        };
+                        worker.onerror = () => finishWorker(worker, null);
+                        worker.postMessage({
+                            start_station: startStation,
+                            end_station: null,
+                            mode: rule.mode,
+                            allow_station_reuse: rule.allowStationReuse,
+                            max_transfers: null,
+                            max_lines: null,
+                            waypoints: [],
+                            optimize_metric: "edges",
+                            nodes: city.nodes,
+                            edges: city.edges,
+                            timeout: CITY_EXTREME_TIMEOUT_SECONDS
+                        });
+                    }
+                };
+
+                cityExtremesStatus.textContent = `正在扫描 ${city.city}：0/${run.starts.length} 个起点。`;
+                launchNext();
+            }
+
+            function viewCityExtremeOnMap(entry) {
+                // Reuse the normal city switch so autocomplete data, viewport and controls remain consistent.
+                document.querySelector(`.city-tab[data-value="${entry.cityKey}"]`).click();
+                routeMode = entry.rule.mode;
+                selectedStartStation = entry.result.path_stations[0] || "";
+                selectedEndStation = routeMode === "path" ? entry.result.path_stations.at(-1) : "";
+                document.getElementById("search-start-input").value = selectedStartStation;
+                document.getElementById("search-end-input").value = selectedEndStation;
+                document.getElementById("search-end-pill").style.display = routeMode === "path" ? "flex" : "none";
+                document.getElementById("mode-path").classList.toggle("active", routeMode === "path");
+                document.getElementById("mode-loop").classList.toggle("active", routeMode === "loop");
+                cityExtremesModal.style.display = "none";
+                renderSvgMap();
+                displayResults(entry.result, data.edges);
+                openDrawer("drawer-roadbook", "路书");
+            }
+
+            document.getElementById("btn-open-city-extremes").addEventListener("click", () => {
+                populateCityExtremesCities();
+                cityExtremesModal.style.display = "flex";
+            });
+            document.getElementById("btn-city-extremes-close").addEventListener("click", () => {
+                cancelCityExtremeRun();
+                cityExtremesModal.style.display = "none";
+            });
+            cityExtremesRunButton.addEventListener("click", runCityExtremeSearch);
+            cityExtremesCancelButton.addEventListener("click", cancelCityExtremeRun);
+
+            // Theme click toggle
+            document.getElementById("btn-theme").addEventListener("click", () => {
+                document.body.classList.toggle("theme-dark");
+            });
+
+            // Toggle tooltip info bubble
+            const infoIcon = document.getElementById("mode-info-icon");
+            const tooltipBox = document.getElementById("mode-tooltip-box");
+            const tooltipClose = document.getElementById("btn-tooltip-close");
+
+            infoIcon.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const display = tooltipBox.style.display;
+                tooltipBox.style.display = (display === "none") ? "block" : "none";
+            });
+
+            tooltipClose.addEventListener("click", (e) => {
+                e.stopPropagation();
+                tooltipBox.style.display = "none";
+            });
+
+            document.addEventListener("click", (e) => {
+                if (!e.target.closest("#mode-tooltip-box") && !e.target.closest("#mode-info-icon")) {
+                    tooltipBox.style.display = "none";
+                }
+            });
+
+            // Collapsible roadbook timeline intermediates
+            window.toggleRoadbookCollapse = function(btn) {
+                const list = btn.nextElementSibling;
+                const arrow = btn.querySelector(".arrow-icon");
+                if (list.style.display === "none") {
+                    list.style.display = "flex";
+                    arrow.textContent = "▲";
+                } else {
+                    list.style.display = "none";
+                    arrow.textContent = "▼";
+                }
+            };
+
+            // Initialize rendering
+            renderSvgMap();
+            updateFloatingOverlay();
+        });
+    </script>
+</body>
+</html>
