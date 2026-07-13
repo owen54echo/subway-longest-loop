@@ -553,3 +553,10 @@
   - 诊断出缩放按钮仅修改 `scale` 未同步调整平移偏移量，导致地图相对原点缩放引起飞出屏幕。
   - 引入了视口中心点相对缩放函数 `zoomSelf`，实现地图围绕屏幕物理几何中心等比例平稳缩放。
   - 跑通回归测试，并成功提交推送至 GitHub 触发 Vercel 自动部署。
+
+### [2026-07-13 20:23:07]
+- **User Question / 用户提问**: 移动端支持双指操作对地图进行放大缩小
+- **Antigravity Response / 答复要点**:
+  - 利用原生 Pointer Events 机制，重构了 `pointerdown`, `pointermove`, `pointerup` 的指针追踪，引入 `activePointers` 的 Map 容器。
+  - 实现了基于两点间欧几里得距离变化的 pinch-to-zoom 比例换算，并结合两指的物理几何中心点，完成了无缝的双指捏合缩放与平移手势。
+  - 跑通测试，并成功提交推送至 GitHub 仓库。

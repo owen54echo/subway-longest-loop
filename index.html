@@ -785,30 +785,93 @@
                 }
             }
 
-            // Pointer Events unify mouse, trackpad and touch dragging without separate mobile code.
+            // Pointer Events unify mouse, trackpad, and touch dragging/pinching
+            const activePointers = new Map();
+            let initialPinchDistance = 0;
+            let initialScale = 1.0;
+            let svgPinchCenterX = 0;
+            let svgPinchCenterY = 0;
+
+            function getDistance(p1, p2) {
+                const dx = p1.x - p2.x;
+                const dy = p1.y - p2.y;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+
             mapSection.addEventListener("pointerdown", (e) => {
-                // A station owns its press/click sequence so opening its action menu is never
-                // swallowed by the map's pointer capture used for panning.
                 if (e.target.closest(".svg-station") || e.target.closest(".float-panel-left") || e.target.closest(".float-panel-right") || 
                     e.target.closest(".bottom-nav-bar") || e.target.closest(".search-pill-container") || e.target.closest(".city-tab-container") ||
                     e.target.closest("#floating-drawer") || e.target.closest("#map-popup")) return;
-                isDragging = true;
-                startDragX = e.clientX - translateX;
-                startDragY = e.clientY - translateY;
+
+                activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
                 mapSection.setPointerCapture(e.pointerId);
                 mapPopup.style.display = "none";
+
+                if (activePointers.size === 1) {
+                    isDragging = true;
+                    startDragX = e.clientX - translateX;
+                    startDragY = e.clientY - translateY;
+                } else if (activePointers.size === 2) {
+                    isDragging = false;
+                    const pointers = Array.from(activePointers.values());
+                    initialPinchDistance = getDistance(pointers[0], pointers[1]);
+                    initialScale = scale;
+
+                    const pinchCenterX = (pointers[0].x + pointers[1].x) / 2;
+                    const pinchCenterY = (pointers[0].y + pointers[1].y) / 2;
+                    svgPinchCenterX = (pinchCenterX - translateX) / scale;
+                    svgPinchCenterY = (pinchCenterY - translateY) / scale;
+                }
             });
 
             window.addEventListener("pointermove", (e) => {
-                if (!isDragging) return;
-                translateX = e.clientX - startDragX;
-                translateY = e.clientY - startDragY;
-                updateViewportTransform();
+                if (!activePointers.has(e.pointerId)) return;
+                activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+                if (activePointers.size === 1 && isDragging) {
+                    translateX = e.clientX - startDragX;
+                    translateY = e.clientY - startDragY;
+                    updateViewportTransform();
+                } else if (activePointers.size === 2) {
+                    const pointers = Array.from(activePointers.values());
+                    const currentDistance = getDistance(pointers[0], pointers[1]);
+                    if (initialPinchDistance > 0) {
+                        const zoomFactor = currentDistance / initialPinchDistance;
+                        scale = Math.max(0.1, Math.min(8, initialScale * zoomFactor));
+
+                        const pinchCenterX = (pointers[0].x + pointers[1].x) / 2;
+                        const pinchCenterY = (pointers[0].y + pointers[1].y) / 2;
+                        translateX = pinchCenterX - svgPinchCenterX * scale;
+                        translateY = pinchCenterY - svgPinchCenterY * scale;
+
+                        updateViewportTransform();
+                    }
+                }
             });
 
-            window.addEventListener("pointerup", () => {
-                isDragging = false;
-            });
+            const handlePointerUp = (e) => {
+                if (activePointers.has(e.pointerId)) {
+                    activePointers.delete(e.pointerId);
+                    try {
+                        mapSection.releasePointerCapture(e.pointerId);
+                    } catch (err) {}
+                }
+
+                if (activePointers.size < 2) {
+                    initialPinchDistance = 0;
+                }
+                if (activePointers.size === 1) {
+                    isDragging = true;
+                    const remainingPointer = activePointers.values().next().value;
+                    startDragX = remainingPointer.x - translateX;
+                    startDragY = remainingPointer.y - translateY;
+                } else if (activePointers.size === 0) {
+                    isDragging = false;
+                }
+            };
+
+            window.addEventListener("pointerup", handlePointerUp);
+            window.addEventListener("pointercancel", handlePointerUp);
 
             // Zooming map
             mapSection.addEventListener("wheel", (e) => {
