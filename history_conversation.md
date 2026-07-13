@@ -560,3 +560,10 @@
   - 利用原生 Pointer Events 机制，重构了 `pointerdown`, `pointermove`, `pointerup` 的指针追踪，引入 `activePointers` 的 Map 容器。
   - 实现了基于两点间欧几里得距离变化的 pinch-to-zoom 比例换算，并结合两指的物理几何中心点，完成了无缝的双指捏合缩放与平移手势。
   - 跑通测试，并成功提交推送至 GitHub 仓库。
+
+### [2026-07-13 20:30:27]
+- **User Question / 用户提问**: 深度审计并修复移动端其他类似的交互和操作缺陷
+- **Antigravity Response / 答复要点**:
+  - 修复了移动端下由于搜索框上移导致联想输入框（Suggestions Box）向上弹出而被裁切和遮挡的 Bug，重设其为向下弹出。
+  - 解决了移动端下因唤起虚拟键盘造成可用视口高度骤缩、引发底导及控制面板重叠拥挤的 Bug，引入 `keyboard-open` 监测逻辑在键盘唤起时自动清空周边悬浮控件。
+  - 跑通测试，并成功提交推送至 GitHub 仓库。

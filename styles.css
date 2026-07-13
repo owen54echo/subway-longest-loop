@@ -1181,6 +1181,12 @@ input:checked + .slider:before {
         left: 50%;
         transform: translateX(-50%);
     }
+
+    #start-suggestions,
+    #end-suggestions {
+        bottom: auto !important;
+        top: calc(100% + 4px) !important;
+    }
 }
 
 .city-tab-container {
@@ -1262,6 +1268,15 @@ input:checked + .slider:before {
     .nav-item {
         min-height: 44px;
         padding: 8px;
+    }
+
+    /* Hide crowding controls when virtual keyboard is active */
+    body.keyboard-open .bottom-nav-bar,
+    body.keyboard-open .float-panel-left,
+    body.keyboard-open .float-panel-right,
+    body.keyboard-open .map-status-overlay,
+    body.keyboard-open .city-tab-container {
+        display: none !important;
     }
 
     /* Cruise panel bottom-floating on mobile */

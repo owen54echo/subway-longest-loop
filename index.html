@@ -1459,6 +1459,19 @@
             setupAutocomplete("waypoint-input", "waypoint-suggestions", () => stationNames, addWaypoint);
             setupAutocomplete("avoid-input", "avoid-suggestions", () => searchAvoidItems, addAvoid);
 
+            // Add keyboard-open class to body on mobile focus for cleaner input layout
+            const textInputs = document.querySelectorAll('input[type="text"]');
+            textInputs.forEach(input => {
+                input.addEventListener("focus", () => {
+                    if (window.innerWidth <= 768) {
+                        document.body.classList.add("keyboard-open");
+                    }
+                });
+                input.addEventListener("blur", () => {
+                    document.body.classList.remove("keyboard-open");
+                });
+            });
+
             // Config tab switchers
             function setupTabSwitcher(tabIds, activeId, callback) {
                 tabIds.forEach(id => {
