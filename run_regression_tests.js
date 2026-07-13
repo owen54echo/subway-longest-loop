@@ -18,7 +18,7 @@ function loadSubwayData() {
     try {
         const runFn = new Function('window', fileContent + '\nreturn window;');
         const resultWindow = runFn(sandbox.window);
-        return resultWindow.subwayData;
+        return resultWindow.subwayDataMap ? resultWindow.subwayDataMap.guangzhou : resultWindow.subwayData;
     } catch (e) {
         console.error("错误: 加载/运行 subway_data.js 失败:", e);
         process.exit(1);

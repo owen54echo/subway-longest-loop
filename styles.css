@@ -1138,7 +1138,7 @@ input:checked + .slider:before {
         right: 12px;
         bottom: 96px;
         width: calc(100% - 24px);
-        height: 40dvh;
+        height: 35dvh;
         transform: translateY(120%);
     }
 
@@ -1147,18 +1147,20 @@ input:checked + .slider:before {
     }
     
     .float-panel-left {
-        top: 12px;
+        top: 164px;
         left: 12px;
     }
     
     .float-panel-right {
-        bottom: 160px;
+        top: 164px;
+        bottom: auto;
         right: 12px;
     }
     
     .search-pill-container {
         width: calc(100% - 24px);
-        bottom: 156px;
+        top: 76px;
+        bottom: auto;
     }
     
     .bottom-nav-bar {
@@ -1170,6 +1172,14 @@ input:checked + .slider:before {
     
     .nav-item {
         padding: 6px 12px;
+    }
+
+    .map-status-overlay {
+        bottom: auto;
+        top: 164px;
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
     }
 }
 
@@ -1252,6 +1262,81 @@ input:checked + .slider:before {
     .nav-item {
         min-height: 44px;
         padding: 8px;
+    }
+
+    /* Cruise panel bottom-floating on mobile */
+    .cruise-panel {
+        top: auto !important;
+        bottom: 74px !important;
+        left: 12px !important;
+        right: 12px !important;
+        width: calc(100% - 24px) !important;
+    }
+
+    /* Larger touch targets for station context menu */
+    .map-popup {
+        min-width: 160px;
+        padding: 8px;
+    }
+    .map-popup-btn {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    /* Modals responsive design */
+    .matrix-modal {
+        top: 2.5% !important;
+        left: 2.5% !important;
+        width: 95% !important;
+        height: 95% !important;
+        padding: 16px 12px !important;
+    }
+    .matrix-close {
+        position: absolute !important;
+        top: 12px !important;
+        right: 12px !important;
+        font-size: 28px !important;
+        z-index: 110 !important;
+    }
+    .matrix-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 6px !important;
+        padding-right: 32px !important;
+    }
+    .matrix-header-right {
+        gap: 8px !important;
+        width: 100% !important;
+        justify-content: flex-start !important;
+        flex-wrap: wrap !important;
+    }
+
+    /* Centrality Modal Header Specific Layout */
+    #centrality-modal .matrix-header {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        padding-right: 32px !important;
+    }
+    #centrality-modal .matrix-header > div {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+    #centrality-modal .matrix-header div[style*="width:"] {
+        display: none !important;
+    }
+    #centrality-modal .matrix-header > div > div {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        width: 100% !important;
+        gap: 8px !important;
+    }
+    #centrality-modal .matrix-header > div > div > label,
+    #centrality-modal .matrix-header > div > div > span {
+        margin: 0 !important;
     }
 }
 
