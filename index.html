@@ -835,13 +835,26 @@
             });
 
             // Zoom buttons binding
-            document.getElementById("btn-zoom-in").addEventListener("click", () => {
-                scale = Math.min(8, scale * 1.3);
+            function zoomSelf(zoomFactor) {
+                const rect = mapContainer.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const svgCenterX = (centerX - translateX) / scale;
+                const svgCenterY = (centerY - translateY) / scale;
+
+                scale = Math.max(0.1, Math.min(8, scale * zoomFactor));
+                translateX = centerX - svgCenterX * scale;
+                translateY = centerY - svgCenterY * scale;
+
                 updateViewportTransform();
+            }
+
+            document.getElementById("btn-zoom-in").addEventListener("click", () => {
+                zoomSelf(1.3);
             });
             document.getElementById("btn-zoom-out").addEventListener("click", () => {
-                scale = Math.max(0.1, scale / 1.3);
-                updateViewportTransform();
+                zoomSelf(1 / 1.3);
             });
             document.getElementById("btn-reset-map").addEventListener("click", () => {
                 lastResultStations = [];

@@ -546,3 +546,10 @@
   - 修复了因为同时继承了 `.matrix-modal` 与自身类名导致的 `transform` translate 偏移出界 bug。
   - 针对移动端在 `.city-extremes-modal` 类上强制覆盖 `top: 12px; left: 12px; transform: none; height: auto; max-height: calc(100dvh - 24px); overflow-y: auto;` 保证显示完整与可滚动。
   - 通过全部 7 项 JS 端寻路回归测试，并将代码推送到 GitHub，自动触发 Vercel 线上热更新。
+
+### [2026-07-13 20:20:00]
+- **User Question / 用户提问**: 修复移动端下点击加减号按钮缩放地图导致地图漂移的问题
+- **Antigravity Response / 答复要点**:
+  - 诊断出缩放按钮仅修改 `scale` 未同步调整平移偏移量，导致地图相对原点缩放引起飞出屏幕。
+  - 引入了视口中心点相对缩放函数 `zoomSelf`，实现地图围绕屏幕物理几何中心等比例平稳缩放。
+  - 跑通回归测试，并成功提交推送至 GitHub 触发 Vercel 自动部署。
