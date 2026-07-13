@@ -1290,6 +1290,7 @@ input:checked + .slider:before {
         width: 95% !important;
         height: 95% !important;
         padding: 16px 12px !important;
+        transform: none !important;
     }
     .matrix-close {
         position: absolute !important;
@@ -1704,9 +1705,14 @@ input:checked + .slider:before {
 
 @media (max-width: 768px) {
     .city-extremes-modal {
-        width: calc(100% - 24px);
-        max-height: calc(100dvh - 24px);
-        padding: 14px;
+        top: 12px !important;
+        left: 12px !important;
+        width: calc(100% - 24px) !important;
+        height: auto !important;
+        max-height: calc(100dvh - 24px) !important;
+        transform: none !important;
+        padding: 14px !important;
+        overflow-y: auto !important;
     }
 
     .city-extremes-controls,

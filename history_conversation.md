@@ -534,8 +534,15 @@
   - 本地配置了远程 Git 地址并成功将代码推送至仓库的 main 分支。
 
 ### [2026-07-13 17:55:54]
-- **User Question / 用户提问**: 梳理移动端设计原则并检查大环线项目前端代码的移动端适配与组件堆叠冲突
+- **User Question / 用户提问**: 确认执行移动端适配布局重构并推送到 GitHub，以及确认 Vercel 同步机制
 - **Antigravity Response / 答复要点**:
-  - 梳理了移动端 5 大设计原则（触控友好、防遮挡与空间独立、拇指热区、响应式布局、视口滚动隔离）
-  - 审计并指出了项目在移动端布局下的 7 大代码冲突（顶部左侧悬浮栏与城市栏重合、右侧缩放控制栏与搜索框重合、规则设置抽屉打开时遮挡搜索框、状态悬浮栏与底导重叠、巡游面板缺少移动端适配、点击靶点偏小以及模态框头部挤压错位）
-  - 撰写并生成了只读审计报告 `mobile_design_audit.md` 存入 artifacts，并提出了包括空间分层定位等具体重构思路
+  - 重构了 styles.css 移动端布局，优化了城市栏、搜索框、悬浮面板、状态栏、巡游控制板与弹窗在触屏下的重合与展示冲突。
+  - 跑通了全部 7 项图论寻路回归测试用例，并将最新代码成功推送至 GitHub 的 main 分支。
+  - 阐明了 Vercel 与 GitHub 的自动部署机制，确认推送后 Vercel 会自动拉取 commit 并进行新一轮线上构建。
+
+### [2026-07-13 20:00:09]
+- **User Question / 用户提问**: 修复移动端下“城市线网之最”弹窗的样式与偏移错误
+- **Antigravity Response / 答复要点**:
+  - 修复了因为同时继承了 `.matrix-modal` 与自身类名导致的 `transform` translate 偏移出界 bug。
+  - 针对移动端在 `.city-extremes-modal` 类上强制覆盖 `top: 12px; left: 12px; transform: none; height: auto; max-height: calc(100dvh - 24px); overflow-y: auto;` 保证显示完整与可滚动。
+  - 通过全部 7 项 JS 端寻路回归测试，并将代码推送到 GitHub，自动触发 Vercel 线上热更新。
