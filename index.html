@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>地铁路网线路研究</title>
     
     <!-- Google Fonts -->
@@ -872,6 +872,11 @@
 
             window.addEventListener("pointerup", handlePointerUp);
             window.addEventListener("pointercancel", handlePointerUp);
+
+            // Prevent browser double-tap-to-zoom defaults on dblclick
+            document.addEventListener("dblclick", (e) => {
+                e.preventDefault();
+            }, { passive: false });
 
             // Zooming map
             mapSection.addEventListener("wheel", (e) => {

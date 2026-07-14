@@ -74,6 +74,11 @@
     border-radius: 0 !important; /* Hard rule: absolute geometric rigidity */
 }
 
+html, body {
+    /* Prevent double-tap-to-zoom globally while keeping scrolling inside drawers/modals */
+    touch-action: manipulation;
+}
+
 body {
     /* This is a full-screen tool, not a scrolling document. Drawers and modals own their internal scrolling. */
     background-color: var(--bg-page);
@@ -83,6 +88,51 @@ body {
     height: 100vh;
     width: 100vw;
     transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Disable native touch/pinch gestures on static UI elements to avoid viewport zoom glitches */
+.float-panel-left,
+.float-panel-right,
+.bottom-nav-bar,
+.search-pill-container,
+.cruise-panel,
+.matrix-modal,
+.map-popup,
+.glass-panel {
+    touch-action: none;
+}
+
+/* Specific button and item overrides to prevent double-tap to zoom */
+.btn-float,
+.btn-float *,
+.nav-item,
+.nav-item * {
+    touch-action: none;
+}
+
+/* Ensure map SVG elements ignore gestures and double-tap zoom */
+.map-svg-container svg,
+.map-svg-container svg * {
+    touch-action: none;
+}
+
+/* Enable horizontal scroll on city selector tabs while disabling double-tap zoom */
+.city-tab-container,
+.city-tab,
+.city-tab * {
+    touch-action: pan-x;
+}
+
+input[type="text"],
+input[type="number"],
+select,
+.drawer-content,
+.matrix-body,
+.roadbook-container,
+.suggestions-box,
+.suggestion-item {
+    /* Restore scroll/manipulation where input or scrolling is required */
+    touch-action: manipulation;
 }
 
 /*
@@ -181,6 +231,11 @@ body {
     border-radius: 6px !important;
     transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease;
     font-size: 14px;
+}
+
+.btn-float svg,
+.nav-item svg {
+    pointer-events: none;
 }
 
 .btn-float:hover {
