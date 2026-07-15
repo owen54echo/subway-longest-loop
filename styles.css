@@ -1379,6 +1379,8 @@ input:checked + .slider:before {
         height: 95% !important;
         padding: 16px 12px !important;
         transform: none !important;
+        overflow: hidden !important;
+        touch-action: pan-x pan-y !important;
     }
     .matrix-close {
         position: absolute !important;
@@ -1398,6 +1400,11 @@ input:checked + .slider:before {
         width: 100% !important;
         justify-content: flex-start !important;
         flex-wrap: wrap !important;
+    }
+
+    .matrix-body {
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x pan-y !important;
     }
 
     /* Centrality Modal Header Specific Layout */
@@ -1759,6 +1766,7 @@ input:checked + .slider:before {
     margin-top: 14px;
     padding-top: 14px;
     border-top: 1px solid var(--border-color);
+    touch-action: pan-y;
 }
 
 .city-extremes-result-card {
@@ -1801,12 +1809,26 @@ input:checked + .slider:before {
         transform: none !important;
         padding: 14px !important;
         overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y !important;
     }
 
     .city-extremes-controls,
     .city-extremes-rules,
     .city-extremes-result-card {
         grid-template-columns: 1fr;
+    }
+
+    .city-extremes-result {
+        padding-bottom: max(88px, calc(env(safe-area-inset-bottom) + 72px));
+    }
+
+    .city-extremes-result-card .btn-primary {
+        position: sticky;
+        bottom: max(0px, env(safe-area-inset-bottom));
+        min-height: 44px;
+        z-index: 1;
+        box-shadow: 0 -8px 18px rgba(0, 0, 0, 0.18);
     }
 }
 

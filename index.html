@@ -1159,6 +1159,15 @@
                 if (btnWiki) {
                     btnWiki.style.display = hasWiki ? "block" : "none";
                 }
+
+                requestAnimationFrame(() => {
+                    const popupRect = mapPopup.getBoundingClientRect();
+                    const margin = 12;
+                    const left = Math.min(clientX + margin, window.innerWidth - popupRect.width - margin);
+                    const top = Math.min(clientY + margin, window.innerHeight - popupRect.height - margin);
+                    mapPopup.style.left = `${Math.max(margin, left)}px`;
+                    mapPopup.style.top = `${Math.max(margin, top)}px`;
+                });
             }
 
             document.addEventListener("click", (e) => {
