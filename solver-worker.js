@@ -17,7 +17,7 @@ onmessage = function(e) {
         max_transfers,          // 最大换乘次数限制 (null 表示不限制)
         max_lines,              // 最大经过线路数限制 (null 表示不限制)
         waypoints,              // 必经车站名称列表
-        optimize_metric,        // 优化度量维度："distance" (物理距离) 或 "stations" (区间数/站数)
+        optimize_metric,        // 优化度量维度："distance" (估算距离) 或 "edges"/"stations" (区间数/站数)
         nodes,                  // 地铁车站节点数据数组
         edges,                  // 地铁区间边数据数组
         end_station             // 终点车站名称
@@ -68,8 +68,11 @@ onmessage = function(e) {
         remainingDegree[edgeU[idx]]++;
         remainingDegree[edgeV[idx]]++;
         
-        // 默认每条区间（边）的权重为 1.0 (按站数计算最长路径)
-        const weight = 1.0;
+        // 默认每条区间（边）的权重为 1.0；距离模式优先使用真实区间长度，缺失时回退到经纬度直线距离。
+        const distanceWeight = edge.actualLengthKm ?? edge.straightLengthKm;
+        const weight = optimize_metric === "distance" && Number.isFinite(distanceWeight) && distanceWeight > 0
+            ? distanceWeight
+            : 1.0;
         edgeWeight[idx] = weight;
         totalNetworkWeight += weight;
     });

@@ -3,6 +3,8 @@ import urllib.request
 import json
 import ssl
 import time
+import math
+import os
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -22,18 +24,100 @@ CITIES = [
     {"key": "suzhou", "name": "苏州市", "adcode": "3205", "pinyin": "suzhou"}
 ]
 
+def parse_station_lng_lat(station):
+    sl = station.get("sl")
+    if not sl:
+        return None, None
+
+    try:
+        lng_str, lat_str = sl.split(",", 1)
+        lng = float(lng_str)
+        lat = float(lat_str)
+    except (TypeError, ValueError):
+        return None, None
+
+    if not (-180 <= lng <= 180 and -90 <= lat <= 90):
+        return None, None
+    return lng, lat
+
+def haversine_km(lng1, lat1, lng2, lat2):
+    radius_km = 6371.0088
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    delta_phi = math.radians(lat2 - lat1)
+    delta_lambda = math.radians(lng2 - lng1)
+
+    a = (
+        math.sin(delta_phi / 2) ** 2
+        + math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2) ** 2
+    )
+    return 2 * radius_km * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+def add_edge_distance(edge, nodes):
+    u_node = nodes.get(edge["u"])
+    v_node = nodes.get(edge["v"])
+    if not u_node or not v_node:
+        return edge
+
+    required = (u_node.get("lng"), u_node.get("lat"), v_node.get("lng"), v_node.get("lat"))
+    if any(value is None for value in required):
+        return edge
+
+    distance = haversine_km(u_node["lng"], u_node["lat"], v_node["lng"], v_node["lat"])
+    if distance > 0:
+        edge["straightLengthKm"] = round(distance, 3)
+    return edge
+
+def load_existing_wiki_by_city(output_js):
+    if not os.path.exists(output_js):
+        return {}
+
+    try:
+        with open(output_js, "r", encoding="utf-8") as f:
+            content = f.read()
+        start_marker = "window.subwayDataMap = "
+        end_marker = ";\n\n// Keep window.subwayData"
+        start = content.index(start_marker) + len(start_marker)
+        end = content.index(end_marker, start)
+        existing_data = json.loads(content[start:end])
+    except (OSError, ValueError, json.JSONDecodeError):
+        return {}
+
+    wiki_by_city = {}
+    for city_key, city_data in existing_data.items():
+        wiki_by_city[city_key] = {
+            node["name"]: node["wiki"]
+            for node in city_data.get("nodes", [])
+            if node.get("wiki")
+        }
+    return wiki_by_city
+
+def restore_existing_wiki(compiled_data, wiki_by_city):
+    restored_count = 0
+    for city_key, city_data in compiled_data.items():
+        city_wiki = wiki_by_city.get(city_key, {})
+        for node in city_data.get("nodes", []):
+            wiki = city_wiki.get(node["name"])
+            if wiki:
+                node["wiki"] = wiki
+                restored_count += 1
+    return restored_count
+
 def fetch_subway_raw(adcode, pinyin):
     url = f"http://map.amap.com/service/subway?srhdata={adcode}_drw_{pinyin}.json"
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
     req = urllib.request.Request(url, headers=headers)
-    try:
-        with urllib.request.urlopen(req, timeout=10) as response:
-            return json.loads(response.read().decode("utf-8"))
-    except Exception as e:
-        print(f"Error fetching {pinyin} ({adcode}): {e}")
-        return None
+    for attempt in range(1, 4):
+        try:
+            with urllib.request.urlopen(req, timeout=20) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except Exception as e:
+            print(f"Error fetching {pinyin} ({adcode}), attempt {attempt}/3: {e}")
+            if attempt < 3:
+                time.sleep(1.0)
+    return None
 
 def parse_city_raw(raw_data, line_rename_fn=None, station_rename_fn=None):
     nodes = {}
@@ -61,17 +145,25 @@ def parse_city_raw(raw_data, line_rename_fn=None, station_rename_fn=None):
                 x, y = map(float, p_str.split())
             except ValueError:
                 x, y = 0.0, 0.0
+
+            lng, lat = parse_station_lng_lat(st)
                 
             if name not in nodes:
                 nodes[name] = {
                     "name": name,
                     "x": x,
                     "y": y,
+                    "lng": lng,
+                    "lat": lat,
                     "lines": [ln]
                 }
             else:
                 if ln not in nodes[name]["lines"]:
                     nodes[name]["lines"].append(ln)
+                if nodes[name].get("lng") is None and lng is not None:
+                    nodes[name]["lng"] = lng
+                if nodes[name].get("lat") is None and lat is not None:
+                    nodes[name]["lat"] = lat
                     
         # Add edges
         for i in range(len(st_list) - 1):
@@ -80,12 +172,15 @@ def parse_city_raw(raw_data, line_rename_fn=None, station_rename_fn=None):
             if station_rename_fn:
                 u = station_rename_fn(u, ln)
                 v = station_rename_fn(v, ln)
-            edges.append({
+            if u == v:
+                continue
+            edge = {
                 "u": u,
                 "v": v,
                 "line": ln,
                 "color": color
-            })
+            }
+            edges.append(add_edge_distance(edge, nodes))
             
     return nodes, edges
 
@@ -106,6 +201,8 @@ def merge_cities(primary_nodes, primary_edges, secondary_raw, affine_params, lin
                 "name": name,
                 "x": round(x_new, 1),
                 "y": round(y_new, 1),
+                "lng": node.get("lng"),
+                "lat": node.get("lat"),
                 "lines": node["lines"]
             }
             
@@ -120,6 +217,8 @@ def merge_cities(primary_nodes, primary_edges, secondary_raw, affine_params, lin
 
 def main():
     compiled_data = {}
+    output_js = "./subway_data.js"
+    existing_wiki_by_city = load_existing_wiki_by_city(output_js)
     
     # Fetch all cities raw data
     raw_subways = {}
@@ -194,8 +293,8 @@ def main():
         }
         print(f"[{c['name']}] Compiled: {len(nodes)} stations, {len(edges)} sections.")
 
-    # Write subway_data.js
-    output_js = "./subway_data.js"
+    restored_wiki_count = restore_existing_wiki(compiled_data, existing_wiki_by_city)
+    print(f"Restored wiki metadata for {restored_wiki_count} stations.")
     
     js_content = [
         "// Consolidated subway data for multiple cities.",

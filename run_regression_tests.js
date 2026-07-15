@@ -203,6 +203,18 @@ function runTestCase(name, solverRunner, data, testConfig) {
                 return false;
             }
         }
+
+        if (config.optimize_metric === "distance") {
+            const calculatedDistance = edges.reduce((sum, edgeIdx) => sum + (data.edges[edgeIdx].actualLengthKm ?? data.edges[edgeIdx].straightLengthKm ?? 0), 0);
+            if (calculatedDistance <= 0) {
+                console.error("❌ 失败: 距离模式下路径估算距离无效");
+                return false;
+            }
+            if (Math.abs(result.weight - calculatedDistance) > 0.02) {
+                console.error(`❌ 失败: 距离模式权重 (${result.weight}) 与路径区间距离合计 (${calculatedDistance}) 不一致`);
+                return false;
+            }
+        }
         
         console.log(`✅ 成功: 路径结构完全合法且连通`);
         return true;
@@ -307,6 +319,20 @@ function main() {
                 max_lines: null,
                 waypoints: [],
                 optimize_metric: "stations",
+                timeout: 5.0
+            }
+        },
+        {
+            name: "体育西路距离权重路径 (验证估算距离模式)",
+            config: {
+                start_station: "体育西路",
+                end_station: "广州南站",
+                mode: "path",
+                allow_station_reuse: false,
+                max_transfers: 3,
+                max_lines: null,
+                waypoints: [],
+                optimize_metric: "distance",
                 timeout: 5.0
             }
         }

@@ -35,6 +35,13 @@
                     <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
                 </svg>
             </button>
+            <button class="btn-float" id="btn-line-colors" title="显示线路官方颜色" aria-pressed="false">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22a7 7 0 0 0 7-7c0-5-7-13-7-13S5 10 5 15a7 7 0 0 0 7 7z"></path>
+                    <path d="M12 8v8"></path>
+                    <path d="M8.5 14h7"></path>
+                </svg>
+            </button>
         </div>
         
         <!-- Floating city selector tabs -->
@@ -216,6 +223,14 @@
                             <button class="tab-btn" id="mode-loop" data-mode="loop">闭环回路</button>
                         </div>
                     </div>
+
+                    <div class="form-item">
+                        <label class="form-label">最长目标</label>
+                        <div class="tab-switcher">
+                            <button class="tab-btn active" id="metric-edges" data-metric="edges">最多区间数</button>
+                            <button class="tab-btn" id="metric-distance" data-metric="distance">最长估算距离</button>
+                        </div>
+                    </div>
                     
                     <button class="btn-primary" id="btn-run-solver" style="margin-top:10px;">
                         <span>开始规划路线</span>
@@ -266,6 +281,14 @@
                         <div class="stat-box">
                             <span class="stat-label">途经车站</span>
                             <span class="stat-value" id="res-stations" style="color:var(--neon-blue);">0 个</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">换乘次数</span>
+                            <span class="stat-value" id="res-transfers" style="color:var(--neon-pink);">0 次</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">估算距离</span>
+                            <span class="stat-value" id="res-distance" style="color:var(--state-end);">0.0 km</span>
                         </div>
                     </div>
                     
@@ -493,12 +516,17 @@
                     <label><input type="radio" name="city-extreme-rule" value="path-simple"> 不重复站点最长单向路线</label>
                     <label><input type="radio" name="city-extreme-rule" value="loop-simple"> 不重复站点最长闭环路线</label>
                 </fieldset>
+                <fieldset class="city-extremes-rules">
+                    <legend>优化目标</legend>
+                    <label><input type="radio" name="city-extreme-metric" value="edges" checked> 按区间数</label>
+                    <label><input type="radio" name="city-extreme-metric" value="distance"> 按估算距离</label>
+                </fieldset>
                 <div class="city-extremes-actions">
-                    <button class="btn-primary" id="btn-city-extremes-run" type="button">查看预计算结果</button>
+                    <button class="btn-primary" id="btn-city-extremes-run" type="button">查看/扫描结果</button>
                     <button class="btn-cancel-solver" id="btn-city-extremes-cancel" type="button" style="display:none;">取消扫描</button>
                 </div>
             </div>
-            <div class="city-extremes-status" id="city-extremes-status">选择城市和规则后查看预计算路线。</div>
+            <div class="city-extremes-status" id="city-extremes-status">选择城市、规则和优化目标后查看路线。</div>
             <div class="city-extremes-result" id="city-extremes-result"></div>
         </div>
 
@@ -521,6 +549,7 @@
             let selectedEndStation = "";
             let routeMode = "path";
             let optimizeMetric = "edges";
+            let showOfficialLineColors = false;
             const selectedWaypoints = new Set();
             const selectedAvoids = new Set();
             let activeWorker = null;
@@ -598,7 +627,7 @@
                     return isTransfer ? "0.65" : "0.0";
                 }
 
-                // Draw base lines in gray
+                // Draw base lines in gray by default; users can toggle official line colors for network exploration.
                 edges.forEach((edge, idx) => {
                     const uNode = nodes.find(n => n.name === edge.u);
                     const vNode = nodes.find(n => n.name === edge.v);
@@ -608,9 +637,9 @@
                         line.setAttribute("y1", uNode.y);
                         line.setAttribute("x2", vNode.x);
                         line.setAttribute("y2", vNode.y);
-                        line.setAttribute("stroke", "var(--base-line-color)");
+                        line.setAttribute("stroke", showOfficialLineColors ? (edge.color || "var(--base-line-color)") : "var(--base-line-color)");
                         line.setAttribute("stroke-width", "2.0");
-                        line.setAttribute("opacity", "0.55");
+                        line.setAttribute("opacity", showOfficialLineColors ? "0.82" : "0.55");
                         line.setAttribute("id", `edge-base-${idx}`);
                         edgesGroup.appendChild(line);
                     }
@@ -1501,7 +1530,10 @@
                 stopCruise();
             });
 
-
+            setupTabSwitcher(["metric-edges", "metric-distance"], "metric-edges", (btn) => {
+                optimizeMetric = btn.getAttribute("data-metric");
+                stopCruise();
+            });
 
             // Sliders toggling
             function setupToggleSlider(toggleId, containerId, sliderId, valId) {
@@ -1673,14 +1705,34 @@
             });
 
             // Results are translated once into route segments, then reused by the roadbook, SVG highlight and cruise mode.
+            function getEdgeDistanceKm(edge) {
+                const distance = edge?.actualLengthKm ?? edge?.straightLengthKm;
+                return Number.isFinite(distance) && distance > 0 ? distance : 0;
+            }
+
+            function calculateRouteDistanceKm(pathEdges, edges) {
+                return pathEdges.reduce((total, edgeIndex) => total + getEdgeDistanceKm(edges[edgeIndex]), 0);
+            }
+
+            function formatDistanceKm(distanceKm) {
+                return `${distanceKm.toFixed(1)} km`;
+            }
+
+            function countPathTransfers(pathEdges, edges) {
+                return pathEdges.reduce((count, edgeIndex, index) => {
+                    if (index === 0) return count;
+                    return count + (edges[edgeIndex]?.line !== edges[pathEdges[index - 1]]?.line ? 1 : 0);
+                }, 0);
+            }
+
             function displayResults(result, filteredEdges) {
                 lastResultStations = result.path_stations;
                 setRoadbookAvailability(true);
 
                 document.getElementById("res-edges").textContent = `${result.path_edges.length} 个`;
                 document.getElementById("res-stations").textContent = `${result.path_stations.length} 个`;
-
-
+                document.getElementById("res-transfers").textContent = `${countPathTransfers(result.path_edges, filteredEdges)} 次`;
+                document.getElementById("res-distance").textContent = formatDistanceKm(calculateRouteDistanceKm(result.path_edges, filteredEdges));
 
                 // Render roadbook steps with high-end subway segment timeline
                 const roadbookList = document.getElementById("roadbook-list");
@@ -2745,16 +2797,28 @@
                 "path-simple": { label: "不重复站点最长单向路线", mode: "path", allowStationReuse: false },
                 "loop-simple": { label: "不重复站点最长闭环路线", mode: "loop", allowStationReuse: false }
             };
+            const cityExtremeMetrics = {
+                edges: { label: "按区间数", optimizeMetric: "edges" },
+                distance: { label: "按估算距离", optimizeMetric: "distance" }
+            };
             // Static results are loaded with the page; browser-side scans are only a development fallback.
             const cityExtremeCache = new Map(Object.entries(window.cityExtremeResults || {}).flatMap(([cityKey, results]) =>
-                Object.entries(results).map(([ruleKey, entry]) => [`${cityKey}|${ruleKey}`, {
+                Object.entries(results).flatMap(([ruleKey, entry]) => {
+                    const parsedKey = parseCityExtremeCacheRuleKey(ruleKey);
+                    const city = window.subwayDataMap[cityKey];
+                    if (!city || !isCityExtremeResultCompatible(entry.result, city.edges)) {
+                        return [];
+                    }
+                    return [[`${cityKey}|${parsedKey.ruleKey}|${parsedKey.metricKey}`, {
                     ...entry,
                     cityKey,
-                    city: window.subwayDataMap[cityKey],
-                    rule: { key: ruleKey, ...cityExtremeRules[ruleKey] },
+                    city,
+                    rule: { key: parsedKey.ruleKey, ...cityExtremeRules[parsedKey.ruleKey] },
+                    metric: { key: parsedKey.metricKey, ...cityExtremeMetrics[parsedKey.metricKey] },
                     completed: entry.total,
                     precomputed: true
-                }])
+                    }]];
+                })
             ));
 
             const cityExtremesModal = document.getElementById("city-extremes-modal");
@@ -2776,6 +2840,43 @@
                 return { key, ...cityExtremeRules[key] };
             }
 
+            function getSelectedCityExtremeMetric() {
+                const key = document.querySelector('input[name="city-extreme-metric"]:checked').value;
+                return { key, ...cityExtremeMetrics[key] };
+            }
+
+            function parseCityExtremeCacheRuleKey(ruleKey) {
+                if (cityExtremeRules[ruleKey]) {
+                    return { ruleKey, metricKey: "edges" };
+                }
+                const distanceSuffix = "-distance";
+                if (ruleKey.endsWith(distanceSuffix)) {
+                    const baseRuleKey = ruleKey.slice(0, -distanceSuffix.length);
+                    if (cityExtremeRules[baseRuleKey]) {
+                        return { ruleKey: baseRuleKey, metricKey: "distance" };
+                    }
+                }
+                return { ruleKey, metricKey: "edges" };
+            }
+
+            function isCityExtremeResultCompatible(result, edges) {
+                if (!result?.path_edges || !result?.path_stations) return false;
+                if (result.path_stations.length !== result.path_edges.length + 1) return false;
+                for (let i = 0; i < result.path_edges.length; i++) {
+                    const edge = edges[result.path_edges[i]];
+                    const u = result.path_stations[i];
+                    const v = result.path_stations[i + 1];
+                    if (!edge || !((edge.u === u && edge.v === v) || (edge.u === v && edge.v === u))) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            function getCityExtremeCacheKey(cityKey, rule, metric) {
+                return `${cityKey}|${rule.key}|${metric.key}`;
+            }
+
             function countRouteTransfers(result, edges) {
                 return result.path_edges.reduce((count, edgeIndex, index) => {
                     if (index === 0) return count;
@@ -2789,6 +2890,7 @@
                 const start = stations[0] || "-";
                 const end = entry.rule.mode === "loop" ? start : (stations[stations.length - 1] || "-");
                 const sourceNote = entry.precomputed ? "已载入预计算结果；" : "";
+                const routeDistanceKm = calculateRouteDistanceKm(result.path_edges, entry.city.edges);
                 const completionNote = entry.timedOutStarts > 0
                     ? `${sourceNote}已扫描 ${entry.completed}/${entry.total} 个起点；部分起点受时间预算限制，展示当前最佳路线。`
                     : `${sourceNote}已完成 ${entry.total} 个起点扫描。`;
@@ -2797,9 +2899,11 @@
                 cityExtremesResult.innerHTML = `
                     <div class="city-extremes-result-card">
                         <div class="city-extremes-metric"><span>规则</span><strong>${entry.rule.label}</strong></div>
+                        <div class="city-extremes-metric"><span>优化目标</span><strong>${entry.metric.label}</strong></div>
                         <div class="city-extremes-metric"><span>起点</span><strong>${start}</strong></div>
                         <div class="city-extremes-metric"><span>${entry.rule.mode === "loop" ? "闭环站点" : "终点"}</span><strong>${end}</strong></div>
                         <div class="city-extremes-metric"><span>经过区间 / 换乘</span><strong>${result.path_edges.length} / ${countRouteTransfers(result, entry.city.edges)}</strong></div>
+                        <div class="city-extremes-metric"><span>估算距离</span><strong>${formatDistanceKm(routeDistanceKm)}</strong></div>
                         <div class="city-extremes-metric"><span>途经车站</span><strong>${stations.length}</strong></div>
                         <div class="city-extremes-metric"><span>涉及线路</span><strong>${new Set(result.path_edges.map(id => entry.city.edges[id]?.line)).size}</strong></div>
                         <button class="btn-primary" id="btn-view-city-extreme" type="button">在地图查看并打开路书</button>
@@ -2822,7 +2926,8 @@
                 const cityKey = cityExtremesCitySelect.value;
                 const city = window.subwayDataMap[cityKey];
                 const rule = getSelectedCityExtremeRule();
-                const cacheKey = `${cityKey}|${rule.key}`;
+                const metric = getSelectedCityExtremeMetric();
+                const cacheKey = getCityExtremeCacheKey(cityKey, rule, metric);
                 const cached = cityExtremeCache.get(cacheKey);
                 if (cached) {
                     renderCityExtremeResult(cached);
@@ -2835,6 +2940,7 @@
                     city,
                     cityKey,
                     rule,
+                    metric,
                     starts: city.nodes.map(node => node.name),
                     nextStart: 0,
                     completed: 0,
@@ -2890,7 +2996,7 @@
                             max_transfers: null,
                             max_lines: null,
                             waypoints: [],
-                            optimize_metric: "edges",
+                            optimize_metric: metric.optimizeMetric,
                             nodes: city.nodes,
                             edges: city.edges,
                             timeout: CITY_EXTREME_TIMEOUT_SECONDS
@@ -2906,6 +3012,7 @@
                 // Reuse the normal city switch so autocomplete data, viewport and controls remain consistent.
                 document.querySelector(`.city-tab[data-value="${entry.cityKey}"]`).click();
                 routeMode = entry.rule.mode;
+                optimizeMetric = entry.metric.optimizeMetric;
                 selectedStartStation = entry.result.path_stations[0] || "";
                 selectedEndStation = routeMode === "path" ? entry.result.path_stations.at(-1) : "";
                 document.getElementById("search-start-input").value = selectedStartStation;
@@ -2913,6 +3020,8 @@
                 document.getElementById("search-end-pill").style.display = routeMode === "path" ? "flex" : "none";
                 document.getElementById("mode-path").classList.toggle("active", routeMode === "path");
                 document.getElementById("mode-loop").classList.toggle("active", routeMode === "loop");
+                document.getElementById("metric-edges").classList.toggle("active", optimizeMetric !== "distance");
+                document.getElementById("metric-distance").classList.toggle("active", optimizeMetric === "distance");
                 cityExtremesModal.style.display = "none";
                 renderSvgMap();
                 displayResults(entry.result, data.edges);
@@ -2933,6 +3042,15 @@
             // Theme click toggle
             document.getElementById("btn-theme").addEventListener("click", () => {
                 document.body.classList.toggle("theme-dark");
+            });
+
+            document.getElementById("btn-line-colors").addEventListener("click", () => {
+                showOfficialLineColors = !showOfficialLineColors;
+                const btn = document.getElementById("btn-line-colors");
+                btn.classList.toggle("active", showOfficialLineColors);
+                btn.setAttribute("aria-pressed", showOfficialLineColors ? "true" : "false");
+                btn.setAttribute("title", showOfficialLineColors ? "关闭线路官方颜色" : "显示线路官方颜色");
+                renderSvgMap();
             });
 
             // Toggle tooltip info bubble

@@ -16,24 +16,41 @@ function runSolver(config) {
     return result;
 }
 
-const rules = {
+const baseRules = {
     'path-reuse': { mode: 'path', allowStationReuse: true },
     'loop-reuse': { mode: 'loop', allowStationReuse: true },
     'path-simple': { mode: 'path', allowStationReuse: false },
     'loop-simple': { mode: 'loop', allowStationReuse: false }
 };
+const metrics = {
+    edges: { suffix: '', optimizeMetric: 'edges' },
+    distance: { suffix: '-distance', optimizeMetric: 'distance' }
+};
+const rules = Object.fromEntries(Object.entries(baseRules).flatMap(([ruleKey, rule]) =>
+    Object.entries(metrics).map(([, metric]) => [
+        `${ruleKey}${metric.suffix}`,
+        { ...rule, optimizeMetric: metric.optimizeMetric }
+    ])
+));
 const timeout = 0.25;
 const output = {};
 const shard = Number(process.argv[2] || 0);
 const shardCount = Number(process.argv[3] || 1);
+const metricFilter = process.argv[4] || "all";
+const cityFilter = process.argv[5] || "";
 const allCityEntries = Object.entries(cities);
-const cityEntries = allCityEntries.filter((_, index) => index % shardCount === shard);
-const totalRuns = cityEntries.reduce((sum, [, city]) => sum + city.nodes.length * Object.keys(rules).length, 0);
+const cityEntries = allCityEntries
+    .filter(([cityKey]) => !cityFilter || cityKey === cityFilter)
+    .filter((_, index) => index % shardCount === shard);
+const selectedRules = Object.fromEntries(Object.entries(rules).filter(([, rule]) =>
+    metricFilter === "all" || rule.optimizeMetric === metricFilter
+));
+const totalRuns = cityEntries.reduce((sum, [, city]) => sum + city.nodes.length * Object.keys(selectedRules).length, 0);
 let completedRuns = 0;
 
 for (const [cityKey, city] of cityEntries) {
     output[cityKey] = {};
-    for (const [ruleKey, rule] of Object.entries(rules)) {
+    for (const [ruleKey, rule] of Object.entries(selectedRules)) {
         let best = null;
         let timedOutStarts = 0;
         for (const node of city.nodes) {
@@ -45,7 +62,7 @@ for (const [cityKey, city] of cityEntries) {
                 max_transfers: null,
                 max_lines: null,
                 waypoints: [],
-                optimize_metric: 'edges',
+                optimize_metric: rule.optimizeMetric,
                 nodes: city.nodes,
                 edges: city.edges,
                 timeout
