@@ -436,6 +436,7 @@ button:focus-visible,
     justify-content: space-between;
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 8px;
+    touch-action: pan-y;
 }
 
 .drawer-title {
@@ -899,6 +900,15 @@ input:checked + .slider:before {
     color: var(--text-secondary);
 }
 
+.section-distance {
+    width: fit-content;
+    font-size: 8.5px;
+    font-weight: 700;
+    color: var(--state-end);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+}
+
 .segment-line-info {
     display: flex;
     align-items: center;
@@ -1199,6 +1209,14 @@ input:checked + .slider:before {
 
     .floating-drawer.open {
         transform: translateY(0);
+    }
+
+    .floating-drawer.drawer-rules-active {
+        height: 52dvh;
+    }
+
+    .floating-drawer.drawer-roadbook-expanded {
+        height: 72dvh;
     }
     
     .float-panel-left {

@@ -1031,6 +1031,7 @@
             const navItems = document.querySelectorAll(".nav-item");
             const roadbookNav = document.getElementById("nav-roadbook");
             let activePaneId = "";
+            let drawerSwipeStartY = null;
 
             // Route results unlock the roadbook; a stale route is never presented as current after reset or city change.
             function setRoadbookAvailability(hasRoute) {
@@ -1059,6 +1060,10 @@
                 } else {
                     drawerTitle.textContent = title + "设置";
                 }
+                drawer.classList.toggle("drawer-rules-active", paneId === "drawer-rules");
+                if (paneId !== "drawer-roadbook") {
+                    drawer.classList.remove("drawer-roadbook-expanded");
+                }
                 document.querySelectorAll(".config-pane").forEach(p => p.style.display = "none");
                 
                 // Constraints combine waypoints and avoidance because both refine the same route request.
@@ -1076,11 +1081,35 @@
 
             function closeDrawer() {
                 drawer.classList.remove("open");
+                drawer.classList.remove("drawer-rules-active");
+                drawer.classList.remove("drawer-roadbook-expanded");
                 activePaneId = "";
                 navItems.forEach(n => n.classList.remove("active"));
             }
 
             document.getElementById("btn-drawer-close").addEventListener("click", closeDrawer);
+
+            const drawerHeader = drawer.querySelector(".drawer-header");
+            drawerHeader.addEventListener("pointerdown", (e) => {
+                if (e.target.closest(".drawer-close")) return;
+                drawerSwipeStartY = e.clientY;
+            });
+            drawerHeader.addEventListener("pointerup", (e) => {
+                if (drawerSwipeStartY === null || activePaneId !== "drawer-roadbook") {
+                    drawerSwipeStartY = null;
+                    return;
+                }
+                const deltaY = e.clientY - drawerSwipeStartY;
+                if (deltaY < -36) {
+                    drawer.classList.add("drawer-roadbook-expanded");
+                } else if (deltaY > 36) {
+                    drawer.classList.remove("drawer-roadbook-expanded");
+                }
+                drawerSwipeStartY = null;
+            });
+            drawerHeader.addEventListener("pointercancel", () => {
+                drawerSwipeStartY = null;
+            });
 
             // Escape is the shared, predictable exit for transient UI layers.
             document.addEventListener("keydown", (e) => {
@@ -1718,6 +1747,13 @@
                 return `${distanceKm.toFixed(1)} km`;
             }
 
+            function renderSectionDistance(edge) {
+                const distanceKm = getEdgeDistanceKm(edge);
+                return distanceKm > 0
+                    ? `<span class="section-distance">${formatDistanceKm(distanceKm)}</span>`
+                    : "";
+            }
+
             function countPathTransfers(pathEdges, edges) {
                 return pathEdges.reduce((count, edgeIndex, index) => {
                     if (index === 0) return count;
@@ -1758,10 +1794,12 @@
                         currentSegment = {
                             line: lineName,
                             color: lineColor,
-                            stations: [startStation, endStation]
+                            stations: [startStation, endStation],
+                            edgeIds: [pathEdges[i]]
                         };
                     } else {
                         currentSegment.stations.push(endStation);
+                        currentSegment.edgeIds.push(pathEdges[i]);
                     }
                 }
                 if (currentSegment) {
@@ -1775,6 +1813,7 @@
                     const startStation = seg.stations[0];
                     const endStation = seg.stations[seg.stations.length - 1];
                     const intermediateStations = seg.stations.slice(1, -1);
+                    const endEdge = filteredEdges[seg.edgeIds[seg.edgeIds.length - 1]];
                     
                     let nextSegLine = "";
                     let nextSegColor = "";
@@ -1793,10 +1832,11 @@
                                     <span class="toggle-text">乘坐 ${intermediateStations.length} 站</span>
                                 </div>
                                 <div class="intermediates-list-content" style="display: none;">
-                                    ${intermediateStations.map(stName => `
+                                    ${intermediateStations.map((stName, stIdx) => `
                                         <div class="segment-point intermediate-point">
                                             <div class="point-marker small"></div>
                                             <div class="point-info">
+                                                ${renderSectionDistance(filteredEdges[seg.edgeIds[stIdx]])}
                                                 <span class="station-name-sub">${stName}</span>
                                             </div>
                                         </div>
@@ -1830,6 +1870,7 @@
                             <div class="segment-point end-point">
                                 <div class="point-marker"></div>
                                 <div class="point-info">
+                                    ${renderSectionDistance(endEdge)}
                                     <div class="station-name-row">
                                         <span class="station-name">${endStation}</span>
                                         ${isLast ? '<span class="badge badge-end">终点</span>' : '<span class="badge badge-transfer">换乘站</span>'}
