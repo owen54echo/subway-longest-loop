@@ -1813,10 +1813,13 @@ input:checked + .slider:before {
 
 .station-menu-stations {
     display: none;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
     padding-bottom: 3px;
 }
 
-.station-menu-group.expanded .station-menu-stations { display: block; }
+.station-menu-group.expanded .station-menu-stations { display: flex; }
 
 .station-menu-line-icon {
     width: 10px;
@@ -1826,7 +1829,13 @@ input:checked + .slider:before {
     border: 1px solid rgba(255, 255, 255, 0.35);
 }
 
-.station-menu-item { padding-left: 26px; }
+.station-menu-item {
+    display: block;
+    flex: 0 0 auto;
+    width: 100%;
+    padding-left: 26px;
+    white-space: normal;
+}
 
 .centrality-city-filter {
     padding-right: 12px;
