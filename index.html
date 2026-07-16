@@ -409,7 +409,9 @@
                     <label class="analysis-filter-group">起始车站
                         <span class="station-select-wrap">
                             <span id="matrix-start-line-icon" class="station-line-icon" aria-hidden="true"></span>
-                            <select id="matrix-start-select" class="analysis-select" aria-label="直达矩阵起始车站"></select>
+                            <button type="button" id="matrix-start-trigger" class="analysis-select analysis-select-trigger" aria-haspopup="listbox" aria-expanded="false">全部车站</button>
+                            <div id="matrix-start-menu" class="station-select-menu" role="listbox" aria-label="直达矩阵起始车站"></div>
+                            <select id="matrix-start-select" class="analysis-select-hidden" aria-hidden="true" tabindex="-1"></select>
                         </span>
                     </label>
                     <span class="matrix-filter-label">最少车站数 >=</span>
@@ -2668,6 +2670,8 @@
             function populateMatrixStations() {
                 const select = document.getElementById("matrix-start-select");
                 const icon = document.getElementById("matrix-start-line-icon");
+                const trigger = document.getElementById("matrix-start-trigger");
+                const menu = document.getElementById("matrix-start-menu");
                 const cityData = window.subwayDataMap[matrixSelectedCity] || data;
                 const previousValue = select.value;
                 const lineStations = {};
@@ -2677,17 +2681,37 @@
                     lineStations[edge.line].add(edge.v);
                 });
                 const groups = Object.entries(lineStations).sort(([a], [b]) => a.localeCompare(b, "zh"));
-                select.innerHTML = `<option value="">全部车站</option>` + groups.map(([line, stations]) => {
+                const stationGroups = groups.map(([line, stations]) => {
                     const color = cityData.edges.find(edge => edge.line === line)?.color || "var(--border-color)";
                     const options = [...stations].sort((a, b) => a.localeCompare(b, "zh")).map(station =>
                         `<option value="${station.replace(/"/g, "&quot;")}">${line} ➜ ${station}</option>`
                     ).join("");
                     return `<optgroup label="${line}">${options}</optgroup>`;
                 }).join("");
+                select.innerHTML = `<option value="">全部车站</option>` + stationGroups;
+                menu.innerHTML = `<button type="button" class="station-menu-all" data-station="">全部车站</button>` + groups.map(([line, stations]) => {
+                    const color = cityData.edges.find(edge => edge.line === line)?.color || "var(--border-color)";
+                    const stationButtons = [...stations].sort((a, b) => a.localeCompare(b, "zh")).map(station =>
+                        `<button type="button" class="station-menu-item" data-station="${station.replace(/"/g, "&quot;")}">${station}</button>`
+                    ).join("");
+                    return `<div class="station-menu-group"><div class="station-menu-line"><span class="station-menu-line-icon" style="background-color:${color};"></span><span>${line}</span></div>${stationButtons}</div>`;
+                }).join("");
                 if ([...select.options].some(option => option.value === previousValue)) select.value = previousValue;
                 const selectedLine = cityData.edges.find(edge => edge.u === select.value || edge.v === select.value)?.color;
                 icon.style.backgroundColor = selectedLine || "transparent";
                 icon.style.borderColor = selectedLine || "var(--border-color)";
+                trigger.textContent = select.value || "全部车站";
+                menu.querySelectorAll("[data-station]").forEach(item => {
+                    item.classList.toggle("active", item.getAttribute("data-station") === select.value);
+                    item.addEventListener("click", () => {
+                        select.value = item.getAttribute("data-station");
+                        trigger.textContent = select.value || "全部车站";
+                        menu.classList.remove("open");
+                        trigger.setAttribute("aria-expanded", "false");
+                        populateMatrixStations();
+                        renderMatrix();
+                    });
+                });
             }
 
             function computeShortestPaths(cityData = data) {
@@ -2910,9 +2934,18 @@
                 populateMatrixStations();
                 renderMatrix();
             });
-            document.getElementById("matrix-start-select").addEventListener("change", () => {
-                populateMatrixStations();
-                renderMatrix();
+            document.getElementById("matrix-start-trigger").addEventListener("click", () => {
+                const trigger = document.getElementById("matrix-start-trigger");
+                const menu = document.getElementById("matrix-start-menu");
+                const open = menu.classList.toggle("open");
+                trigger.setAttribute("aria-expanded", String(open));
+            });
+            document.addEventListener("click", event => {
+                const wrap = document.querySelector(".station-select-wrap");
+                if (wrap && !wrap.contains(event.target)) {
+                    document.getElementById("matrix-start-menu").classList.remove("open");
+                    document.getElementById("matrix-start-trigger").setAttribute("aria-expanded", "false");
+                }
             });
 
             populateAnalysisCities("centrality-city-select", centralitySelectedCity);

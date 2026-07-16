@@ -1410,10 +1410,17 @@ input:checked + .slider:before {
 
     .analysis-filter-group .analysis-select,
     .station-select-wrap,
-    .station-select-wrap .analysis-select {
+    .station-select-wrap .analysis-select-trigger {
         min-width: 0;
         width: 100%;
         max-width: none;
+    }
+
+    .station-select-menu {
+        left: 0;
+        right: 0;
+        min-width: 0;
+        max-height: 42dvh;
     }
 
     .matrix-filter-label {
@@ -1708,6 +1715,7 @@ input:checked + .slider:before {
     display: inline-flex;
     align-items: center;
     gap: 5px;
+    position: relative;
 }
 
 .station-line-icon {
@@ -1717,6 +1725,83 @@ input:checked + .slider:before {
     border: 1px solid var(--border-color);
     border-radius: 50%;
 }
+
+.analysis-select-trigger {
+    cursor: pointer;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.analysis-select-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.station-select-menu {
+    position: absolute;
+    z-index: 130;
+    top: calc(100% + 5px);
+    left: 14px;
+    min-width: 220px;
+    max-height: 340px;
+    overflow-y: auto;
+    display: none;
+    padding: 6px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--panel-shadow);
+}
+
+.station-select-menu.open { display: block; }
+
+.station-menu-all,
+.station-menu-item {
+    width: 100%;
+    min-height: 30px;
+    padding: 6px 9px;
+    border: 0;
+    background: transparent;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: 10px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.station-menu-all:hover,
+.station-menu-item:hover,
+.station-menu-all.active,
+.station-menu-item.active {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+}
+
+.station-menu-group { padding-top: 5px; }
+
+.station-menu-line {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 9px 4px;
+    color: var(--text-primary);
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.station-menu-line-icon {
+    width: 10px;
+    height: 10px;
+    flex: 0 0 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.station-menu-item { padding-left: 26px; }
 
 .centrality-city-filter {
     padding-right: 12px;
