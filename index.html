@@ -2660,7 +2660,7 @@
                 const select = document.getElementById(selectId);
                 if (!select) return;
                 select.innerHTML = Object.entries(window.subwayDataMap || {}).map(([key, city]) =>
-                    `<option value="${key}">${city.name || key}</option>`
+                    `<option value="${key}">${city.city || key}</option>`
                 ).join("");
                 select.value = selectedValue;
             }
