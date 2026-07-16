@@ -403,6 +403,15 @@
             <div class="matrix-header">
                 <span class="matrix-title">直达最少站数表 (按车站数倒序)</span>
                 <div class="matrix-header-right">
+                    <label class="analysis-filter-group">城市
+                        <select id="matrix-city-select" class="analysis-select" aria-label="直达矩阵城市"></select>
+                    </label>
+                    <label class="analysis-filter-group">起始车站
+                        <span class="station-select-wrap">
+                            <span id="matrix-start-line-icon" class="station-line-icon" aria-hidden="true"></span>
+                            <select id="matrix-start-select" class="analysis-select" aria-label="直达矩阵起始车站"></select>
+                        </span>
+                    </label>
                     <span class="matrix-filter-label">最少车站数 >=</span>
                     <input type="number" class="matrix-filter-input" id="matrix-filter-input" value="25" min="1" max="100">
                     <button class="matrix-close" id="btn-matrix-close">×</button>
@@ -427,6 +436,10 @@
                     </button>
                 </span>
                 <div style="display:flex;align-items:center;gap:16px;">
+                    <div class="centrality-city-filter">
+                        <span style="font-size:10px;color:var(--text-muted);">城市:</span>
+                        <select id="centrality-city-select" class="analysis-select" aria-label="中心性排行城市"></select>
+                    </div>
                     <div style="display:flex;align-items:center;gap:6px;">
                         <span style="font-size:10px;color:var(--text-muted);">图空间:</span>
                         <label style="font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:3px;cursor:pointer;">
@@ -2251,10 +2264,11 @@
             // --- Centrality Analysis Logic ---
             // Centrality has two graph models: Space L uses physical adjacent stations, while Space P connects same-line stations.
             const centralityResultCache = {};
+            let centralitySelectedCity = selectedCity;
 
-            function buildSpaceLAdj() {
-                const nodes = data.nodes;
-                const edges = data.edges;
+            function buildSpaceLAdj(cityData = data) {
+                const nodes = cityData.nodes;
+                const edges = cityData.edges;
                 const nameToIdx = {};
                 nodes.forEach((n, i) => nameToIdx[n.name] = i);
                 const adj = Array.from({ length: nodes.length }, () => new Set());
@@ -2265,9 +2279,9 @@
                 return { adj: adj.map(s => [...s]), nameToIdx, nodes };
             }
 
-            function buildSpacePAdj() {
-                const nodes = data.nodes;
-                const edges = data.edges;
+            function buildSpacePAdj(cityData = data) {
+                const nodes = cityData.nodes;
+                const edges = cityData.edges;
                 const nameToIdx = {};
                 nodes.forEach((n, i) => nameToIdx[n.name] = i);
                 const lineStations = {};
@@ -2289,8 +2303,8 @@
                 return { adj: adj.map(s => [...s]), nameToIdx, nodes };
             }
 
-            function getAdjForSpace(space) {
-                return space === 'P' ? buildSpacePAdj() : buildSpaceLAdj();
+            function getAdjForSpace(space, cityData = data) {
+                return space === 'P' ? buildSpacePAdj(cityData) : buildSpaceLAdj(cityData);
             }
 
             function _calcDegree(adjData) {
@@ -2388,17 +2402,17 @@
             let centralitySortCol = "value";
             let centralitySortAsc = false;
 
-            function getStationLines(stationName) {
-                const node = data.nodes.find(n => n.name === stationName);
+            function getStationLines(stationName, cityData = data) {
+                const node = cityData.nodes.find(n => n.name === stationName);
                 if (node && node.lines && node.lines.length > 0) return node.lines;
-                const edge = data.edges.find(e => e.u === stationName || e.v === stationName);
+                const edge = cityData.edges.find(e => e.u === stationName || e.v === stationName);
                 return edge ? [edge.line] : [];
             }
 
             // Reuse the roadbook's color language so line membership is scannable at a glance.
-            function renderCentralityLineBadges(lines) {
+            function renderCentralityLineBadges(lines, cityData = data) {
                 return lines.map(line => {
-                    const color = data.edges.find(edge => edge.line === line)?.color || "var(--border-color)";
+                    const color = cityData.edges.find(edge => edge.line === line)?.color || "var(--border-color)";
                     return `<span class="line-badge centrality-line-badge" style="background-color:${color};">${line}</span>`;
                 }).join("");
             }
@@ -2406,26 +2420,27 @@
 
 
             function renderCentralityTable() {
+                const analysisData = window.subwayDataMap[centralitySelectedCity] || data;
                 const space = document.querySelector('input[name="centrality-space"]:checked').value;
                 
                 const nValInput = document.getElementById("centrality-n-val");
                 // An empty n intentionally means all reachable stations in the selected city's network.
                 const selectedN = nValInput ? parseInt(nValInput.value, 10) : NaN;
-                const nVal = !isNaN(selectedN) && selectedN >= 1 ? selectedN : data.nodes.length;
+                const nVal = !isNaN(selectedN) && selectedN >= 1 ? selectedN : analysisData.nodes.length;
                 const coverageLabel = !isNaN(selectedN) && selectedN >= 1 ? `${nVal}站覆盖数` : "全部站覆盖数";
                 
-                const keyDeg = `${selectedCity}|${space}|degree`;
-                const keyBet = `${selectedCity}|${space}|betweenness`;
-                const keyRW = `${selectedCity}|${space}|rw-betweenness`;
-                const keyNHop = `${selectedCity}|L|nhop-${nVal}`;
+                const keyDeg = `${centralitySelectedCity}|${space}|degree`;
+                const keyBet = `${centralitySelectedCity}|${space}|betweenness`;
+                const keyRW = `${centralitySelectedCity}|${space}|rw-betweenness`;
+                const keyNHop = `${centralitySelectedCity}|L|nhop-${nVal}`;
 
                 // If any of the metrics is missing from the cache, trigger a single unified calculation step
                 if (!centralityResultCache[keyDeg] || !centralityResultCache[keyBet] || !centralityResultCache[keyRW] || !centralityResultCache[keyNHop]) {
                     document.getElementById("centrality-body").innerHTML =
                         `<div style="padding:40px;text-align:center;color:var(--text-muted);font-size:12px;">正在计算车站度数、介数、随机游走介数及覆盖指标，请稍候...</div>`;
                     setTimeout(() => {
-                        const adjData = getAdjForSpace(space);
-                        const adjDataL = getAdjForSpace('L');
+                        const adjData = getAdjForSpace(space, analysisData);
+                        const adjDataL = getAdjForSpace('L', analysisData);
                         if (!centralityResultCache[keyDeg]) {
                             centralityResultCache[keyDeg] = _calcDegree(adjData);
                         }
@@ -2448,9 +2463,9 @@
                 const rwMap = centralityResultCache[keyRW];
                 const nHopMap = centralityResultCache[keyNHop];
 
-                let rows = data.nodes.map(n => ({
+                let rows = analysisData.nodes.map(n => ({
                     name: n.name,
-                    line: getStationLines(n.name),
+                    line: getStationLines(n.name, analysisData),
                     deg: degMap[n.name] ?? 0,
                     bet: betMap[n.name] ?? 0,
                     rw: rwMap[n.name] ?? 0,
@@ -2500,7 +2515,7 @@
                             : '';
                         html += `<tr class="centrality-row" data-station="${r.name}" style="cursor:pointer;">
                             <td style="padding:8px 12px 8px 16px;font-weight:bold;color:var(--text-primary);">${rankBadge}${r.name}</td>
-                            <td style="padding:8px 12px;"><div class="centrality-line-badges">${renderCentralityLineBadges(r.line)}</div></td>
+                            <td style="padding:8px 12px;"><div class="centrality-line-badges">${renderCentralityLineBadges(r.line, analysisData)}</div></td>
                             <td style="text-align:center;padding:8px;font-weight:bold;color:var(--text-primary);font-variant-numeric:tabular-nums;">${r.deg}</td>
                             <td style="text-align:center;padding:8px;font-weight:bold;color:var(--text-primary);font-variant-numeric:tabular-nums;">${displayBet}</td>
                             <td style="text-align:center;padding:8px;font-weight:bold;color:var(--text-primary);font-variant-numeric:tabular-nums;">${displayRW}</td>
@@ -2532,6 +2547,10 @@
                     row.addEventListener("click", () => {
                         const stName = row.getAttribute("data-station");
                         document.getElementById("centrality-modal").style.display = "none";
+                        if (centralitySelectedCity !== selectedCity) {
+                            const cityTab = document.querySelector(`.city-tab[data-value="${centralitySelectedCity}"]`);
+                            if (cityTab) cityTab.click();
+                        }
                         highlightSingleStation(stName);
                     });
                 });
@@ -2569,6 +2588,8 @@
 
             function openCentralityModal() {
                 closeDrawer();
+                centralitySelectedCity = selectedCity;
+                document.getElementById("centrality-city-select").value = centralitySelectedCity;
                 // Default sorting to betweenness descending
                 centralitySortCol = "bet";
                 centralitySortAsc = false;
@@ -2633,9 +2654,45 @@
 
             // --- Direct (Shortest) Path Matrix Logic ---
             // This analysis is intentionally separate from the longest-path worker: it computes all-pairs shortest paths on demand.
-            function computeShortestPaths() {
-                const nodes = data.nodes;
-                const edges = data.edges;
+            let matrixSelectedCity = selectedCity;
+
+            function populateAnalysisCities(selectId, selectedValue) {
+                const select = document.getElementById(selectId);
+                if (!select) return;
+                select.innerHTML = Object.entries(window.subwayDataMap || {}).map(([key, city]) =>
+                    `<option value="${key}">${city.name || key}</option>`
+                ).join("");
+                select.value = selectedValue;
+            }
+
+            function populateMatrixStations() {
+                const select = document.getElementById("matrix-start-select");
+                const icon = document.getElementById("matrix-start-line-icon");
+                const cityData = window.subwayDataMap[matrixSelectedCity] || data;
+                const previousValue = select.value;
+                const lineStations = {};
+                cityData.edges.forEach(edge => {
+                    if (!lineStations[edge.line]) lineStations[edge.line] = new Set();
+                    lineStations[edge.line].add(edge.u);
+                    lineStations[edge.line].add(edge.v);
+                });
+                const groups = Object.entries(lineStations).sort(([a], [b]) => a.localeCompare(b, "zh"));
+                select.innerHTML = `<option value="">全部车站</option>` + groups.map(([line, stations]) => {
+                    const color = cityData.edges.find(edge => edge.line === line)?.color || "var(--border-color)";
+                    const options = [...stations].sort((a, b) => a.localeCompare(b, "zh")).map(station =>
+                        `<option value="${station.replace(/"/g, "&quot;")}">${line} ➜ ${station}</option>`
+                    ).join("");
+                    return `<optgroup label="${line}">${options}</optgroup>`;
+                }).join("");
+                if ([...select.options].some(option => option.value === previousValue)) select.value = previousValue;
+                const selectedLine = cityData.edges.find(edge => edge.u === select.value || edge.v === select.value)?.color;
+                icon.style.backgroundColor = selectedLine || "transparent";
+                icon.style.borderColor = selectedLine || "var(--border-color)";
+            }
+
+            function computeShortestPaths(cityData = data) {
+                const nodes = cityData.nodes;
+                const edges = cityData.edges;
                 const V = nodes.length;
 
                 const adj = Array.from({ length: V }, () => []);
@@ -2682,7 +2739,7 @@
                 return { dist, parent, nodeNameToId };
             }
 
-            function reconstructShortestPath(startId, endId, parent, nodeNameToId) {
+            function reconstructShortestPath(startId, endId, parent, nodeNameToId, cityData = data) {
                 if (parent[startId][endId] === -1 && startId !== endId) {
                     return null;
                 }
@@ -2690,7 +2747,7 @@
                 const stationsPath = [];
                 let curr = endId;
                 while (curr !== -1) {
-                    stationsPath.push(data.nodes[curr].name);
+                    stationsPath.push(cityData.nodes[curr].name);
                     curr = parent[startId][curr];
                 }
                 stationsPath.reverse();
@@ -2699,7 +2756,7 @@
                 for (let i = 0; i < stationsPath.length - 1; i++) {
                     const uName = stationsPath[i];
                     const vName = stationsPath[i+1];
-                    const edgeIdx = data.edges.findIndex(edge => {
+                    const edgeIdx = cityData.edges.findIndex(edge => {
                         const matches = (edge.u === uName && edge.v === vName) || (edge.u === vName && edge.v === uName);
                         if (!matches) return false;
                         const isAvoidedLine = selectedAvoids.has(edge.line);
@@ -2727,26 +2784,33 @@
                     filterInput.value = 1;
                 }
 
-                const { dist, parent, nodeNameToId } = computeShortestPaths();
-                const nodes = data.nodes;
+                const matrixData = window.subwayDataMap[matrixSelectedCity] || data;
+                const { dist, parent, nodeNameToId } = computeShortestPaths(matrixData);
+                const nodes = matrixData.nodes;
                 const V = nodes.length;
+                const selectedStart = document.getElementById("matrix-start-select").value;
+                const selectedStartId = selectedStart ? nodeNameToId[selectedStart] : undefined;
 
                 // Collect all valid station pairs
                 const pairs = [];
                 for (let i = 0; i < V; i++) {
-                    for (let j = i + 1; j < V; j++) {
-                        const d = dist[i][j];
+                    const startIds = selectedStartId === undefined ? [i] : (i === selectedStartId ? [i] : []);
+                    for (const startId of startIds) {
+                        for (let j = selectedStartId === undefined ? i + 1 : 0; j < V; j++) {
+                            if (j === startId) continue;
+                            const d = dist[startId][j];
                         if (d !== Infinity) {
                             const val = d + 1; // including start and end stations
                             if (val >= filterVal) {
                                 pairs.push({
-                                    start: nodes[i].name,
+                                    start: nodes[startId].name,
                                     end: nodes[j].name,
                                     val: val,
-                                    startId: i,
+                                    startId,
                                     endId: j
                                 });
                             }
+                        }
                         }
                     }
                 }
@@ -2804,8 +2868,12 @@
                         const startId = nodeNameToId[startName];
                         const endId = nodeNameToId[endName];
 
-                        const shortestPathResult = reconstructShortestPath(startId, endId, parent, nodeNameToId);
+                        const shortestPathResult = reconstructShortestPath(startId, endId, parent, nodeNameToId, matrixData);
                         if (shortestPathResult) {
+                            if (matrixSelectedCity !== selectedCity) {
+                                const cityTab = document.querySelector(`.city-tab[data-value="${matrixSelectedCity}"]`);
+                                if (cityTab) cityTab.click();
+                            }
                             selectedStartStation = startName;
                             selectedEndStation = endName;
                             updateFloatingOverlay();
@@ -2823,6 +2891,9 @@
 
             function openMatrixModal() {
                 closeDrawer();
+                matrixSelectedCity = selectedCity;
+                populateAnalysisCities("matrix-city-select", matrixSelectedCity);
+                populateMatrixStations();
                 document.getElementById("matrix-modal").style.display = "flex";
                 renderMatrix();
             }
@@ -2834,6 +2905,23 @@
             document.getElementById("btn-open-matrix").addEventListener("click", openMatrixModal);
 
             document.getElementById("matrix-filter-input").addEventListener("input", renderMatrix);
+            document.getElementById("matrix-city-select").addEventListener("change", event => {
+                matrixSelectedCity = event.target.value;
+                populateMatrixStations();
+                renderMatrix();
+            });
+            document.getElementById("matrix-start-select").addEventListener("change", () => {
+                populateMatrixStations();
+                renderMatrix();
+            });
+
+            populateAnalysisCities("centrality-city-select", centralitySelectedCity);
+            document.getElementById("centrality-city-select").addEventListener("change", event => {
+                centralitySelectedCity = event.target.value;
+                centralitySortCol = "bet";
+                centralitySortAsc = false;
+                renderCentralityTable();
+            });
 
             // --- City-wide extremes ---
             // The solver itself accepts one start station. This coordinator scans every start in
