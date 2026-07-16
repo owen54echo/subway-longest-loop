@@ -1784,14 +1784,39 @@ input:checked + .slider:before {
 .station-menu-group { padding-top: 5px; }
 
 .station-menu-line {
+    width: 100%;
     display: flex;
     align-items: center;
     gap: 7px;
     padding: 6px 9px 4px;
+    border: 0;
+    background: transparent;
     color: var(--text-primary);
     font-size: 10px;
     font-weight: bold;
+    text-align: left;
+    cursor: pointer;
 }
+
+.station-menu-line:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.station-menu-chevron {
+    margin-left: auto;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1;
+}
+
+.station-menu-group.expanded .station-menu-chevron { color: var(--neon-blue); }
+
+.station-menu-stations {
+    display: none;
+    padding-bottom: 3px;
+}
+
+.station-menu-group.expanded .station-menu-stations { display: block; }
 
 .station-menu-line-icon {
     width: 10px;

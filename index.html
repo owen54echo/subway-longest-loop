@@ -2694,7 +2694,7 @@
                     const stationButtons = [...stations].sort((a, b) => a.localeCompare(b, "zh")).map(station =>
                         `<button type="button" class="station-menu-item" data-station="${station.replace(/"/g, "&quot;")}">${station}</button>`
                     ).join("");
-                    return `<div class="station-menu-group"><div class="station-menu-line"><span class="station-menu-line-icon" style="background-color:${color};"></span><span>${line}</span></div>${stationButtons}</div>`;
+                    return `<div class="station-menu-group"><button type="button" class="station-menu-line" data-line-toggle="${line.replace(/"/g, "&quot;")}" aria-expanded="false"><span class="station-menu-line-icon" style="background-color:${color};"></span><span>${line}</span><span class="station-menu-chevron">+</span></button><div class="station-menu-stations">${stationButtons}</div></div>`;
                 }).join("");
                 if ([...select.options].some(option => option.value === previousValue)) select.value = previousValue;
                 const selectedLine = cityData.edges.find(edge => edge.u === select.value || edge.v === select.value)?.color;
@@ -2710,6 +2710,13 @@
                         trigger.setAttribute("aria-expanded", "false");
                         populateMatrixStations();
                         renderMatrix();
+                    });
+                });
+                menu.querySelectorAll("[data-line-toggle]").forEach(lineButton => {
+                    lineButton.addEventListener("click", () => {
+                        const group = lineButton.closest(".station-menu-group");
+                        const expanded = group.classList.toggle("expanded");
+                        lineButton.setAttribute("aria-expanded", String(expanded));
                     });
                 });
             }
