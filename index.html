@@ -375,6 +375,18 @@
                     <span id="cruise-current-station">当前站: --</span>
                     <span id="cruise-next-station">下一站: --</span>
                 </div>
+                <div class="cruise-progress-row">
+                    <span id="cruise-progress-text">0 / 0</span>
+                    <div class="cruise-progress-track"
+                         id="cruise-progress-track"
+                         role="progressbar"
+                         aria-label="路书播放进度"
+                         aria-valuemin="0"
+                         aria-valuemax="100"
+                         aria-valuenow="0">
+                        <span id="cruise-progress-bar"></span>
+                    </div>
+                </div>
                 <div class="cruise-controls">
                     <button class="cruise-btn" id="btn-cruise-play-pause">暂停</button>
                     <button class="cruise-btn" id="btn-cruise-replay" style="display:none;">重播</button>
@@ -577,7 +589,9 @@
             let cruiseSegments = [];
             let cruiseCurrentSegmentIndex = 0;
             let cruiseCurrentSegmentProgress = 0.0;
+            let cruisePreviousViewport = null;
             const BASE_CRUISE_SPEED = 80.0;
+            const CRUISE_MIN_SCALE = 4.0;
 
             // Zoom & Pan state
             let scale = 1.0;
@@ -588,6 +602,7 @@
             let startDragY = 0;
 
             // Cache stable DOM anchors once; dynamic SVG children are recreated by renderSvgMap().
+            const appContainer = document.querySelector(".app-container");
             const mapContainer = document.getElementById("map-container");
             const mapSection = document.getElementById("map-section");
             const mapPopup = document.getElementById("map-popup");
@@ -652,9 +667,12 @@
                         line.setAttribute("y1", uNode.y);
                         line.setAttribute("x2", vNode.x);
                         line.setAttribute("y2", vNode.y);
+                        line.setAttribute("class", "metro-line");
                         line.setAttribute("stroke", showOfficialLineColors ? (edge.color || "var(--base-line-color)") : "var(--base-line-color)");
-                        line.setAttribute("stroke-width", "2.0");
-                        line.setAttribute("opacity", showOfficialLineColors ? "0.82" : "0.55");
+                        line.setAttribute("stroke-width", "4.5");
+                        line.setAttribute("stroke-linecap", "round");
+                        line.setAttribute("stroke-linejoin", "round");
+                        line.setAttribute("opacity", showOfficialLineColors ? "0.92" : "0.78");
                         line.setAttribute("id", `edge-base-${idx}`);
                         edgesGroup.appendChild(line);
                     }
@@ -711,52 +729,51 @@
                     const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
                     circle.setAttribute("cx", node.x);
                     circle.setAttribute("cy", node.y);
+                    circle.setAttribute("class", `station-marker station-marker-primary ${isTransfer ? "station-marker-transfer" : "station-marker-local"}`);
                     
                     const isSelected = (node.name === selectedStartStation || 
                                        (routeMode === "path" && node.name === selectedEndStation) || 
                                        selectedWaypoints.has(node.name) || 
                                        selectedAvoids.has(node.name));
 
+                    let strokeColor = "var(--station-outline)";
+                    if (node.name === selectedStartStation) {
+                        strokeColor = "var(--state-start)";
+                    } else if (routeMode === "path" && node.name === selectedEndStation) {
+                        strokeColor = "var(--state-end)";
+                    } else if (selectedWaypoints.has(node.name)) {
+                        strokeColor = "var(--state-waypoint)";
+                    } else if (selectedAvoids.has(node.name)) {
+                        strokeColor = "var(--state-avoid)";
+                    }
+
                     if (isTransfer) {
-                        circle.setAttribute("r", "5.0");
-                        circle.setAttribute("fill", "var(--bg-page)");
+                        circle.setAttribute("r", "6.5");
+                        circle.setAttribute("fill", "var(--station-fill)");
                         circle.setAttribute("stroke-width", "2.0");
-                        
-                        let strokeColor = "var(--base-station-color)";
-                        if (node.name === selectedStartStation) {
-                            strokeColor = "var(--state-start)";
-                        } else if (routeMode === "path" && node.name === selectedEndStation) {
-                            strokeColor = "var(--state-end)";
-                        } else if (selectedWaypoints.has(node.name)) {
-                            strokeColor = "var(--state-waypoint)";
-                        } else if (selectedAvoids.has(node.name)) {
-                            strokeColor = "var(--state-avoid)";
-                        }
                         circle.setAttribute("stroke", strokeColor);
                     } else {
-                        circle.setAttribute("r", "2.8");
-                        if (isSelected) {
-                            circle.setAttribute("fill", "var(--bg-page)");
-                            circle.setAttribute("stroke-width", "2.0");
-                            
-                            let strokeColor = "var(--base-station-color)";
-                            if (node.name === selectedStartStation) {
-                                strokeColor = "var(--state-start)";
-                            } else if (routeMode === "path" && node.name === selectedEndStation) {
-                                strokeColor = "var(--state-end)";
-                            } else if (selectedWaypoints.has(node.name)) {
-                                strokeColor = "var(--state-waypoint)";
-                            } else if (selectedAvoids.has(node.name)) {
-                                strokeColor = "var(--state-avoid)";
-                            }
-                            circle.setAttribute("stroke", strokeColor);
-                        } else {
-                            circle.setAttribute("fill", "var(--base-station-color)");
-                            circle.setAttribute("stroke", "none");
-                        }
+                        circle.setAttribute("r", "4.2");
+                        circle.setAttribute("fill", "var(--station-fill)");
+                        circle.setAttribute("stroke-width", isSelected ? "2.0" : "1.5");
+                        circle.setAttribute("stroke", strokeColor);
                     }
                     
                     stationGroup.appendChild(circle);
+
+                    if (isTransfer) {
+                        const innerRing = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                        innerRing.setAttribute("cx", node.x);
+                        innerRing.setAttribute("cy", node.y);
+                        innerRing.setAttribute("r", "3.2");
+                        innerRing.setAttribute("class", "station-marker station-marker-inner");
+                        innerRing.setAttribute("fill", "none");
+                        innerRing.setAttribute("stroke", "var(--station-outline)");
+                        innerRing.setAttribute("stroke-width", "1.0");
+                        innerRing.setAttribute("pointer-events", "none");
+                        stationGroup.appendChild(innerRing);
+                    }
+
                     stationsGroup.appendChild(stationGroup);
 
                     // Text label (dynamically shown/hidden)
@@ -768,6 +785,7 @@
                     text.setAttribute("font-family", "inherit");
                     text.setAttribute("text-anchor", "middle");
                     text.setAttribute("id", `label-text-${node.name}`);
+                    text.setAttribute("class", `station-label ${isTransfer ? "station-label-transfer" : "station-label-local"}`);
                     text.setAttribute("opacity", getLabelDefaultOpacity(node.name, isTransfer));
                     text.setAttribute("pointer-events", "none");
                     if (isTransfer) {
@@ -786,15 +804,19 @@
                 trainHalo.setAttribute("cx", "0");
                 trainHalo.setAttribute("cy", "0");
                 trainHalo.setAttribute("r", "10");
+                trainHalo.setAttribute("class", "train-marker-halo");
                 trainHalo.setAttribute("fill", "var(--state-end)");
-                trainHalo.setAttribute("opacity", "0.3");
+                trainHalo.setAttribute("opacity", "0.22");
                 trainGroup.appendChild(trainHalo);
 
                 const trainDot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
                 trainDot.setAttribute("cx", "0");
                 trainDot.setAttribute("cy", "0");
-                trainDot.setAttribute("r", "5");
-                trainDot.setAttribute("fill", "var(--state-end)");
+                trainDot.setAttribute("r", "6");
+                trainDot.setAttribute("class", "train-marker-core");
+                trainDot.setAttribute("fill", "var(--station-fill)");
+                trainDot.setAttribute("stroke", "var(--state-end)");
+                trainDot.setAttribute("stroke-width", "3");
                 trainGroup.appendChild(trainDot);
 
                 const trainLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -805,7 +827,8 @@
                 trainLabel.setAttribute("font-weight", "bold");
                 trainLabel.setAttribute("text-anchor", "middle");
                 trainLabel.setAttribute("font-family", "inherit");
-                trainLabel.textContent = "模拟地铁";
+                trainLabel.setAttribute("class", "train-marker-label");
+                trainLabel.textContent = "";
                 trainGroup.appendChild(trainLabel);
 
                 const viewport = document.getElementById("map-viewport-group");
@@ -819,6 +842,10 @@
             let lastResultStations = [];
             function isStationTraversed(name) {
                 return lastResultStations.includes(name);
+            }
+
+            function getPrimaryStationMarker(stationGroup) {
+                return stationGroup ? stationGroup.querySelector(".station-marker-primary") : null;
             }
 
             // Keep pan and zoom state in one transform so every input method updates the same view.
@@ -1339,8 +1366,8 @@
                 if (selectedStartStation) {
                     const prevNode = document.getElementById(`station-node-${selectedStartStation}`);
                     if (prevNode) {
-                        const circle = prevNode.querySelector("circle");
-                        let strokeColor = "var(--border-color)";
+                        const circle = getPrimaryStationMarker(prevNode);
+                        let strokeColor = "var(--station-outline)";
                         if (selectedEndStation === selectedStartStation) {
                             strokeColor = "var(--state-end)";
                         } else if (selectedWaypoints.has(selectedStartStation)) {
@@ -1358,7 +1385,7 @@
                 if (name) {
                     const currNode = document.getElementById(`station-node-${name}`);
                     if (currNode) {
-                        const circle = currNode.querySelector("circle");
+                        const circle = getPrimaryStationMarker(currNode);
                         circle.setAttribute("stroke", "var(--state-start)");
                     }
                 }
@@ -1370,8 +1397,8 @@
                 if (selectedEndStation) {
                     const prevNode = document.getElementById(`station-node-${selectedEndStation}`);
                     if (prevNode) {
-                        const circle = prevNode.querySelector("circle");
-                        let strokeColor = "var(--border-color)";
+                        const circle = getPrimaryStationMarker(prevNode);
+                        let strokeColor = "var(--station-outline)";
                         if (selectedStartStation === selectedEndStation) {
                             strokeColor = "var(--state-start)";
                         } else if (selectedWaypoints.has(selectedEndStation)) {
@@ -1389,7 +1416,7 @@
                 if (name) {
                     const currNode = document.getElementById(`station-node-${name}`);
                     if (currNode) {
-                        const circle = currNode.querySelector("circle");
+                        const circle = getPrimaryStationMarker(currNode);
                         circle.setAttribute("stroke", "var(--state-end)");
                     }
                 }
@@ -1407,7 +1434,7 @@
                 
                 const node = document.getElementById(`station-node-${name}`);
                 if (node) {
-                    const circle = node.querySelector("circle");
+                    const circle = getPrimaryStationMarker(node);
                     circle.setAttribute("stroke", "var(--state-waypoint)");
                 }
                 updateFloatingOverlay();
@@ -1419,8 +1446,8 @@
                 
                 const node = document.getElementById(`station-node-${name}`);
                 if (node) {
-                    const circle = node.querySelector("circle");
-                    circle.setAttribute("stroke", "var(--border-color)");
+                    const circle = getPrimaryStationMarker(node);
+                    circle.setAttribute("stroke", "var(--station-outline)");
                 }
                 updateFloatingOverlay();
             }
@@ -1436,7 +1463,7 @@
 
                 const node = document.getElementById(`station-node-${nameOrLine}`);
                 if (node) {
-                    const circle = node.querySelector("circle");
+                    const circle = getPrimaryStationMarker(node);
                     circle.setAttribute("stroke", "var(--state-avoid)");
                     circle.setAttribute("opacity", "0.35");
                 }
@@ -1449,8 +1476,8 @@
 
                 const node = document.getElementById(`station-node-${nameOrLine}`);
                 if (node) {
-                    const circle = node.querySelector("circle");
-                    circle.setAttribute("stroke", "var(--border-color)");
+                    const circle = getPrimaryStationMarker(node);
+                    circle.setAttribute("stroke", "var(--station-outline)");
                     circle.setAttribute("opacity", "1.0");
                 }
                 updateFloatingOverlay();
@@ -1946,8 +1973,8 @@
                             lineEl.setAttribute("opacity", "0.0");
                         } else {
                             lineEl.setAttribute("stroke", "var(--base-line-color)");
-                            lineEl.setAttribute("opacity", "0.22"); // Dimmed but legible
-                            lineEl.setAttribute("stroke-width", "1.0");
+                            lineEl.setAttribute("opacity", "0.2");
+                            lineEl.setAttribute("stroke-width", "2.2");
                         }
                     }
                 });
@@ -1959,7 +1986,7 @@
                     const isTraversed = node.name in traversedStationSeq;
                     
                     if (nodeEl) {
-                        const circle = nodeEl.querySelector("circle");
+                        const circle = getPrimaryStationMarker(nodeEl);
                         circle.setAttribute("stroke", "var(--base-station-color)");
                         circle.setAttribute("opacity", isTraversed ? "0.0" : "0.35"); // Dimmed but visible
                     }
@@ -1983,28 +2010,29 @@
                         const uNode = data.nodes.find(n => n.name === edge.u);
                         const vNode = data.nodes.find(n => n.name === edge.v);
                         if (uNode && vNode) {
-                            // Backing line instead of neon blur glow
+                            // A dark backing separates the active route at crossings without a glow.
                             const backingLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
                             backingLine.setAttribute("x1", uNode.x);
                             backingLine.setAttribute("y1", uNode.y);
                             backingLine.setAttribute("x2", vNode.x);
                             backingLine.setAttribute("y2", vNode.y);
-                            backingLine.setAttribute("stroke", edge.color);
-                            backingLine.setAttribute("stroke-width", "4.5");
-                            backingLine.setAttribute("opacity", "0.22");
+                            backingLine.setAttribute("stroke", "var(--route-backing)");
+                            backingLine.setAttribute("stroke-width", "8");
+                            backingLine.setAttribute("stroke-linecap", "round");
+                            backingLine.setAttribute("opacity", "0.95");
                             hlEdgesGroup.appendChild(backingLine);
 
-                            // Active flow line
-                            const flowLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                            flowLine.setAttribute("x1", uNode.x);
-                            flowLine.setAttribute("y1", uNode.y);
-                            flowLine.setAttribute("x2", vNode.x);
-                            flowLine.setAttribute("y2", vNode.y);
-                            flowLine.setAttribute("stroke", edge.color);
-                            flowLine.setAttribute("stroke-width", "3.0");
-                            flowLine.setAttribute("opacity", "0.9");
-                            flowLine.setAttribute("class", "animated-flow-line");
-                            hlEdgesGroup.appendChild(flowLine);
+                            const routeLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                            routeLine.setAttribute("x1", uNode.x);
+                            routeLine.setAttribute("y1", uNode.y);
+                            routeLine.setAttribute("x2", vNode.x);
+                            routeLine.setAttribute("y2", vNode.y);
+                            routeLine.setAttribute("stroke", edge.color);
+                            routeLine.setAttribute("stroke-width", "5.5");
+                            routeLine.setAttribute("stroke-linecap", "round");
+                            routeLine.setAttribute("opacity", "1");
+                            routeLine.setAttribute("class", "route-line-active");
+                            hlEdgesGroup.appendChild(routeLine);
                         }
                     }
                 });
@@ -2059,16 +2087,56 @@
             // --- Cruising Simulation Logic ---
             // Cruise interpolates over the solved station sequence and is safe to stop or replay independently.
             function focusMapOn(tx, ty) {
-                const rect = mapContainer.getBoundingClientRect();
-                const containerWidth = rect.width;
-                const containerHeight = rect.height;
-                translateX = containerWidth / 2 - tx * scale;
-                translateY = containerHeight / 2 - ty * scale;
+                const svg = document.getElementById("metro-svg");
+                if (!svg) return;
+                const viewBox = svg.viewBox.baseVal;
+                translateX = viewBox.width / 2 - tx * scale;
+                translateY = viewBox.height / 2 - ty * scale;
                 updateViewportTransform();
+            }
+
+            function setCruiseMapMode(isActive) {
+                mapSection.classList.toggle("cruise-map-mode", isActive);
+                appContainer.classList.toggle("cruise-map-mode", isActive);
+            }
+
+            function updateCruiseProgress() {
+                const progressTrack = document.getElementById("cruise-progress-track");
+                const progressBar = document.getElementById("cruise-progress-bar");
+                const progressText = document.getElementById("cruise-progress-text");
+                const segmentCount = cruiseSegments.length;
+                const completed = Math.min(segmentCount, cruiseCurrentSegmentIndex + cruiseCurrentSegmentProgress);
+                const ratio = segmentCount > 0 ? completed / segmentCount : 0;
+                const percentage = Math.round(ratio * 100);
+
+                if (progressTrack) progressTrack.setAttribute("aria-valuenow", String(percentage));
+                if (progressBar) progressBar.style.width = `${percentage}%`;
+                if (progressText) progressText.textContent = `${Math.min(cruiseCurrentSegmentIndex + 1, segmentCount + 1)} / ${segmentCount + 1}`;
+            }
+
+            function updateTrainMarker(segment) {
+                const trainHalo = document.querySelector("#train-group .train-marker-halo");
+                const trainCore = document.querySelector("#train-group .train-marker-core");
+                const trainLabel = document.querySelector("#train-group .train-marker-label");
+                const color = segment && segment.color ? segment.color : "var(--state-end)";
+                if (trainHalo) trainHalo.setAttribute("fill", color);
+                if (trainCore) trainCore.setAttribute("stroke", color);
+                if (trainLabel) {
+                    trainLabel.setAttribute("fill", color);
+                    trainLabel.textContent = segment ? segment.from.name : "";
+                }
             }
 
             function stopCruise() {
                 cruiseIsPlaying = false;
+                setCruiseMapMode(false);
+                if (cruisePreviousViewport) {
+                    scale = cruisePreviousViewport.scale;
+                    translateX = cruisePreviousViewport.translateX;
+                    translateY = cruisePreviousViewport.translateY;
+                    cruisePreviousViewport = null;
+                    updateViewportTransform();
+                }
                 const trainGroup = document.getElementById("train-group");
                 if (trainGroup) {
                     trainGroup.style.display = "none";
@@ -2095,7 +2163,12 @@
                     }
                     document.getElementById("cruise-current-station").textContent = `当前站: ${lastSeg.to.name}`;
                     document.getElementById("cruise-next-station").textContent = `已到达终点站`;
+                    const trainLabel = document.querySelector("#train-group .train-marker-label");
+                    if (trainLabel) trainLabel.textContent = lastSeg.to.name;
                 }
+                cruiseCurrentSegmentIndex = cruiseSegments.length;
+                cruiseCurrentSegmentProgress = 0;
+                updateCruiseProgress();
 
                 const playPauseBtn = document.getElementById("btn-cruise-play-pause");
                 const replayBtn = document.getElementById("btn-cruise-replay");
@@ -2157,6 +2230,8 @@
                     trainGroup.setAttribute("transform", `translate(${trainX}, ${trainY})`);
                     trainGroup.style.display = "block";
                 }
+                updateTrainMarker(currentSegment);
+                updateCruiseProgress();
 
                 document.getElementById("cruise-current-station").textContent = `当前站: ${currentSegment.from.name}`;
                 document.getElementById("cruise-next-station").textContent = `下一站: ${currentSegment.to.name}`;
@@ -2189,12 +2264,17 @@
                     const dx = p2.x - p1.x;
                     const dy = p2.y - p1.y;
                     const len = Math.sqrt(dx * dx + dy * dy);
+                    const routeEdge = data.edges.find(edge =>
+                        (edge.u === p1.name && edge.v === p2.name) ||
+                        (edge.u === p2.name && edge.v === p1.name)
+                    );
                     cruiseSegments.push({
                         from: p1,
                         to: p2,
                         dx: dx,
                         dy: dy,
-                        length: len || 1.0
+                        length: len || 1.0,
+                        color: routeEdge && routeEdge.color ? routeEdge.color : "var(--state-end)"
                     });
                 }
 
@@ -2207,6 +2287,12 @@
                 if (cruisePanel) {
                     cruisePanel.style.display = "flex";
                 }
+                if (!cruisePreviousViewport) {
+                    cruisePreviousViewport = { scale, translateX, translateY };
+                }
+                scale = Math.max(scale, CRUISE_MIN_SCALE);
+                setCruiseMapMode(true);
+                focusMapOn(cruiseSegments[0].from.x, cruiseSegments[0].from.y);
 
                 document.querySelectorAll(".speed-btn").forEach(btn => {
                     btn.classList.remove("active");
@@ -2224,6 +2310,10 @@
                 if (replayBtn) {
                     replayBtn.style.display = "none";
                 }
+                document.getElementById("cruise-current-station").textContent = `当前站: ${cruiseSegments[0].from.name}`;
+                document.getElementById("cruise-next-station").textContent = `下一站: ${cruiseSegments[0].to.name}`;
+                updateTrainMarker(cruiseSegments[0]);
+                updateCruiseProgress();
 
                 closeDrawer();
 
@@ -2567,7 +2657,7 @@
                 updateViewportTransform();
                 const stEl = document.getElementById(`station-node-${stationName}`);
                 if (stEl) {
-                    const circle = stEl.querySelector("circle");
+                    const circle = getPrimaryStationMarker(stEl);
                     const origStroke = circle.getAttribute("stroke");
                     const origR = circle.getAttribute("r");
                     let flashes = 0;

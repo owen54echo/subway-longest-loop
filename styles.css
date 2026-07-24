@@ -13,8 +13,11 @@
     --input-bg: #fcfbf9;
     --accent-color: #d92626; /* Aviation red */
     
-    --base-line-color: #b5b3aa;    /* Darker grid line for drawing readability */
+    --base-line-color: #969590;    /* Continuous neutral network line in light mode */
     --base-station-color: #8c8a81; /* High contrast node ring */
+    --station-fill: #ffffff;
+    --station-outline: #18191c;
+    --route-backing: #f6f4ee;
     
     --state-start: #d92626;
     --state-end: #00aa55;
@@ -46,8 +49,11 @@
     --input-bg: #16161b;
     --accent-color: #ff2a2a; /* CRT hazard red */
     
-    --base-line-color: #3e3e46;    /* CRT phosphor dark grid */
+    --base-line-color: #686a70;    /* Continuous neutral network line in dark mode */
     --base-station-color: #64646e; /* CRT phosphor node ring */
+    --station-fill: #f7f7f4;
+    --station-outline: #0b0c0e;
+    --route-backing: #0c0c0d;
     
     --state-start: #ff2a2a;
     --state-end: #00ff88;
@@ -1074,22 +1080,26 @@ input:checked + .slider:before {
     cursor: pointer;
 }
 
-.svg-station circle {
+.station-marker {
     transition: r 0.15s, stroke-width 0.15s, stroke 0.15s, opacity 0.15s;
 }
 
-.svg-station:hover circle {
+.svg-station:hover .station-marker-primary {
     r: 7.5px;
     stroke-width: 2.2px;
     stroke: var(--text-primary) !important;
     opacity: 1.0 !important;
 }
 
-.svg-station:focus-visible circle {
+.svg-station:focus-visible .station-marker-primary {
     r: 7.5px;
     stroke: var(--text-primary) !important;
     stroke-width: 2.2px;
     opacity: 1 !important;
+}
+
+.station-marker-inner {
+    vector-effect: non-scaling-stroke;
 }
 
 /* SVG Text Label Halo for Legibility */
@@ -1180,19 +1190,6 @@ input:checked + .slider:before {
     width: 6px;
     height: 6px;
     background: var(--accent-color);
-}
-
-/* Flow line animation */
-@keyframes flow {
-    to {
-        stroke-dashoffset: -120;
-    }
-}
-
-.animated-flow-line {
-    stroke-dasharray: 24 96;
-    stroke-linecap: round;
-    animation: flow 1.5s linear infinite;
 }
 
 /* Tablet and phone layouts move the drawer into the thumb-reachable lower half of the viewport. */
@@ -1517,6 +1514,25 @@ input:checked + .slider:before {
     box-shadow: var(--panel-shadow);
 }
 
+/* Route playback keeps the confirmed route and its geographic context in view. */
+.app-container.cruise-map-mode .float-panel-left,
+.app-container.cruise-map-mode .float-panel-right,
+.app-container.cruise-map-mode .bottom-nav-bar,
+.app-container.cruise-map-mode .search-pill-container,
+.app-container.cruise-map-mode .city-tab-container,
+.app-container.cruise-map-mode .map-status-overlay {
+    display: none !important;
+}
+
+.map-section.cruise-map-mode #edges-group,
+.map-section.cruise-map-mode #stations-group {
+    opacity: 0.3;
+}
+
+.map-section.cruise-map-mode #labels-group {
+    opacity: 0.46;
+}
+
 .cruise-header {
     display: flex;
     justify-content: space-between;
@@ -1564,6 +1580,30 @@ input:checked + .slider:before {
     font-family: inherit;
 }
 
+.cruise-progress-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 10px;
+    color: var(--text-secondary);
+}
+
+.cruise-progress-track {
+    position: relative;
+    flex: 1;
+    height: 5px;
+    overflow: hidden;
+    background: var(--border-color);
+}
+
+#cruise-progress-bar {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: var(--text-primary);
+    transition: width 160ms ease-out;
+}
+
 .cruise-controls {
     display: flex;
     align-items: center;
@@ -1582,6 +1622,7 @@ input:checked + .slider:before {
     cursor: pointer;
     transition: all 0.1s ease;
     min-width: 50px;
+    min-height: 44px;
     text-align: center;
 }
 
@@ -1640,6 +1681,13 @@ input:checked + .slider:before {
 
 .cruise-toggle input {
     cursor: pointer;
+}
+
+.train-marker-label {
+    paint-order: stroke fill;
+    stroke: var(--route-backing);
+    stroke-width: 3px;
+    stroke-linejoin: round;
 }
 
 /* Analysis modals sit above the map and contain their own scrollable data tables. */
