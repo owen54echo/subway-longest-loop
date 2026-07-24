@@ -2127,3 +2127,118 @@ input:checked + .slider:before {
     border-bottom: 1px solid var(--border-color);
     display: none;
 }
+
+/* Liquid Glass button system: shared material only; existing button markup and behavior stay untouched. */
+:root {
+    --button-glass-surface: rgba(255, 255, 255, 0.46);
+    --button-glass-surface-hover: rgba(255, 255, 255, 0.62);
+    --button-glass-edge: rgba(33, 35, 40, 0.16);
+    --button-glass-highlight: rgba(255, 255, 255, 0.76);
+    --button-glass-shadow: 0 8px 20px rgba(35, 37, 42, 0.14), 0 2px 5px rgba(35, 37, 42, 0.08);
+    --button-glass-primary: rgba(12, 12, 13, 0.78);
+    --button-glass-selected: rgba(217, 38, 38, 0.18);
+    --button-glass-end: rgba(0, 170, 85, 0.26);
+    --button-glass-danger: rgba(217, 38, 38, 0.22);
+}
+
+.theme-dark {
+    --button-glass-surface: rgba(36, 38, 45, 0.62);
+    --button-glass-surface-hover: rgba(53, 56, 65, 0.72);
+    --button-glass-edge: rgba(255, 255, 255, 0.17);
+    --button-glass-highlight: rgba(255, 255, 255, 0.20);
+    --button-glass-shadow: 0 10px 24px rgba(0, 0, 0, 0.34), 0 2px 5px rgba(0, 0, 0, 0.26);
+    --button-glass-primary: rgba(235, 238, 244, 0.18);
+    --button-glass-selected: rgba(255, 70, 91, 0.26);
+    --button-glass-end: rgba(0, 255, 136, 0.22);
+    --button-glass-danger: rgba(255, 92, 104, 0.25);
+}
+
+.button-glass-surface,
+.app-container button {
+    background: var(--button-glass-surface) !important;
+    border: 1px solid var(--button-glass-edge) !important;
+    border-radius: 12px !important;
+    box-shadow: inset 0 1px 0 var(--button-glass-highlight), inset 0 -1px 0 rgba(0, 0, 0, 0.10), var(--button-glass-shadow);
+    color: var(--text-primary);
+    backdrop-filter: blur(18px) saturate(130%);
+    -webkit-backdrop-filter: blur(18px) saturate(130%);
+    transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .button-glass-surface:hover,
+    .app-container button:not(:disabled):not([aria-disabled="true"]):hover {
+        background: var(--button-glass-surface-hover) !important;
+        border-color: var(--button-glass-highlight) !important;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), inset 0 -1px 0 rgba(0, 0, 0, 0.08), 0 12px 26px rgba(0, 0, 0, 0.18);
+        filter: brightness(1.06);
+        transform: scale(1.02);
+    }
+}
+
+.button-glass-surface:active,
+.app-container button:not(:disabled):not([aria-disabled="true"]):active {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 3px 8px rgba(0, 0, 0, 0.16);
+    transform: scale(0.96);
+}
+
+.button-glass-surface:disabled,
+.app-container button:disabled,
+.app-container button[aria-disabled="true"] {
+    background: var(--button-glass-surface) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    cursor: not-allowed;
+    filter: none;
+    opacity: 0.46;
+    transform: none !important;
+}
+
+.app-container :is(.btn-primary, .btn-cancel-solver) {
+    background: var(--button-glass-primary) !important;
+    border-color: var(--button-glass-highlight) !important;
+    color: var(--bg-page) !important;
+}
+
+.theme-dark .app-container :is(.btn-primary, .btn-cancel-solver) {
+    color: var(--text-primary) !important;
+}
+
+.app-container :is(.nav-item.active, .city-tab.active, .tab-btn.active, .speed-btn.active) {
+    background: var(--button-glass-selected) !important;
+    border-color: var(--button-glass-highlight) !important;
+    color: var(--text-primary) !important;
+    font-weight: bold;
+}
+
+.app-container #btn-roadbook-cruise,
+.app-container #popup-btn-cruise {
+    background: var(--button-glass-end) !important;
+    border-color: rgba(0, 170, 85, 0.48) !important;
+}
+
+.app-container .map-popup-btn.danger,
+.app-container .chip-close {
+    background: var(--button-glass-danger) !important;
+}
+
+.app-container .btn-float {
+    border-radius: 50% !important;
+}
+
+.app-container :is(.city-tab, .speed-btn, .tab-btn) {
+    border-radius: 10px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .button-glass-surface,
+    .app-container button {
+        transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+    }
+
+    .button-glass-surface:hover,
+    .button-glass-surface:active,
+    .app-container button:hover,
+    .app-container button:active {
+        transform: none !important;
+    }
+}
