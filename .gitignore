@@ -22,3 +22,8 @@ __pycache__/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Local assistant artifacts and regenerated result shards
+.superpowers/
+history_conversation.md
+city_extremes_results_*.json
