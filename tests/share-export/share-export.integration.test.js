@@ -8,12 +8,15 @@ assert.ok(html.includes('id="share-sheet"'), "Share sheet is missing");
 assert.ok(html.includes('data-share-mode="compact"'), "Compact share mode is missing");
 assert.ok(html.includes('data-share-mode="normal"'), "Normal share mode is missing");
 assert.ok(html.includes('data-share-mode="complete"'), "Complete share mode is missing");
+assert.ok(html.includes('data-share-mode="normal" role="tab">详细'), "Normal share mode should be renamed to detailed");
 assert.ok(html.includes("function openShareSheet()"), "Share sheet open flow is missing");
 assert.ok(html.includes("function exportShareImage("), "PNG export flow is missing");
 assert.ok(html.includes("function printCompleteShare()"), "Print-to-PDF flow is missing");
 assert.ok(html.includes("function createShareThumbnailMap("), "Route-focused thumbnail map is missing");
 assert.ok(html.includes("function wrapShareText("), "Long share text wrapping is missing");
 assert.ok(html.includes("MAX_THUMBNAIL_LABELS"), "Thumbnail label density limit is missing");
-assert.ok(html.includes('thumbnailHeight = hasThumbnail ? (model.mode === "complete" ? 340 : 300) : 0'), "Thumbnail should use the larger share-card layout");
+assert.ok(html.includes("thumbnailHeight = hasThumbnail ? 300 : 0"), "Detailed share should use the larger share-card layout");
+assert.ok(html.includes("function createCompleteShareSvg("), "Complete share needs a dedicated wide export canvas");
+assert.ok(html.includes('id="btn-share-expand"'), "Complete share needs an original-size viewer trigger");
 
 console.log("route share integration contract ok");

@@ -596,7 +596,7 @@
                 </div>
                 <div class="share-mode-tabs" role="tablist" aria-label="分享内容密度">
                     <button class="share-mode-tab" type="button" data-share-mode="compact" role="tab">精简</button>
-                    <button class="share-mode-tab active" type="button" data-share-mode="normal" role="tab">正常</button>
+                    <button class="share-mode-tab active" type="button" data-share-mode="normal" role="tab">详细</button>
                     <button class="share-mode-tab" type="button" data-share-mode="complete" role="tab">完整</button>
                 </div>
                 <div class="share-preview-wrap">
@@ -605,9 +605,15 @@
                 <div class="share-sheet-actions">
                     <button id="btn-share-download" type="button">下载图片</button>
                     <button id="btn-share-system" type="button">系统分享</button>
+                    <button id="btn-share-expand" type="button" style="display:none;">查看大图</button>
                     <button class="btn-primary" id="btn-share-print" type="button" style="display:none;">打印 / 存为 PDF</button>
                 </div>
             </section>
+        </div>
+
+        <div class="share-large-viewer" id="share-large-viewer" role="dialog" aria-modal="true" aria-label="完整路线大图" style="display:none;">
+            <button class="share-large-viewer-close" id="btn-share-large-close" type="button" aria-label="关闭大图">×</button>
+            <div class="share-large-viewer-scroll"><img id="share-large-viewer-image" alt="完整路线大图"></div>
         </div>
 
     <script src="subway_data.js"></script>
@@ -2082,29 +2088,32 @@
                 return lines.length ? lines : [""];
             }
 
-            function createShareThumbnailMap(model, x, y, width, height) {
+            function createShareThumbnailMap(model, x, y, width, height, options = {}) {
                 const nodesByName = new Map(data.nodes.map(node => [node.name, node]));
                 const allNodes = data.nodes.filter(node => Number.isFinite(node.x) && Number.isFinite(node.y));
                 if (!allNodes.length) return "";
                 const routeNodes = model.routeStations.map(name => nodesByName.get(name)).filter(Boolean);
-                const focusNodes = routeNodes.length ? routeNodes : allNodes;
+                const focusNodes = options.fullNetwork || !routeNodes.length ? allNodes : routeNodes;
                 const routeMinX = Math.min(...focusNodes.map(node => node.x));
                 const routeMaxX = Math.max(...focusNodes.map(node => node.x));
                 const routeMinY = Math.min(...focusNodes.map(node => node.y));
                 const routeMaxY = Math.max(...focusNodes.map(node => node.y));
                 const horizontalSpan = Math.max(routeMaxX - routeMinX, 180);
                 const verticalSpan = Math.max(routeMaxY - routeMinY, 140);
-                const minX = (routeMinX + routeMaxX) / 2 - horizontalSpan * 0.85;
-                const maxX = (routeMinX + routeMaxX) / 2 + horizontalSpan * 0.85;
-                const minY = (routeMinY + routeMaxY) / 2 - verticalSpan * 0.85;
-                const maxY = (routeMinY + routeMaxY) / 2 + verticalSpan * 0.85;
+                const minX = options.fullNetwork ? routeMinX : (routeMinX + routeMaxX) / 2 - horizontalSpan * 0.85;
+                const maxX = options.fullNetwork ? routeMaxX : (routeMinX + routeMaxX) / 2 + horizontalSpan * 0.85;
+                const minY = options.fullNetwork ? routeMinY : (routeMinY + routeMaxY) / 2 - verticalSpan * 0.85;
+                const maxY = options.fullNetwork ? routeMaxY : (routeMinY + routeMaxY) / 2 + verticalSpan * 0.85;
                 const padding = 26;
-                const scaleX = (width - padding * 2) / Math.max(maxX - minX, 1);
-                const scaleY = (height - padding * 2) / Math.max(maxY - minY, 1);
+                const availableWidth = width - padding * 2;
+                const availableHeight = height - padding * 2;
+                const mapScale = Math.min(availableWidth / Math.max(maxX - minX, 1), availableHeight / Math.max(maxY - minY, 1));
+                const contentWidth = (maxX - minX) * mapScale;
+                const contentHeight = (maxY - minY) * mapScale;
                 const point = (name) => {
                     const node = nodesByName.get(name);
                     if (!node) return null;
-                    return { x: x + padding + (node.x - minX) * scaleX, y: y + padding + (node.y - minY) * scaleY, node };
+                    return { x: x + padding + (availableWidth - contentWidth) / 2 + (node.x - minX) * mapScale, y: y + padding + (availableHeight - contentHeight) / 2 + (node.y - minY) * mapScale, node };
                 };
                 const isInsideMap = (station) => station && station.x >= x && station.x <= x + width && station.y >= y && station.y <= y + height;
                 const baseLines = data.edges.map(edge => {
@@ -2118,7 +2127,11 @@
                     const to = edge && point(edge.v);
                     return isInsideMap(from) && isInsideMap(to) ? `<line x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" stroke="${escapeShareXml(edge.color || "#1d8b68")}" stroke-width="6" stroke-linecap="round"/>` : "";
                 }).join("");
-                const MAX_THUMBNAIL_LABELS = 6;
+                const baseStations = options.showBaseStations ? allNodes.map(node => {
+                    const station = point(node.name);
+                    return isInsideMap(station) ? `<circle cx="${station.x}" cy="${station.y}" r="1.8" fill="#ffffff" stroke="#aeb5ad" stroke-width="0.8"/>` : "";
+                }).join("") : "";
+                const MAX_THUMBNAIL_LABELS = options.maxLabels || 6;
                 const transferNames = [...new Set(model.routeStations.filter(name => name !== model.start && name !== model.end && nodesByName.get(name)?.lines.length > 1))];
                 const transferSlots = Math.max(MAX_THUMBNAIL_LABELS - 2, 0);
                 const transferStep = Math.max(1, Math.ceil(transferNames.length / Math.max(transferSlots, 1)));
@@ -2139,14 +2152,63 @@
                     if (!collides) occupied.push(box);
                     return `<circle cx="${station.x}" cy="${station.y}" r="${isStart || isEnd ? 5 : 4}" fill="#fff" stroke="${color}" stroke-width="2"/>${collides ? "" : `<text x="${labelX}" y="${labelY}" fill="#354039" font-size="12" font-weight="${isStart || isEnd ? "700" : "600"}">${escapeShareXml(name)}</text>`}`;
                 }).join("");
-                return `<g><rect x="${x}" y="${y}" width="${width}" height="${height}" rx="12" fill="#f4f5f0" stroke="#dde1db"/>${baseLines}${routeLines}${labels}</g>`;
+                return `<g><rect x="${x}" y="${y}" width="${width}" height="${height}" rx="12" fill="#f4f5f0" stroke="#dde1db"/>${baseLines}${baseStations}${routeLines}${labels}</g>`;
+            }
+
+            function createCompleteShareSvg(model) {
+                const width = 1920;
+                const mapY = 188;
+                const mapHeight = 1180;
+                const statsY = mapY + mapHeight + 48;
+                const text = (value) => escapeShareXml(value);
+                let segmentCursorY = statsY + 170;
+                const segmentLines = model.segments.map(segment => {
+                    const routeLines = wrapShareText(`${segment.stations[0]} → ${segment.stations[segment.stations.length - 1]}`, 28);
+                    const rowHeight = Math.max(72, routeLines.length * 32 + 34);
+                    const y = segmentCursorY;
+                    segmentCursorY += rowHeight;
+                    const distance = Number(segment.distanceKm || 0).toFixed(1);
+                    const routeText = routeLines.map((line, index) => `<tspan x="390" dy="${index === 0 ? 0 : 31}">${text(line)}</tspan>`).join("");
+                    return `<line x1="132" y1="${y - 22}" x2="132" y2="${y + rowHeight - 34}" stroke="${text(segment.color || "#1d8b68")}" stroke-width="10" stroke-linecap="round"/><text x="170" y="${y}" fill="#17201b" font-size="30" font-weight="700">${text(segment.line)}</text><text x="390" y="${y}" fill="#4d554e" font-size="28">${routeText}</text><text x="1760" y="${y + rowHeight - 34}" fill="#4d554e" font-size="26" text-anchor="end">${text(`${segment.stations.length - 1} 站 · ${distance} km`)}</text>`;
+                }).join("");
+                let stationCursorY = segmentCursorY + 24;
+                const stationList = model.stations.map((station, index) => {
+                    const lines = wrapShareText(`${index + 1}. ${station}`, 48);
+                    const rowHeight = Math.max(52, lines.length * 31 + 14);
+                    const y = stationCursorY;
+                    stationCursorY += rowHeight;
+                    const isLast = index === model.stations.length - 1;
+                    const stationText = lines.map((line, lineIndex) => `<tspan x="170" dy="${lineIndex === 0 ? 0 : 31}">${text(line)}</tspan>`).join("");
+                    return `<circle cx="132" cy="${y - 9}" r="9" fill="${isLast ? "#d94a4a" : "#1d8b68"}"/><text x="170" y="${y}" fill="#17201b" font-size="28">${stationText}</text>`;
+                }).join("");
+                const height = Math.max(1880, stationCursorY + 100);
+                const stats = [
+                    ["经过区间", `${model.stats.edgeCount} 个`],
+                    ["途经车站", `${model.stats.stationCount} 个`],
+                    ["换乘次数", `${model.stats.transferCount} 次`],
+                    ["估算距离", `${model.stats.distanceKm.toFixed(1)} km`]
+                ].map(([label, value], index) => {
+                    const x = 96 + index * 432;
+                    return `<rect x="${x}" y="${statsY}" width="384" height="112" rx="14" fill="#eef0eb"/><text x="${x + 22}" y="${statsY + 40}" fill="#687068" font-size="26">${text(label)}</text><text x="${x + 22}" y="${statsY + 86}" fill="#17201b" font-size="38" font-weight="700">${text(value)}</text>`;
+                }).join("");
+
+                return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+                    <rect width="100%" height="100%" fill="#f8f7f2"/>
+                    <rect x="40" y="40" width="1840" height="${height - 80}" rx="24" fill="#ffffff" stroke="#d8ddd5" stroke-width="2"/>
+                    <text x="96" y="106" fill="#17201b" font-size="56" font-weight="700">${text(model.cityName)}地铁路书</text>
+                    <text x="96" y="152" fill="#687068" font-size="30">${text(model.source)} · 完整路线记录</text>
+                    ${createShareThumbnailMap(model, 96, mapY, 1728, mapHeight, { fullNetwork: true, showBaseStations: true, maxLabels: 16 })}
+                    ${stats}${segmentLines}${stationList}
+                    <text x="96" y="${height - 60}" fill="#8b918a" font-size="24">地铁路网线路研究 · 估算距离</text>
+                </svg>`;
             }
 
             function createShareSvg(model) {
+                if (model.mode === "complete") return createCompleteShareSvg(model);
                 const width = 1080;
                 const text = (value) => escapeShareXml(value);
                 const hasThumbnail = model.mode !== "compact";
-                const thumbnailHeight = hasThumbnail ? (model.mode === "complete" ? 340 : 300) : 0;
+                const thumbnailHeight = hasThumbnail ? 300 : 0;
                 const statsY = hasThumbnail ? 194 + thumbnailHeight + 30 : 412;
                 const segmentStartY = statsY + 160;
                 let segmentCursorY = segmentStartY;
@@ -2188,7 +2250,7 @@
                     <rect width="100%" height="100%" fill="#f8f7f2"/>
                     <rect x="28" y="28" width="1024" height="${height - 56}" rx="20" fill="#ffffff" stroke="#d8ddd5" stroke-width="2"/>
                     <text x="64" y="96" fill="#17201b" font-size="44" font-weight="700">${text(model.cityName)}地铁路书</text>
-                    <text x="64" y="136" fill="#687068" font-size="24">${text(model.source)} · ${model.mode === "compact" ? "精简分享卡" : model.mode === "normal" ? "正常分享卡" : "完整路线记录"}</text>
+                    <text x="64" y="136" fill="#687068" font-size="24">${text(model.source)} · ${model.mode === "compact" ? "精简分享卡" : "详细分享卡"}</text>
                     ${hasThumbnail ? createShareThumbnailMap(model, 64, 164, 952, thumbnailHeight) : compactRoute}
                     ${stats}${segmentLines}${stationList}
                     <text x="64" y="${height - 52}" fill="#8b918a" font-size="20">地铁路网线路研究 · 估算距离</text>
@@ -2213,6 +2275,7 @@
                     button.setAttribute("aria-selected", String(active));
                 });
                 document.getElementById("btn-share-print").style.display = shareMode === "complete" ? "inline-flex" : "none";
+                document.getElementById("btn-share-expand").style.display = shareMode === "complete" ? "inline-flex" : "none";
             }
 
             function openShareSheet() {
@@ -2224,6 +2287,16 @@
 
             function closeShareSheet() {
                 document.getElementById("share-sheet").style.display = "none";
+            }
+
+            function openShareLargeViewer() {
+                if (shareMode !== "complete" || !sharePreviewUrl) return;
+                document.getElementById("share-large-viewer-image").src = sharePreviewUrl;
+                document.getElementById("share-large-viewer").style.display = "flex";
+            }
+
+            function closeShareLargeViewer() {
+                document.getElementById("share-large-viewer").style.display = "none";
             }
 
             async function exportShareImage(shareViaSystem = false) {
@@ -2806,7 +2879,9 @@
             });
             document.getElementById("btn-share-download").addEventListener("click", () => exportShareImage(false));
             document.getElementById("btn-share-system").addEventListener("click", () => exportShareImage(true));
+            document.getElementById("btn-share-expand").addEventListener("click", openShareLargeViewer);
             document.getElementById("btn-share-print").addEventListener("click", printCompleteShare);
+            document.getElementById("btn-share-large-close").addEventListener("click", closeShareLargeViewer);
 
             document.getElementById("btn-roadbook-cruise").addEventListener("click", () => {
                 startCruise();

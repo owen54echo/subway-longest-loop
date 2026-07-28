@@ -1221,6 +1221,47 @@ input:checked + .slider:before {
     grid-column: 1 / -1;
 }
 
+.share-large-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 540;
+    padding: 28px;
+    background: rgba(9, 11, 10, 0.94);
+    align-items: center;
+    justify-content: center;
+}
+
+.share-large-viewer-scroll {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: #111;
+}
+
+.share-large-viewer img {
+    display: block;
+    width: 100%;
+    max-width: 1920px;
+    height: auto;
+    margin: 0 auto;
+}
+
+.share-large-viewer-close {
+    position: absolute;
+    z-index: 1;
+    top: 38px;
+    right: 42px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.58);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    font-size: 24px;
+    line-height: 1;
+}
+
 /* SVG Text Label Halo for Legibility */
 #labels-group text {
     stroke: var(--bg-page);
@@ -1353,6 +1394,15 @@ input:checked + .slider:before {
 
     .share-preview-wrap {
         max-height: 42dvh;
+    }
+
+    .share-large-viewer {
+        padding: 10px;
+    }
+
+    .share-large-viewer-close {
+        top: 18px;
+        right: 18px;
     }
 
     .floating-drawer.drawer-roadbook-expanded {
