@@ -1102,6 +1102,26 @@ input:checked + .slider:before {
     vector-effect: non-scaling-stroke;
 }
 
+.custom-route-summary {
+    font-size: 12px;
+    color: var(--text-secondary);
+    min-height: 36px;
+    line-height: 1.5;
+}
+
+.custom-route-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.station-label-leader {
+    stroke: var(--text-muted);
+    stroke-width: 1px;
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
+}
+
 /* SVG Text Label Halo for Legibility */
 #labels-group text {
     stroke: var(--bg-page);
@@ -1210,6 +1230,14 @@ input:checked + .slider:before {
 
     .floating-drawer.drawer-rules-active {
         height: 52dvh;
+    }
+
+    .floating-drawer.drawer-custom-route-active {
+        height: 52dvh;
+    }
+
+    .custom-route-actions {
+        grid-template-columns: 1fr;
     }
 
     .floating-drawer.drawer-roadbook-expanded {

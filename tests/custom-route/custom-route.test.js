@@ -36,6 +36,7 @@ assert.strictEqual(jump.addedSegment.kind, "jump");
 assert.deepStrictEqual(jump.addedSegment.stations, ["B", "D", "E"]);
 
 const confirmed = confirmDraft(jump.draft, graph);
+assert.strictEqual(confirmed.ok, true);
 assert.deepStrictEqual(confirmed.path_stations, ["A", "B", "D", "E"]);
 assert.deepStrictEqual(confirmed.path_edges, [0, 1, 4]);
 assert.strictEqual(confirmed.transfers, 1);

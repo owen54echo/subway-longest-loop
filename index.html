@@ -149,6 +149,16 @@
                 </span>
                 <span class="nav-item-label">分析</span>
             </button>
+            <button class="nav-item" id="nav-custom-route" data-target="drawer-custom-route" type="button">
+                <span class="nav-item-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="5" cy="6" r="2"></circle>
+                        <circle cx="19" cy="18" r="2"></circle>
+                        <path d="M7 7l4 4-4 4 5 4h5"></path>
+                    </svg>
+                </span>
+                <span class="nav-item-label">自定义</span>
+            </button>
         </div>
         
         <!-- Floating Glassmorphism Side Drawer (unified config dialog) -->
@@ -303,6 +313,20 @@
                                 暂无规划路线，请先在“规则”面板中点击开始
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="config-pane" id="pane-custom-route" style="display:none; flex-direction:column; gap:12px;">
+                    <div class="custom-route-summary" id="custom-route-summary">点击任意车站设置起点</div>
+                    <div class="stats-grid" aria-live="polite">
+                        <div class="stat-box"><span class="stat-label">途经车站</span><span class="stat-value" id="custom-stations">0 个</span></div>
+                        <div class="stat-box"><span class="stat-label">换乘次数</span><span class="stat-value" id="custom-transfers">0 次</span></div>
+                        <div class="stat-box"><span class="stat-label">估算距离</span><span class="stat-value" id="custom-distance">0.0 km</span></div>
+                    </div>
+                    <div class="custom-route-actions">
+                        <button id="btn-custom-undo" type="button">撤销上一步</button>
+                        <button id="btn-custom-clear" type="button">清空</button>
+                        <button class="btn-primary" id="btn-custom-confirm" type="button" disabled>确认路线</button>
                     </div>
                 </div>
 
@@ -559,6 +583,9 @@
 
     <script src="subway_data.js"></script>
     <script src="city_extremes_results.js"></script>
+    <script src="custom-route.js"></script>
+    <script src="station-label-layout.js"></script>
+    <script src="share-export.js"></script>
     
     <!-- Page Controller script -->
     <script>
@@ -580,6 +607,12 @@
             const selectedWaypoints = new Set();
             const selectedAvoids = new Set();
             let activeWorker = null;
+            let isCustomRouteMode = false;
+            let customRouteGraph = window.CustomRoute.createGraph(data.nodes, data.edges);
+            let customRouteDraft = window.CustomRoute.createDraft();
+            let currentConfirmedResult = null;
+            let confirmedRouteSource = "solver";
+            let hoveredStationName = "";
 
             // Cruise state is deliberately separate from route planning so pausing an animation never changes a route.
             let cruiseIsPlaying = false;
@@ -693,37 +726,23 @@
                     // open the same station action menu with Enter or Space.
                     stationGroup.addEventListener("click", (e) => {
                         e.stopPropagation();
-                        showMapPopup(node.name, e.clientX, e.clientY);
+                        handleStationActivation(node.name, e);
                     });
                     stationGroup.addEventListener("keydown", (e) => {
                         if (e.key === "Enter" || e.key === " ") {
                             e.preventDefault();
-                            showMapPopup(node.name, window.innerWidth / 2, window.innerHeight / 2);
+                            handleStationActivation(node.name, { clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 });
                         }
                     });
 
-                    // Interactive hover labels
                     stationGroup.addEventListener("mouseover", () => {
-                        const lbl = document.getElementById(`label-text-${node.name}`);
-                        if (lbl) {
-                            lbl.setAttribute("opacity", "1.0");
-                            lbl.setAttribute("fill", "var(--text-primary)");
-                            lbl.setAttribute("font-weight", "bold");
-                            lbl.setAttribute("font-size", isTransfer ? "8.5" : "6.5");
-                        }
+                        hoveredStationName = node.name;
+                        refreshStationLabels();
                     });
 
                     stationGroup.addEventListener("mouseout", () => {
-                        const lbl = document.getElementById(`label-text-${node.name}`);
-                        if (lbl) {
-                            if (!isStationTraversed(node.name)) {
-                                const baseOpacity = getLabelDefaultOpacity(node.name, isTransfer);
-                                lbl.setAttribute("opacity", baseOpacity);
-                                lbl.setAttribute("fill", isTransfer ? "var(--text-primary)" : "var(--text-secondary)");
-                                lbl.setAttribute("font-weight", isTransfer ? "bold" : "normal");
-                                lbl.setAttribute("font-size", isTransfer ? "6.5" : "4.5");
-                            }
-                        }
+                        if (hoveredStationName === node.name) hoveredStationName = "";
+                        refreshStationLabels();
                     });
 
                     const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -837,11 +856,90 @@
                 }
 
                 updateViewportTransform();
+                refreshStationLabels();
             }
 
             let lastResultStations = [];
             function isStationTraversed(name) {
                 return lastResultStations.includes(name);
+            }
+
+            function getStationLabelPriority(node) {
+                if (node.name === hoveredStationName || node.name === clickedStationName || node.name === customRouteDraft.current) return 600;
+                if (node.name === selectedStartStation || node.name === selectedEndStation) return 500;
+                if (node.lines.length > 1) return 400;
+                if (isStationTraversed(node.name)) return 300;
+                return scale >= 1.7 ? 100 : 0;
+            }
+
+            function isNodeInCurrentViewport(node, svg) {
+                const viewBox = svg.viewBox.baseVal;
+                const left = -translateX / scale;
+                const top = -translateY / scale;
+                const margin = 32 / scale;
+                return node.x >= left - margin && node.x <= left + viewBox.width / scale + margin &&
+                    node.y >= top - margin && node.y <= top + viewBox.height / scale + margin;
+            }
+
+            function buildPriorityMarkerRects(nodes) {
+                return nodes
+                    .filter(node => node.name === selectedStartStation || node.name === selectedEndStation || node.name === customRouteDraft.current)
+                    .map(node => ({ left: node.x - 8, top: node.y - 8, right: node.x + 8, bottom: node.y + 8 }));
+            }
+
+            function refreshStationLabels() {
+                const svg = document.getElementById("metro-svg");
+                const labelsGroup = document.getElementById("labels-group");
+                if (!svg || !labelsGroup || !window.StationLabelLayout) return;
+
+                labelsGroup.querySelectorAll(".station-label-leader").forEach(leader => leader.remove());
+                const candidateById = new Map();
+
+                data.nodes.forEach(node => {
+                    const label = document.getElementById(`label-text-${node.name}`);
+                    if (!label) return;
+                    const priority = getStationLabelPriority(node);
+                    const isTransfer = node.lines.length > 1;
+                    label.setAttribute("x", node.x);
+                    label.setAttribute("y", node.y);
+                    label.setAttribute("text-anchor", "start");
+                    label.setAttribute("font-size", isTransfer ? "6.5" : "4.5");
+                    label.setAttribute("font-weight", isTransfer || priority >= 500 ? "700" : "400");
+                    label.setAttribute("opacity", "0");
+                    if (!priority || !isNodeInCurrentViewport(node, svg)) return;
+
+                    const bounds = label.getBBox();
+                    candidateById.set(node.name, {
+                        id: node.name,
+                        x: node.x,
+                        y: node.y,
+                        width: Math.max(bounds.width, 1),
+                        height: Math.max(bounds.height, 1),
+                        priority,
+                        label,
+                        node
+                    });
+                });
+
+                const layout = window.StationLabelLayout.place([...candidateById.values()], buildPriorityMarkerRects(data.nodes));
+                layout.placed.forEach(item => {
+                    const candidate = candidateById.get(item.id);
+                    if (!candidate) return;
+                    const { label, node } = candidate;
+                    if (item.slot !== "n" && item.slot !== "s") {
+                        const leader = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                        leader.setAttribute("class", "station-label-leader");
+                        leader.setAttribute("x1", node.x);
+                        leader.setAttribute("y1", node.y);
+                        leader.setAttribute("x2", item.x);
+                        leader.setAttribute("y2", item.y - candidate.height / 2);
+                        labelsGroup.insertBefore(leader, label);
+                    }
+                    label.setAttribute("x", item.x);
+                    label.setAttribute("y", item.y);
+                    label.setAttribute("fill", node.lines.length > 1 || candidate.priority >= 500 ? "var(--text-primary)" : "var(--text-secondary)");
+                    label.setAttribute("opacity", "1");
+                });
             }
 
             function getPrimaryStationMarker(stationGroup) {
@@ -854,6 +952,7 @@
                 if (viewport) {
                     viewport.setAttribute("transform", `translate(${translateX}, ${translateY}) scale(${scale})`);
                 }
+                refreshStationLabels();
             }
 
             // Pointer Events unify mouse, trackpad, and touch dragging/pinching
@@ -1009,6 +1108,9 @@
                         alert("未能加载该城市的数据！");
                         return;
                     }
+                    if (isCustomRouteMode && customRouteDraft.segments.length && !window.confirm("切换城市会放弃当前自定义路线，是否继续？")) {
+                        return;
+                    }
                     
                     // Highlight active tab
                     document.querySelectorAll(".city-tab").forEach(t => {
@@ -1021,6 +1123,11 @@
                     
                     selectedCity = selected;
                     data = window.subwayDataMap[selectedCity];
+                    isCustomRouteMode = false;
+                    appContainer.classList.remove("custom-route-mode");
+                    customRouteGraph = window.CustomRoute.createGraph(data.nodes, data.edges);
+                    customRouteDraft = window.CustomRoute.createDraft();
+                    currentConfirmedResult = null;
                     document.title = "地铁路网线路研究";
                     
                     // Reset all states
@@ -1085,6 +1192,17 @@
                 item.addEventListener("click", () => {
                     const targetPaneId = item.getAttribute("data-target");
                     const paneName = item.querySelector(".nav-item-label").textContent;
+
+                    if (targetPaneId === "drawer-custom-route") {
+                        if (isCustomRouteMode && drawer.classList.contains("open") && activePaneId === targetPaneId) {
+                            if (!leaveCustomRouteMode()) return;
+                            closeDrawer();
+                            return;
+                        }
+                        beginCustomRouteMode();
+                    } else if (isCustomRouteMode && !leaveCustomRouteMode()) {
+                        return;
+                    }
                     
                     if (drawer.classList.contains("open") && activePaneId === targetPaneId) {
                         closeDrawer();
@@ -1097,12 +1215,13 @@
             });
 
             function openDrawer(paneId, title) {
-                if (paneId === "drawer-wiki") {
+                if (paneId === "drawer-wiki" || paneId === "drawer-custom-route") {
                     drawerTitle.textContent = title;
                 } else {
                     drawerTitle.textContent = title + "设置";
                 }
                 drawer.classList.toggle("drawer-rules-active", paneId === "drawer-rules");
+                drawer.classList.toggle("drawer-custom-route-active", paneId === "drawer-custom-route");
                 if (paneId !== "drawer-roadbook") {
                     drawer.classList.remove("drawer-roadbook-expanded");
                 }
@@ -1124,12 +1243,107 @@
             function closeDrawer() {
                 drawer.classList.remove("open");
                 drawer.classList.remove("drawer-rules-active");
+                drawer.classList.remove("drawer-custom-route-active");
                 drawer.classList.remove("drawer-roadbook-expanded");
                 activePaneId = "";
                 navItems.forEach(n => n.classList.remove("active"));
             }
 
-            document.getElementById("btn-drawer-close").addEventListener("click", closeDrawer);
+            function refreshCustomRouteEditor() {
+                const confirmed = customRouteDraft.segments.length
+                    ? window.CustomRoute.confirmDraft(customRouteDraft, customRouteGraph)
+                    : null;
+                const current = customRouteDraft.current || "未设置";
+                document.getElementById("custom-route-summary").textContent = customRouteDraft.start
+                    ? `起点：${customRouteDraft.start} · 当前：${current}`
+                    : "点击任意车站设置起点";
+                document.getElementById("custom-stations").textContent = `${confirmed?.path_stations.length || (customRouteDraft.start ? 1 : 0)} 个`;
+                document.getElementById("custom-transfers").textContent = `${confirmed?.transfers || 0} 次`;
+                document.getElementById("custom-distance").textContent = formatDistanceKm(confirmed?.distanceKm || 0);
+                document.getElementById("btn-custom-undo").disabled = customRouteDraft.segments.length === 0;
+                document.getElementById("btn-custom-clear").disabled = !customRouteDraft.start;
+                document.getElementById("btn-custom-confirm").disabled = !confirmed?.path_edges.length;
+            }
+
+            function renderCustomDraftPreview() {
+                if (!customRouteDraft.segments.length) {
+                    lastResultStations = customRouteDraft.start ? [customRouteDraft.start] : [];
+                    renderSvgMap();
+                    return;
+                }
+                const preview = window.CustomRoute.confirmDraft(customRouteDraft, customRouteGraph);
+                lastResultStations = preview.path_stations;
+                highlightPathOnSvgMap(preview, data.edges);
+                refreshStationLabels();
+            }
+
+            function beginCustomRouteMode() {
+                if (isCustomRouteMode) return;
+                isCustomRouteMode = true;
+                customRouteGraph = window.CustomRoute.createGraph(data.nodes, data.edges);
+                customRouteDraft = window.CustomRoute.createDraft();
+                lastResultStations = [];
+                mapPopup.style.display = "none";
+                appContainer.classList.add("custom-route-mode");
+                renderSvgMap();
+                refreshCustomRouteEditor();
+            }
+
+            function leaveCustomRouteMode() {
+                if (customRouteDraft.segments.length && !window.confirm("放弃当前自定义路线？")) return false;
+                isCustomRouteMode = false;
+                customRouteDraft = window.CustomRoute.createDraft();
+                appContainer.classList.remove("custom-route-mode");
+                lastResultStations = currentConfirmedResult?.result.path_stations || [];
+                renderSvgMap();
+                if (currentConfirmedResult) displayResults(currentConfirmedResult.result, currentConfirmedResult.edges);
+                return true;
+            }
+
+            function showCustomRouteError(message) {
+                document.getElementById("custom-route-summary").textContent = message;
+            }
+
+            function handleStationActivation(stationName, event) {
+                if (!isCustomRouteMode) {
+                    showMapPopup(stationName, event.clientX, event.clientY);
+                    return;
+                }
+                const result = window.CustomRoute.appendSelection(customRouteDraft, stationName, customRouteGraph);
+                if (!result.ok) {
+                    showCustomRouteError(result.error);
+                    return;
+                }
+                customRouteDraft = result.draft;
+                renderCustomDraftPreview();
+                refreshCustomRouteEditor();
+                refreshStationLabels();
+            }
+
+            document.getElementById("btn-custom-undo").addEventListener("click", () => {
+                customRouteDraft = window.CustomRoute.undoDraft(customRouteDraft);
+                renderCustomDraftPreview();
+                refreshCustomRouteEditor();
+            });
+            document.getElementById("btn-custom-clear").addEventListener("click", () => {
+                customRouteDraft = window.CustomRoute.clearDraft();
+                renderCustomDraftPreview();
+                refreshCustomRouteEditor();
+            });
+            document.getElementById("btn-custom-confirm").addEventListener("click", () => {
+                const confirmed = window.CustomRoute.confirmDraft(customRouteDraft, customRouteGraph);
+                if (!confirmed.ok) return showCustomRouteError(confirmed.error);
+                isCustomRouteMode = false;
+                confirmedRouteSource = "custom";
+                appContainer.classList.remove("custom-route-mode");
+                displayResults(confirmed, data.edges);
+                openDrawer("drawer-roadbook", "路书");
+            });
+
+            document.getElementById("btn-drawer-close").addEventListener("click", () => {
+                if (isCustomRouteMode && !leaveCustomRouteMode()) return;
+                closeDrawer();
+            });
 
             const drawerHeader = drawer.querySelector(".drawer-header");
             drawerHeader.addEventListener("pointerdown", (e) => {
@@ -1157,6 +1371,7 @@
             document.addEventListener("keydown", (e) => {
                 if (e.key !== "Escape") return;
                 mapPopup.style.display = "none";
+                if (isCustomRouteMode && !leaveCustomRouteMode()) return;
                 closeDrawer();
                 document.getElementById("matrix-modal").style.display = "none";
                 document.getElementById("centrality-modal").style.display = "none";
@@ -1165,6 +1380,7 @@
             // A station menu is a transient editor for the current planning state, not a second data model.
             function showMapPopup(stationName, clientX, clientY) {
                 clickedStationName = stationName;
+                refreshStationLabels();
                 popupStationName.textContent = stationName;
                 mapPopup.style.left = `${clientX + 12}px`;
                 mapPopup.style.top = `${clientY + 12}px`;
@@ -1814,6 +2030,8 @@
 
             function displayResults(result, filteredEdges) {
                 lastResultStations = result.path_stations;
+                currentConfirmedResult = { result: { ...result }, edges: filteredEdges };
+                if (result.source !== "custom") confirmedRouteSource = "solver";
                 setRoadbookAvailability(true);
 
                 document.getElementById("res-edges").textContent = `${result.path_edges.length} 个`;
@@ -1979,10 +2197,9 @@
                     }
                 });
 
-                // Fade base stations and highlight traversed labels
+                // Fade base stations. Labels are rendered separately through the collision-free layout pass.
                 data.nodes.forEach(node => {
                     const nodeEl = document.getElementById(`station-node-${node.name}`);
-                    const labelEl = document.getElementById(`label-text-${node.name}`);
                     const isTraversed = node.name in traversedStationSeq;
                     
                     if (nodeEl) {
@@ -1991,16 +2208,6 @@
                         circle.setAttribute("opacity", isTraversed ? "0.0" : "0.35"); // Dimmed but visible
                     }
                     
-                    if (labelEl) {
-                        if (!isTraversed) {
-                            labelEl.setAttribute("opacity", "0.0"); // Hide non-traversed labels
-                        } else {
-                            labelEl.setAttribute("fill", "var(--text-primary)");
-                            labelEl.setAttribute("font-weight", "bold");
-                            labelEl.setAttribute("font-size", node.lines.length > 1 ? "8.5" : "6.5");
-                            labelEl.setAttribute("opacity", "1.0");
-                        }
-                    }
                 });
 
                 // Draw highlight edges (curves) with original line color
@@ -2082,6 +2289,7 @@
                         hlStationsGroup.appendChild(group);
                     }
                 });
+                refreshStationLabels();
             }
 
             // --- Cruising Simulation Logic ---

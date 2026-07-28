@@ -142,7 +142,7 @@
             return graph.edges[edgeIndex].line !== graph.edges[path_edges[offset - 1]].line ? count + 1 : count;
         }, 0);
 
-        return { path_stations, path_edges, distanceKm, transfers, source: "custom" };
+        return { ok: true, path_stations, path_edges, distanceKm, transfers, source: "custom" };
     }
 
     window.CustomRoute = {

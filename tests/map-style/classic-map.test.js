@@ -18,5 +18,11 @@ assert.ok(html.includes('circle.setAttribute("r", "6.5")'), "Classic transfer st
 assert.ok(html.includes("station-marker-inner"), "Transfer inner ring is missing");
 assert.ok(html.includes("station-label-transfer"), "Transfer label class is missing");
 assert.ok(!html.includes("map-style-a") && !html.includes("map-style-b"), "Withdrawn A/B switch leaked into the renderer");
+assert.ok(html.includes('id="nav-custom-route"'), "Custom route navigation is missing");
+assert.ok(html.includes('id="pane-custom-route"'), "Custom route editor pane is missing");
+assert.ok(html.includes('src="custom-route.js"'), "Custom route module is not loaded");
+assert.ok(html.includes('src="station-label-layout.js"'), "Label layout module is not loaded");
+assert.ok(html.includes("function refreshStationLabels()"), "Collision-aware label refresh hook is missing");
+assert.ok(html.includes("window.StationLabelLayout.place"), "Map does not use collision-free label layout");
 
 console.log("classic shared map contract ok");
