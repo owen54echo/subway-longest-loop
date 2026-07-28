@@ -11,5 +11,7 @@ assert.ok(html.includes('data-share-mode="complete"'), "Complete share mode is m
 assert.ok(html.includes("function openShareSheet()"), "Share sheet open flow is missing");
 assert.ok(html.includes("function exportShareImage("), "PNG export flow is missing");
 assert.ok(html.includes("function printCompleteShare()"), "Print-to-PDF flow is missing");
+assert.ok(html.includes("function createShareThumbnailMap("), "Route-focused thumbnail map is missing");
+assert.ok(html.includes("function wrapShareText("), "Long share text wrapping is missing");
 
 console.log("route share integration contract ok");

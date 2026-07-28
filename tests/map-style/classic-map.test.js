@@ -24,5 +24,6 @@ assert.ok(html.includes('src="custom-route.js"'), "Custom route module is not lo
 assert.ok(html.includes('src="station-label-layout.js"'), "Label layout module is not loaded");
 assert.ok(html.includes("function refreshStationLabels()"), "Collision-aware label refresh hook is missing");
 assert.ok(html.includes("window.StationLabelLayout.place"), "Map does not use collision-free label layout");
+assert.ok(!html.includes('leader.setAttribute("class", "station-label-leader")'), "Station label leader lines should not be rendered");
 
 console.log("classic shared map contract ok");

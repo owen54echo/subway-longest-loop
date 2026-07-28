@@ -1136,13 +1136,6 @@ input:checked + .slider:before {
     gap: 8px;
 }
 
-.station-label-leader {
-    stroke: var(--text-muted);
-    stroke-width: 1px;
-    vector-effect: non-scaling-stroke;
-    pointer-events: none;
-}
-
 .share-sheet {
     position: fixed;
     inset: 0;

@@ -26,7 +26,9 @@
             source: snapshot.source,
             stats: snapshot.stats,
             start: snapshot.stations[0],
-            end: snapshot.stations[snapshot.stations.length - 1]
+            end: snapshot.stations[snapshot.stations.length - 1],
+            routeStations: [...snapshot.stations],
+            edges: [...snapshot.edges]
         };
 
         if (mode === "compact") {
