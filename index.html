@@ -307,7 +307,10 @@
                     </button>
                     
                     <div class="roadbook-container">
-                        <div class="roadbook-title">行车路书</div>
+                        <div class="roadbook-title-row">
+                            <div class="roadbook-title">行车路书</div>
+                            <button class="roadbook-share-trigger" id="btn-roadbook-share" type="button" title="分享路线">分享</button>
+                        </div>
                         <div class="roadbook-list" id="roadbook-list">
                             <div style="font-size:12px; color:var(--text-muted); text-align:center; padding:20px 0;">
                                 暂无规划路线，请先在“规则”面板中点击开始
@@ -581,6 +584,32 @@
             <div class="city-extremes-result" id="city-extremes-result"></div>
         </div>
 
+        <div class="share-sheet" id="share-sheet" role="dialog" aria-modal="true" aria-labelledby="share-sheet-title" style="display:none;">
+            <div class="share-sheet-backdrop" data-share-close="true"></div>
+            <section class="share-sheet-panel">
+                <div class="share-sheet-header">
+                    <div>
+                        <div class="share-sheet-eyebrow">本地生成</div>
+                        <h2 id="share-sheet-title">分享路线</h2>
+                    </div>
+                    <button class="drawer-close" id="btn-share-close" type="button" aria-label="关闭分享">×</button>
+                </div>
+                <div class="share-mode-tabs" role="tablist" aria-label="分享内容密度">
+                    <button class="share-mode-tab" type="button" data-share-mode="compact" role="tab">精简</button>
+                    <button class="share-mode-tab active" type="button" data-share-mode="normal" role="tab">正常</button>
+                    <button class="share-mode-tab" type="button" data-share-mode="complete" role="tab">完整</button>
+                </div>
+                <div class="share-preview-wrap">
+                    <img id="share-preview-image" alt="路线分享卡预览">
+                </div>
+                <div class="share-sheet-actions">
+                    <button id="btn-share-download" type="button">下载图片</button>
+                    <button id="btn-share-system" type="button">系统分享</button>
+                    <button class="btn-primary" id="btn-share-print" type="button" style="display:none;">打印 / 存为 PDF</button>
+                </div>
+            </section>
+        </div>
+
     <script src="subway_data.js"></script>
     <script src="city_extremes_results.js"></script>
     <script src="custom-route.js"></script>
@@ -613,6 +642,9 @@
             let currentConfirmedResult = null;
             let confirmedRouteSource = "solver";
             let hoveredStationName = "";
+            let currentRouteSegments = [];
+            let shareMode = "normal";
+            let sharePreviewUrl = "";
 
             // Cruise state is deliberately separate from route planning so pausing an animation never changes a route.
             let cruiseIsPlaying = false;
@@ -2028,6 +2060,138 @@
                 }, 0);
             }
 
+            function escapeShareXml(value) {
+                return String(value)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/\"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            function buildShareSnapshot() {
+                if (!currentConfirmedResult) return null;
+                const result = currentConfirmedResult.result;
+                return window.RouteShare.createSnapshot({
+                    cityName: data.city || document.querySelector(`.city-tab[data-value="${selectedCity}"]`)?.textContent || "地铁",
+                    source: confirmedRouteSource,
+                    path_stations: result.path_stations,
+                    path_edges: result.path_edges,
+                    distanceKm: calculateRouteDistanceKm(result.path_edges, currentConfirmedResult.edges),
+                    transfers: countPathTransfers(result.path_edges, currentConfirmedResult.edges),
+                    segments: currentRouteSegments
+                });
+            }
+
+            function createShareSvg(model) {
+                const width = 1080;
+                const sectionRows = model.mode === "compact" ? 0 : model.segments.length;
+                const stationRows = model.mode === "complete" ? model.stations.length : 0;
+                const height = Math.max(720, 520 + sectionRows * 58 + stationRows * 44);
+                const text = (value) => escapeShareXml(value);
+                const routeStart = 112;
+                const routeEnd = width - 112;
+                const routeLine = `<line x1="${routeStart}" y1="350" x2="${routeEnd}" y2="350" stroke="#c9cdc7" stroke-width="8" stroke-linecap="round"/><circle cx="${routeStart}" cy="350" r="15" fill="#1d8b68"/><circle cx="${routeEnd}" cy="350" r="15" fill="#d94a4a"/>`;
+                const stats = [
+                    ["经过区间", `${model.stats.edgeCount} 个`],
+                    ["途经车站", `${model.stats.stationCount} 个`],
+                    ["换乘次数", `${model.stats.transferCount} 次`],
+                    ["估算距离", `${model.stats.distanceKm.toFixed(1)} km`]
+                ].map(([label, value], index) => {
+                    const x = 64 + index * 248;
+                    return `<rect x="${x}" y="412" width="224" height="98" rx="12" fill="#eef0eb"/><text x="${x + 18}" y="447" fill="#687068" font-size="22">${text(label)}</text><text x="${x + 18}" y="486" fill="#17201b" font-size="30" font-weight="700">${text(value)}</text>`;
+                }).join("");
+                const segmentLines = model.mode === "compact" ? "" : model.segments.map((segment, index) => {
+                    const y = 572 + index * 58;
+                    const distance = Number(segment.distanceKm || 0).toFixed(1);
+                    return `<line x1="84" y1="${y - 8}" x2="84" y2="${y + 26}" stroke="${text(segment.color || "#1d8b68")}" stroke-width="8" stroke-linecap="round"/><text x="112" y="${y}" fill="#17201b" font-size="25" font-weight="700">${text(segment.line)}</text><text x="270" y="${y}" fill="#4d554e" font-size="23">${text(segment.stations[0])} → ${text(segment.stations[segment.stations.length - 1])}</text><text x="1000" y="${y}" fill="#4d554e" font-size="21" text-anchor="end">${text(`${segment.stations.length - 1} 站 · ${distance} km`)}</text>`;
+                }).join("");
+                const stationListOffset = 572 + sectionRows * 58 + (sectionRows ? 28 : 0);
+                const stationList = model.mode === "complete" ? model.stations.map((station, index) => {
+                    const y = stationListOffset + index * 44;
+                    const isLast = index === model.stations.length - 1;
+                    return `<circle cx="84" cy="${y - 8}" r="8" fill="${isLast ? "#d94a4a" : "#1d8b68"}"/><text x="112" y="${y}" fill="#17201b" font-size="24">${index + 1}. ${text(station)}</text>`;
+                }).join("") : "";
+
+                return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+                    <rect width="100%" height="100%" fill="#f8f7f2"/>
+                    <rect x="28" y="28" width="1024" height="${height - 56}" rx="20" fill="#ffffff" stroke="#d8ddd5" stroke-width="2"/>
+                    <text x="64" y="96" fill="#17201b" font-size="44" font-weight="700">${text(model.cityName)}地铁路书</text>
+                    <text x="64" y="136" fill="#687068" font-size="24">${text(model.source)} · ${model.mode === "compact" ? "精简分享卡" : model.mode === "normal" ? "正常分享卡" : "完整路线记录"}</text>
+                    <text x="${routeStart}" y="318" fill="#17201b" font-size="30" font-weight="700">${text(model.start)}</text>
+                    <text x="${routeEnd}" y="318" fill="#17201b" font-size="30" font-weight="700" text-anchor="end">${text(model.end)}</text>
+                    ${routeLine}${stats}${segmentLines}${stationList}
+                    <text x="64" y="${height - 52}" fill="#8b918a" font-size="20">地铁路网线路研究 · 估算距离</text>
+                </svg>`;
+            }
+
+            function getShareModel() {
+                const snapshot = buildShareSnapshot();
+                return snapshot ? window.RouteShare.createCardModel(snapshot, shareMode) : null;
+            }
+
+            function refreshSharePreview() {
+                const model = getShareModel();
+                if (!model) return;
+                const svg = createShareSvg(model);
+                if (sharePreviewUrl) URL.revokeObjectURL(sharePreviewUrl);
+                sharePreviewUrl = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
+                document.getElementById("share-preview-image").src = sharePreviewUrl;
+                document.querySelectorAll(".share-mode-tab").forEach(button => {
+                    const active = button.getAttribute("data-share-mode") === shareMode;
+                    button.classList.toggle("active", active);
+                    button.setAttribute("aria-selected", String(active));
+                });
+                document.getElementById("btn-share-print").style.display = shareMode === "complete" ? "inline-flex" : "none";
+            }
+
+            function openShareSheet() {
+                if (!currentConfirmedResult) return;
+                shareMode = "normal";
+                document.getElementById("share-sheet").style.display = "flex";
+                refreshSharePreview();
+            }
+
+            function closeShareSheet() {
+                document.getElementById("share-sheet").style.display = "none";
+            }
+
+            async function exportShareImage(shareViaSystem = false) {
+                const model = getShareModel();
+                if (!model) return;
+                const svg = createShareSvg(model);
+                const height = Number(svg.match(/height="(\d+)"/)?.[1] || 720);
+                const blob = await window.RouteShare.svgToPngBlob(svg, 1080, height);
+                if (!blob) return;
+                const filename = `${model.cityName}-${model.start}-${model.end}-${model.mode}.png`;
+                const file = new File([blob], filename, { type: "image/png" });
+                if (shareViaSystem && navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+                    try {
+                        await navigator.share({ title: `${model.cityName}地铁路书`, text: `${model.start} → ${model.end}`, files: [file] });
+                        return;
+                    } catch (error) {
+                        if (error.name === "AbortError") return;
+                    }
+                }
+                const url = URL.createObjectURL(blob);
+                const anchor = document.createElement("a");
+                anchor.href = url;
+                anchor.download = filename;
+                anchor.click();
+                URL.revokeObjectURL(url);
+            }
+
+            function printCompleteShare() {
+                const snapshot = buildShareSnapshot();
+                if (!snapshot) return;
+                const printWindow = window.open("", "_blank", "noopener,noreferrer");
+                if (!printWindow) return;
+                printWindow.document.write(window.RouteShare.createPrintHtml(window.RouteShare.createCardModel(snapshot, "complete")));
+                printWindow.document.close();
+                printWindow.focus();
+                printWindow.print();
+            }
+
             function displayResults(result, filteredEdges) {
                 lastResultStations = result.path_stations;
                 currentConfirmedResult = { result: { ...result }, edges: filteredEdges };
@@ -2074,6 +2238,10 @@
                 if (currentSegment) {
                     segments.push(currentSegment);
                 }
+                currentRouteSegments = segments.map(segment => ({
+                    ...segment,
+                    distanceKm: calculateRouteDistanceKm(segment.edgeIds, filteredEdges)
+                }));
 
                 let roadbookHtml = "";
                 segments.forEach((seg, sIdx) => {
@@ -2556,6 +2724,19 @@
                     cruiseSpeedMultiplier = parseFloat(btn.getAttribute("data-speed"));
                 });
             });
+
+            document.getElementById("btn-roadbook-share").addEventListener("click", openShareSheet);
+            document.getElementById("btn-share-close").addEventListener("click", closeShareSheet);
+            document.querySelector(".share-sheet-backdrop").addEventListener("click", closeShareSheet);
+            document.querySelectorAll(".share-mode-tab").forEach(button => {
+                button.addEventListener("click", () => {
+                    shareMode = button.getAttribute("data-share-mode");
+                    refreshSharePreview();
+                });
+            });
+            document.getElementById("btn-share-download").addEventListener("click", () => exportShareImage(false));
+            document.getElementById("btn-share-system").addEventListener("click", () => exportShareImage(true));
+            document.getElementById("btn-share-print").addEventListener("click", printCompleteShare);
 
             document.getElementById("btn-roadbook-cruise").addEventListener("click", () => {
                 startCruise();

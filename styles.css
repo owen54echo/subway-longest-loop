@@ -826,6 +826,27 @@ input:checked + .slider:before {
     text-transform: uppercase;
 }
 
+.roadbook-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 8px;
+}
+
+.roadbook-title-row .roadbook-title {
+    border-bottom: 0;
+    margin-bottom: 0;
+}
+
+.roadbook-share-trigger {
+    width: auto;
+    min-height: 26px;
+    padding: 3px 8px;
+    font-size: 10px;
+}
+
 .roadbook-list {
     display: flex;
     flex-direction: column;
@@ -1122,6 +1143,91 @@ input:checked + .slider:before {
     pointer-events: none;
 }
 
+.share-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 520;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.share-sheet-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 12, 11, 0.52);
+    backdrop-filter: blur(8px);
+}
+
+.share-sheet-panel {
+    position: relative;
+    width: min(560px, 100%);
+    max-height: min(92dvh, 820px);
+    overflow: auto;
+    padding: 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--panel-bg);
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.26);
+}
+
+.share-sheet-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.share-sheet-header h2 {
+    margin: 2px 0 0;
+    color: var(--text-primary);
+    font-size: 18px;
+}
+
+.share-sheet-eyebrow {
+    color: var(--text-muted);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+}
+
+.share-mode-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin: 16px 0 12px;
+}
+
+.share-mode-tab {
+    min-height: 34px;
+    padding: 6px;
+    font-size: 12px;
+}
+
+.share-preview-wrap {
+    min-height: 260px;
+    max-height: 46dvh;
+    overflow: auto;
+    border: 1px solid var(--border-color);
+    background: #eff1eb;
+}
+
+.share-preview-wrap img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.share-sheet-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.share-sheet-actions .btn-primary {
+    grid-column: 1 / -1;
+}
+
 /* SVG Text Label Halo for Legibility */
 #labels-group text {
     stroke: var(--bg-page);
@@ -1238,6 +1344,22 @@ input:checked + .slider:before {
 
     .custom-route-actions {
         grid-template-columns: 1fr;
+    }
+
+    .share-sheet {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .share-sheet-panel {
+        width: 100%;
+        max-height: 88dvh;
+        border-radius: 8px 8px 0 0;
+        padding: 16px 14px max(16px, env(safe-area-inset-bottom));
+    }
+
+    .share-preview-wrap {
+        max-height: 42dvh;
     }
 
     .floating-drawer.drawer-roadbook-expanded {

@@ -48,6 +48,9 @@
     }
 
     function createPrintHtml(model) {
+        const segments = model.segments
+            .map(segment => `<li><strong>${escapeHtml(segment.line)}</strong><span>${escapeHtml(segment.stations[0])} - ${escapeHtml(segment.stations[segment.stations.length - 1])}</span></li>`)
+            .join("");
         const stations = model.stations
             .map((name, index) => `<li><span>${index + 1}</span>${escapeHtml(name)}</li>`)
             .join("");
@@ -63,10 +66,14 @@ h1 { margin: 0; font-size: 24px; }
 ol { margin: 0; padding: 0; list-style: none; }
 li { display: flex; gap: 10px; min-height: 26px; align-items: center; border-bottom: 1px solid #d7ddd8; }
 li span { color: #1d8b68; font-variant-numeric: tabular-nums; width: 24px; }
+.segments { margin: 0 0 18px; padding: 0; list-style: none; }
+.segments li { gap: 10px; color: #52605a; }
+.segments strong { color: #161a18; min-width: 64px; }
 @media print { .page-break { break-before: page; } }
 </style></head><body>
 <h1>${escapeHtml(model.cityName)} · ${escapeHtml(model.source)}</h1>
 <p class="summary">${escapeHtml(model.start)} - ${escapeHtml(model.end)} · ${model.stats.stationCount} 站 · ${model.stats.transferCount} 次换乘 · ${model.stats.distanceKm.toFixed(1)} km</p>
+<ul class="segments">${segments}</ul>
 <ol>${stations}</ol>
 </body></html>`;
     }

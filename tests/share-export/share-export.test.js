@@ -28,6 +28,8 @@ assert.ok(!JSON.stringify(snapshot).match(/location|token|url/i));
 assert.strictEqual(createCardModel(snapshot, "compact").stations.length, 2);
 assert.strictEqual(createCardModel(snapshot, "normal").segments.length, 2);
 assert.strictEqual(createCardModel(snapshot, "complete").stations.length, 3);
-assert.ok(createPrintHtml(createCardModel(snapshot, "complete")).includes("@media print"));
+const printHtml = createPrintHtml(createCardModel(snapshot, "complete"));
+assert.ok(printHtml.includes("@media print"));
+assert.ok(printHtml.includes("1号线"), "Complete print output should include route segments");
 
 console.log("route share contract ok");
