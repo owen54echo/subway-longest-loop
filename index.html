@@ -2118,7 +2118,12 @@
                     const to = edge && point(edge.v);
                     return isInsideMap(from) && isInsideMap(to) ? `<line x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" stroke="${escapeShareXml(edge.color || "#1d8b68")}" stroke-width="6" stroke-linecap="round"/>` : "";
                 }).join("");
-                const markedNames = [...new Set(model.routeStations.filter((name, index, stations) => index === 0 || index === stations.length - 1 || nodesByName.get(name)?.lines.length > 1))];
+                const MAX_THUMBNAIL_LABELS = 6;
+                const transferNames = [...new Set(model.routeStations.filter(name => name !== model.start && name !== model.end && nodesByName.get(name)?.lines.length > 1))];
+                const transferSlots = Math.max(MAX_THUMBNAIL_LABELS - 2, 0);
+                const transferStep = Math.max(1, Math.ceil(transferNames.length / Math.max(transferSlots, 1)));
+                const keyTransfers = transferNames.filter((name, index) => index % transferStep === 0).slice(0, transferSlots);
+                const markedNames = [model.start, ...keyTransfers, model.end].filter((name, index, names) => name && names.indexOf(name) === index);
                 const occupied = [];
                 const labels = markedNames.map(name => {
                     const station = point(name);
@@ -2141,8 +2146,8 @@
                 const width = 1080;
                 const text = (value) => escapeShareXml(value);
                 const hasThumbnail = model.mode !== "compact";
-                const thumbnailHeight = hasThumbnail ? 214 : 0;
-                const statsY = hasThumbnail ? 410 : 412;
+                const thumbnailHeight = hasThumbnail ? (model.mode === "complete" ? 340 : 300) : 0;
+                const statsY = hasThumbnail ? 194 + thumbnailHeight + 30 : 412;
                 const segmentStartY = statsY + 160;
                 let segmentCursorY = segmentStartY;
                 const segmentLines = model.mode === "compact" ? "" : model.segments.map(segment => {
