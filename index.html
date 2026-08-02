@@ -320,6 +320,10 @@
                 </div>
 
                 <div class="config-pane" id="pane-custom-route" style="display:none; flex-direction:column; gap:12px;">
+                    <button id="btn-custom-route-drawer-toggle" class="custom-route-compact-summary" type="button">
+                        <span id="custom-route-compact-count">已选 0 站</span>
+                        <span aria-hidden="true">展开</span>
+                    </button>
                     <div class="custom-route-summary" id="custom-route-summary">点击任意车站设置起点</div>
                     <div class="stats-grid" aria-live="polite">
                         <div class="stat-box"><span class="stat-label">途经车站</span><span class="stat-value" id="custom-stations">0 个</span></div>
@@ -618,6 +622,7 @@
 
     <script src="subway_data.js"></script>
     <script src="city_extremes_results.js"></script>
+    <script src="mobile-map-interaction.js"></script>
     <script src="custom-route.js"></script>
     <script src="station-label-layout.js"></script>
     <script src="share-export.js"></script>
@@ -782,6 +787,14 @@
                         if (hoveredStationName === node.name) hoveredStationName = "";
                         refreshStationLabels();
                     });
+
+                    // Keep the compact classic station mark while making touch selection forgiving.
+                    const hitArea = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    hitArea.setAttribute("cx", node.x);
+                    hitArea.setAttribute("cy", node.y);
+                    hitArea.setAttribute("r", isTransfer ? "14" : "12");
+                    hitArea.setAttribute("class", "station-hit-area");
+                    stationGroup.appendChild(hitArea);
 
                     const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
                     circle.setAttribute("cx", node.x);
@@ -975,12 +988,19 @@
             }
 
             // Keep pan and zoom state in one transform so every input method updates the same view.
-            function updateViewportTransform() {
+            function updateViewportTransform({ refreshLabels = true } = {}) {
                 const viewport = document.getElementById("map-viewport-group");
                 if (viewport) {
                     viewport.setAttribute("transform", `translate(${translateX}, ${translateY}) scale(${scale})`);
                 }
-                refreshStationLabels();
+                if (refreshLabels) refreshStationLabels();
+            }
+
+            const deferredLabelRefresh = window.MobileMapInteraction.createDeferredRefresh(refreshStationLabels);
+
+            function updateMapDuringGesture() {
+                updateViewportTransform({ refreshLabels: false });
+                deferredLabelRefresh.schedule();
             }
 
             // Pointer Events unify mouse, trackpad, and touch dragging/pinching
@@ -1029,7 +1049,7 @@
                 if (activePointers.size === 1 && isDragging) {
                     translateX = e.clientX - startDragX;
                     translateY = e.clientY - startDragY;
-                    updateViewportTransform();
+                    updateMapDuringGesture();
                 } else if (activePointers.size === 2) {
                     const pointers = Array.from(activePointers.values());
                     const currentDistance = getDistance(pointers[0], pointers[1]);
@@ -1042,7 +1062,7 @@
                         translateX = pinchCenterX - svgPinchCenterX * scale;
                         translateY = pinchCenterY - svgPinchCenterY * scale;
 
-                        updateViewportTransform();
+                        updateMapDuringGesture();
                     }
                 }
             });
@@ -1065,6 +1085,7 @@
                     startDragY = remainingPointer.y - translateY;
                 } else if (activePointers.size === 0) {
                     isDragging = false;
+                    deferredLabelRefresh.flush();
                 }
             };
 
@@ -1096,7 +1117,7 @@
                 translateX = mouseX - svgMouseX * scale;
                 translateY = mouseY - svgMouseY * scale;
 
-                updateViewportTransform();
+                updateMapDuringGesture();
                 mapPopup.style.display = "none";
             });
 
@@ -1266,12 +1287,14 @@
                 
                 activePaneId = paneId;
                 drawer.classList.add("open");
+                setCustomRouteDrawerCollapsed(paneId === "drawer-custom-route");
             }
 
             function closeDrawer() {
                 drawer.classList.remove("open");
                 drawer.classList.remove("drawer-rules-active");
                 drawer.classList.remove("drawer-custom-route-active");
+                drawer.classList.remove("drawer-custom-route-collapsed");
                 drawer.classList.remove("drawer-roadbook-expanded");
                 activePaneId = "";
                 navItems.forEach(n => n.classList.remove("active"));
@@ -1286,6 +1309,7 @@
                     ? `起点：${customRouteDraft.start} · 当前：${current}`
                     : "点击任意车站设置起点";
                 document.getElementById("custom-stations").textContent = `${confirmed?.path_stations.length || (customRouteDraft.start ? 1 : 0)} 个`;
+                document.getElementById("custom-route-compact-count").textContent = `已选 ${confirmed?.path_stations.length || (customRouteDraft.start ? 1 : 0)} 站`;
                 document.getElementById("custom-transfers").textContent = `${confirmed?.transfers || 0} 次`;
                 document.getElementById("custom-distance").textContent = formatDistanceKm(confirmed?.distanceKm || 0);
                 document.getElementById("btn-custom-undo").disabled = customRouteDraft.segments.length === 0;
@@ -1322,6 +1346,7 @@
                 isCustomRouteMode = false;
                 customRouteDraft = window.CustomRoute.createDraft();
                 appContainer.classList.remove("custom-route-mode");
+                drawer.classList.remove("drawer-custom-route-collapsed");
                 lastResultStations = currentConfirmedResult?.result.path_stations || [];
                 renderSvgMap();
                 if (currentConfirmedResult) displayResults(currentConfirmedResult.result, currentConfirmedResult.edges);
@@ -1364,6 +1389,7 @@
                 isCustomRouteMode = false;
                 confirmedRouteSource = "custom";
                 appContainer.classList.remove("custom-route-mode");
+                drawer.classList.remove("drawer-custom-route-collapsed");
                 displayResults(confirmed, data.edges);
                 openDrawer("drawer-roadbook", "路书");
             });
@@ -1374,20 +1400,52 @@
             });
 
             const drawerHeader = drawer.querySelector(".drawer-header");
+            const customDrawerToggle = document.getElementById("btn-custom-route-drawer-toggle");
+            let customDrawerSwipeStartY = null;
+
+            function setCustomRouteDrawerCollapsed(collapsed) {
+                const compact = collapsed && window.MobileMapInteraction.shouldUseCompactCustomDrawer(isCustomRouteMode, window.innerWidth);
+                drawer.classList.toggle("drawer-custom-route-collapsed", compact);
+            }
+
+            customDrawerToggle.addEventListener("click", () => {
+                setCustomRouteDrawerCollapsed(false);
+            });
+            customDrawerToggle.addEventListener("pointerdown", (e) => {
+                customDrawerSwipeStartY = e.clientY;
+            });
+            customDrawerToggle.addEventListener("pointerup", (e) => {
+                if (customDrawerSwipeStartY !== null && e.clientY - customDrawerSwipeStartY < -24) {
+                    setCustomRouteDrawerCollapsed(false);
+                }
+                customDrawerSwipeStartY = null;
+            });
+            customDrawerToggle.addEventListener("pointercancel", () => {
+                customDrawerSwipeStartY = null;
+            });
+
             drawerHeader.addEventListener("pointerdown", (e) => {
                 if (e.target.closest(".drawer-close")) return;
                 drawerSwipeStartY = e.clientY;
             });
             drawerHeader.addEventListener("pointerup", (e) => {
-                if (drawerSwipeStartY === null || activePaneId !== "drawer-roadbook") {
+                if (drawerSwipeStartY === null) {
                     drawerSwipeStartY = null;
                     return;
                 }
                 const deltaY = e.clientY - drawerSwipeStartY;
-                if (deltaY < -36) {
-                    drawer.classList.add("drawer-roadbook-expanded");
-                } else if (deltaY > 36) {
-                    drawer.classList.remove("drawer-roadbook-expanded");
+                if (activePaneId === "drawer-roadbook") {
+                    if (deltaY < -36) {
+                        drawer.classList.add("drawer-roadbook-expanded");
+                    } else if (deltaY > 36) {
+                        drawer.classList.remove("drawer-roadbook-expanded");
+                    }
+                } else if (activePaneId === "drawer-custom-route") {
+                    if (deltaY < -36) {
+                        setCustomRouteDrawerCollapsed(false);
+                    } else if (deltaY > 36) {
+                        setCustomRouteDrawerCollapsed(true);
+                    }
                 }
                 drawerSwipeStartY = null;
             });
