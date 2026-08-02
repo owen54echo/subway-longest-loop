@@ -193,6 +193,14 @@
                             <span class="slider"></span>
                         </label>
                     </div>
+
+                    <div class="switch-container">
+                        <span class="switch-label">允许重复经过线路</span>
+                        <label class="switch">
+                            <input type="checkbox" id="allow-line-reuse" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                     
                     <div class="form-item">
                         <div class="switch-container">
@@ -1846,7 +1854,7 @@
             }
 
             // Autocomplete is shared by starts, ends, waypoints and avoids; callers provide the current searchable universe.
-            function setupAutocomplete(inputId, boxId, getSearchItemsFn, selectCallback) {
+            function setupAutocomplete(inputId, boxId, getSearchItemsFn, selectCallback, clearAfterSelection = true) {
                 const input = document.getElementById(inputId);
                 const box = document.getElementById(boxId);
 
@@ -1870,7 +1878,7 @@
                     box.querySelectorAll(".suggestion-item").forEach(itemDiv => {
                         itemDiv.addEventListener("click", () => {
                             selectCallback(itemDiv.textContent);
-                            input.value = "";
+                            if (clearAfterSelection) input.value = "";
                             box.style.display = "none";
                         });
                     });
@@ -1887,8 +1895,8 @@
             let lineNames = [...new Set(data.edges.map(e => e.line))];
             let searchAvoidItems = [...stationNames, ...lineNames];
 
-            setupAutocomplete("search-start-input", "start-suggestions", () => stationNames, setStartStation);
-            setupAutocomplete("search-end-input", "end-suggestions", () => stationNames, setEndStation);
+            setupAutocomplete("search-start-input", "start-suggestions", () => stationNames, setStartStation, false);
+            setupAutocomplete("search-end-input", "end-suggestions", () => stationNames, setEndStation, false);
             setupAutocomplete("waypoint-input", "waypoint-suggestions", () => stationNames, addWaypoint);
             setupAutocomplete("avoid-input", "avoid-suggestions", () => searchAvoidItems, addAvoid);
 
@@ -2030,13 +2038,14 @@
                     end_station: (routeMode === "path" && selectedEndStation) ? calculationTopology.normalizeStation(selectedEndStation) : null,
                     mode: routeMode,
                     allow_station_reuse: document.getElementById("allow-station-reuse").checked,
+                    allow_line_reuse: document.getElementById("allow-line-reuse").checked,
                     max_transfers: limitTransfers ? parseInt(document.getElementById("max-transfers").value) : null,
                     max_lines: limitLines ? parseInt(document.getElementById("max-lines").value) : null,
                     waypoints: [...new Set(Array.from(selectedWaypoints, station => calculationTopology.normalizeStation(station)))],
                     optimize_metric: optimizeMetric,
                     nodes: calculationTopology.nodes,
                     edges: calculationEdges,
-                    timeout: 10
+                    timeout: null
                 };
 
                 console.log("%c🚀 [Solver] Starting path planning with config:", "color: #00f0ff; font-weight: bold;", solverConfig);
@@ -2069,6 +2078,14 @@
                         const duration = Date.now() - startTime;
                         
                         if (result && result.weight > -1) {
+                            if (result.timeout_reached) {
+                                alert("精确搜索尚未完成，未输出临时路线。请继续等待或取消后调整规则。");
+                                if (activeWorker) {
+                                    activeWorker.terminate();
+                                    activeWorker = null;
+                                }
+                                return;
+                            }
                             console.log(`%c✅ [Solver] Completed in ${duration}ms! Path weight: ${result.weight}, Stations: ${result.path_stations.length}, Timeout reached: ${result.timeout_reached}`, "color: #39ff14; font-weight: bold;");
                             console.log("%c🔗 Traversed Route:", "color: #fff30a;", result.path_stations.join(" -> "));
                             
@@ -2133,7 +2150,9 @@
                     if (index === 0) return count;
                     const previousEdge = edges[pathEdges[index - 1]];
                     const edge = edges[edgeIndex];
-                    return count + (edge?.line !== previousEdge?.line && !calculationTopology.isThroughServiceTransition(previousEdge, edge) ? 1 : 0);
+                    const previousLine = previousEdge?.logicalLine || calculationTopology.normalizeLine(previousEdge?.line);
+                    const line = edge?.logicalLine || calculationTopology.normalizeLine(edge?.line);
+                    return count + (line !== previousLine && !calculationTopology.isThroughServiceTransition(previousEdge, edge) ? 1 : 0);
                 }, 0);
             }
 
@@ -3817,7 +3836,9 @@
                     if (index === 0) return count;
                     const previousEdge = edges[result.path_edges[index - 1]];
                     const edge = edges[edgeIndex];
-                    return count + (edge?.line !== previousEdge?.line && !topology.isThroughServiceTransition(previousEdge, edge) ? 1 : 0);
+                    const previousLine = previousEdge?.logicalLine || topology.normalizeLine(previousEdge?.line);
+                    const line = edge?.logicalLine || topology.normalizeLine(edge?.line);
+                    return count + (line !== previousLine && !topology.isThroughServiceTransition(previousEdge, edge) ? 1 : 0);
                 }, 0);
             }
 

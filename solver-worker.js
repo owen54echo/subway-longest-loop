@@ -14,6 +14,7 @@ onmessage = function(e) {
         start_station,          // 起始车站名称
         mode,                   // 模式："loop" (闭环回路) 或 "path" (单向最长路径)
         allow_station_reuse,    // 是否允许车站重复经过
+        allow_line_reuse = true, // 是否允许离开后再次经过同一逻辑线路
         max_transfers,          // 最大换乘次数限制 (null 表示不限制)
         max_lines,              // 最大经过线路数限制 (null 表示不限制)
         waypoints,              // 必经车站名称列表
@@ -43,8 +44,9 @@ onmessage = function(e) {
     const lineNameToId = {};
     let lineCounter = 0;
     edges.forEach(edge => {
-        if (lineNameToId[edge.line] === undefined) {
-            lineNameToId[edge.line] = lineCounter++;
+        const logicalLine = edge.logicalLine || edge.line;
+        if (lineNameToId[logicalLine] === undefined) {
+            lineNameToId[logicalLine] = lineCounter++;
         }
     });
     const lineCount = lineCounter; // 不同的地铁线路总数
@@ -62,7 +64,7 @@ onmessage = function(e) {
     edges.forEach((edge, idx) => {
         edgeU[idx] = stationNameToId[edge.u];
         edgeV[idx] = stationNameToId[edge.v];
-        edgeLine[idx] = lineNameToId[edge.line];
+        edgeLine[idx] = lineNameToId[edge.logicalLine || edge.line];
         
         // 累加车站的初始度数
         remainingDegree[edgeU[idx]]++;
@@ -151,7 +153,7 @@ onmessage = function(e) {
     let bestStations = [];
 
     const startTime = Date.now();
-    const timeoutDuration = (config.timeout || 10) * 1000; // 超时限制 (默认为 10 秒)
+    const timeoutDuration = config.timeout === null ? Infinity : (config.timeout || 10) * 1000;
     let timeoutReached = false;
 
     // 7. 使用预分配容器进行快速 BFS，计算当前节点在剩余子图中的“最大连通分量权重之和”与“必经站连通性”
@@ -233,6 +235,104 @@ onmessage = function(e) {
     // 8. 核心 DFS 回溯搜索算法
     let remainingTotalWeight = totalNetworkWeight; // 全网尚未使用的边总权重上限，用于全局上界剪枝
     let stepCount = 0;
+
+    // A fixed-endpoint simple path is especially sensitive to DFS branch order. Seed it with
+    // a deterministic randomized walk to establish a strong lower bound before exhaustive search.
+    function seedFixedEndpointSimplePath() {
+        if (mode !== "path" || endId === undefined || allow_station_reuse || waypointIds.length ||
+            max_transfers !== null || max_lines !== null || !allow_line_reuse) {
+            return;
+        }
+
+        const seedVisited = new Uint8Array(V);
+        const seedStations = new Int32Array(V);
+        const seedEdges = new Int32Array(Math.max(0, V - 1));
+        const seedQueue = new Int32Array(V);
+        const seedSeen = new Int32Array(V);
+        const seedBudget = Math.min(1200, Math.max(250, Math.floor(timeoutDuration * 0.12)));
+        const seedDeadline = startTime + seedBudget;
+        let seedToken = 0;
+        let randomState = (((startId + 1) * 1103515245) ^ ((endId + 1) * 12345) ^ E) >>> 0;
+
+        function nextRandom() {
+            randomState = (randomState * 1664525 + 1013904223) >>> 0;
+            return randomState / 4294967296;
+        }
+
+        function canReachEnd(from) {
+            seedToken++;
+            let queueHead = 0;
+            let queueTail = 0;
+            seedQueue[queueTail++] = from;
+            seedSeen[from] = seedToken;
+
+            while (queueHead < queueTail) {
+                const u = seedQueue[queueHead++];
+                if (u === endId) return true;
+
+                let halfEdge = head[u];
+                while (halfEdge !== -1) {
+                    const v = to[halfEdge];
+                    if (seedSeen[v] !== seedToken && (!seedVisited[v] || v === endId)) {
+                        seedSeen[v] = seedToken;
+                        seedQueue[queueTail++] = v;
+                    }
+                    halfEdge = next[halfEdge];
+                }
+            }
+            return false;
+        }
+
+        function remainingDegreeScore(station) {
+            let score = 0;
+            let halfEdge = head[station];
+            while (halfEdge !== -1) {
+                if (!seedVisited[to[halfEdge]]) score++;
+                halfEdge = next[halfEdge];
+            }
+            return score;
+        }
+
+        while (Date.now() < seedDeadline) {
+            seedVisited.fill(0);
+            seedVisited[startId] = 1;
+            seedStations[0] = startId;
+            let current = startId;
+            let pathLength = 0;
+            let pathWeight = 0;
+
+            while (current !== endId && pathLength < V - 1) {
+                const candidates = [];
+                let halfEdge = head[current];
+                while (halfEdge !== -1) {
+                    const v = to[halfEdge];
+                    if (!seedVisited[v] && canReachEnd(v)) {
+                        candidates.push({ v, id: edgeId[halfEdge], score: remainingDegreeScore(v) });
+                    }
+                    halfEdge = next[halfEdge];
+                }
+                if (!candidates.length) break;
+
+                const nonTerminalCandidates = candidates.filter(candidate => candidate.v !== endId);
+                const pool = nonTerminalCandidates.length ? nonTerminalCandidates : candidates;
+                pool.sort((a, b) => b.score - a.score || (nextRandom() < 0.5 ? -1 : 1));
+                const choice = pool[Math.floor(nextRandom() * Math.min(3, pool.length))];
+
+                current = choice.v;
+                seedVisited[current] = 1;
+                seedEdges[pathLength] = choice.id;
+                seedStations[pathLength + 1] = current;
+                pathWeight += edgeWeight[choice.id];
+                pathLength++;
+            }
+
+            if (current === endId && pathWeight > bestWeight) {
+                bestWeight = pathWeight;
+                bestPath = Array.from(seedEdges.subarray(0, pathLength));
+                bestStations = Array.from(seedStations.subarray(0, pathLength + 1)).map(id => stationIdToName[id]);
+            }
+        }
+    }
 
     function isThroughServiceTransition(previousEdgeId, nextEdgeId) {
         if (previousEdgeId === -1 || nextEdgeId === -1) return false;
@@ -385,9 +485,17 @@ onmessage = function(e) {
             }
 
             // 计算并校验最大线路数限制
-            if (max_lines !== null) {
+            // Leaving and later re-entering a logical line is disallowed when requested.
+            // Consecutive edges on that line remain valid, including its official branches.
+            if (!allow_line_reuse && lineId !== lastLineId && lineUsageCount[lineId] > 0) {
+                e = next[e];
+                continue;
+            }
+
+            const trackLineUsage = max_lines !== null || !allow_line_reuse;
+            if (trackLineUsage) {
                 addLineUsage(lineId);
-                if (uniqueLinesCount > max_lines) {
+                if (max_lines !== null && uniqueLinesCount > max_lines) {
                     removeLineUsage(lineId);
                     e = next[e];
                     continue;
@@ -421,7 +529,7 @@ onmessage = function(e) {
             remainingDegree[v]++;
             visitedStationsCount[v]--;
             visitedEdges[id] = 0;
-            if (max_lines !== null) {
+            if (trackLineUsage) {
                 removeLineUsage(lineId);
             }
 
@@ -431,6 +539,8 @@ onmessage = function(e) {
             e = next[e]; // 走向下一个前向星邻居
         }
     }
+
+    seedFixedEndpointSimplePath();
 
     // 启动求解器搜索
     dfs(startId, 0, 0.0, -1, -1, 0);
