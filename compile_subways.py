@@ -217,7 +217,7 @@ def merge_cities(primary_nodes, primary_edges, secondary_raw, affine_params, lin
 
 def main():
     compiled_data = {}
-    output_js = "./subway_data.js"
+    output_js = os.path.join(os.path.dirname(os.path.abspath(__file__)), "subway_data.js")
     existing_wiki_by_city = load_existing_wiki_by_city(output_js)
     
     # Fetch all cities raw data

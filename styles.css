@@ -80,6 +80,18 @@
     border-radius: 0 !important; /* Hard rule: absolute geometric rigidity */
 }
 
+:root {
+    /* Falls back to the layout viewport in older browsers. */
+    --app-viewport-height: 100vh;
+}
+
+/* iOS Chrome changes its visible height while its browser chrome expands or collapses. */
+@supports (height: 100dvh) {
+    :root {
+        --app-viewport-height: 100dvh;
+    }
+}
+
 html, body {
     /* Prevent double-tap-to-zoom globally while keeping scrolling inside drawers/modals */
     touch-action: manipulation;
@@ -91,7 +103,7 @@ body {
     color: var(--text-primary);
     font-family: 'JetBrains Mono', 'IBM Plex Mono', 'SF Mono', Monaco, Consolas, monospace;
     overflow: hidden;
-    height: 100vh;
+    height: var(--app-viewport-height);
     width: 100vw;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
@@ -158,7 +170,7 @@ select,
 /* App Fullscreen Map Layout */
 .app-container {
     position: relative;
-    height: 100vh;
+    height: var(--app-viewport-height);
     width: 100vw;
     overflow: hidden;
 }
@@ -1436,11 +1448,17 @@ input:checked + .slider:before {
 
 /* Tablet and phone layouts move the drawer into the thumb-reachable lower half of the viewport. */
 @media (max-width: 1024px) {
+    :root {
+        /* Keep map controls above both the home indicator and the browser toolbar. */
+        --mobile-bottom-inset: max(12px, calc(env(safe-area-inset-bottom) + 12px));
+        --mobile-bottom-nav-clearance: calc(var(--mobile-bottom-inset) + 84px);
+    }
+
     .floating-drawer {
         top: auto;
         left: 12px;
         right: 12px;
-        bottom: 96px;
+        bottom: var(--mobile-bottom-nav-clearance);
         width: calc(100% - 24px);
         height: 35dvh;
         transform: translateY(120%);
@@ -1553,7 +1571,7 @@ input:checked + .slider:before {
     }
     
     .bottom-nav-bar {
-        bottom: 12px;
+        bottom: var(--mobile-bottom-inset);
         width: calc(100% - 24px);
         justify-content: space-around;
         padding: 4px;
@@ -1671,7 +1689,7 @@ input:checked + .slider:before {
     /* Cruise panel bottom-floating on mobile */
     .cruise-panel {
         top: auto !important;
-        bottom: 74px !important;
+        bottom: calc(var(--mobile-bottom-inset) + 62px) !important;
         left: 12px !important;
         right: 12px !important;
         width: calc(100% - 24px) !important;

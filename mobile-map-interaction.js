@@ -33,5 +33,16 @@
         return Boolean(isCustomRouteMode && viewportWidth <= 1024);
     }
 
-    global.MobileMapInteraction = { createDeferredRefresh, shouldUseCompactCustomDrawer };
+    function getPanUnitsPerCssPixel(viewBox, rect) {
+        if (!viewBox || !rect?.width || !rect.height) {
+            return { x: 1, y: 1 };
+        }
+
+        return {
+            x: viewBox.width / rect.width,
+            y: viewBox.height / rect.height
+        };
+    }
+
+    global.MobileMapInteraction = { createDeferredRefresh, shouldUseCompactCustomDrawer, getPanUnitsPerCssPixel };
 })(window);

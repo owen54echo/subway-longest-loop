@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>地铁路网线路研究</title>
     
     <!-- Google Fonts -->
@@ -676,6 +676,8 @@
             let isDragging = false;
             let startDragX = 0;
             let startDragY = 0;
+            let dragStartTranslateX = 0;
+            let dragStartTranslateY = 0;
 
             // Cache stable DOM anchors once; dynamic SVG children are recreated by renderSvgMap().
             const appContainer = document.querySelector(".app-container");
@@ -1016,6 +1018,16 @@
                 return Math.sqrt(dx * dx + dy * dy);
             }
 
+            // Pointer events report CSS pixels, while the SVG transform stores viewBox units.
+            // Converting between them keeps a low-zoom map moving at the same distance as the finger.
+            function beginMapDrag(clientX, clientY) {
+                isDragging = true;
+                startDragX = clientX;
+                startDragY = clientY;
+                dragStartTranslateX = translateX;
+                dragStartTranslateY = translateY;
+            }
+
             mapSection.addEventListener("pointerdown", (e) => {
                 if (e.target.closest(".svg-station") || e.target.closest(".float-panel-left") || e.target.closest(".float-panel-right") || 
                     e.target.closest(".bottom-nav-bar") || e.target.closest(".search-pill-container") || e.target.closest(".city-tab-container") ||
@@ -1026,9 +1038,7 @@
                 mapPopup.style.display = "none";
 
                 if (activePointers.size === 1) {
-                    isDragging = true;
-                    startDragX = e.clientX - translateX;
-                    startDragY = e.clientY - translateY;
+                    beginMapDrag(e.clientX, e.clientY);
                 } else if (activePointers.size === 2) {
                     isDragging = false;
                     const pointers = Array.from(activePointers.values());
@@ -1047,8 +1057,13 @@
                 activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
                 if (activePointers.size === 1 && isDragging) {
-                    translateX = e.clientX - startDragX;
-                    translateY = e.clientY - startDragY;
+                    const svg = document.getElementById("metro-svg");
+                    const panUnits = window.MobileMapInteraction.getPanUnitsPerCssPixel(
+                        svg?.viewBox?.baseVal,
+                        mapContainer.getBoundingClientRect()
+                    );
+                    translateX = dragStartTranslateX + (e.clientX - startDragX) * panUnits.x;
+                    translateY = dragStartTranslateY + (e.clientY - startDragY) * panUnits.y;
                     updateMapDuringGesture();
                 } else if (activePointers.size === 2) {
                     const pointers = Array.from(activePointers.values());
@@ -1079,10 +1094,8 @@
                     initialPinchDistance = 0;
                 }
                 if (activePointers.size === 1) {
-                    isDragging = true;
                     const remainingPointer = activePointers.values().next().value;
-                    startDragX = remainingPointer.x - translateX;
-                    startDragY = remainingPointer.y - translateY;
+                    beginMapDrag(remainingPointer.x, remainingPointer.y);
                 } else if (activePointers.size === 0) {
                     isDragging = false;
                     deferredLabelRefresh.flush();

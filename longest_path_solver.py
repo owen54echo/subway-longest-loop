@@ -307,7 +307,8 @@ def main():
     
     args = parser.parse_args()
     
-    json_path = "./guangzhou_subway_network.json"
+    project_dir = os.path.dirname(os.path.abspath(__file__))
+    json_path = os.path.join(project_dir, "guangzhou_subway_network.json")
     if not os.path.exists(json_path):
         print(f"Error: Network JSON file not found at {json_path}. Please run generate_subway_graph.py first.")
         sys.exit(1)
@@ -336,7 +337,7 @@ def main():
     print_result(result, data["edges"], args.metric)
     
     if result and result["weight"] > -1:
-        result_json_path = "./longest_path_result.json"
+        result_json_path = os.path.join(project_dir, "longest_path_result.json")
         with open(result_json_path, "w", encoding="utf-8") as f:
             json.dump({
                 "path_edges": result["path_edges"],
@@ -348,7 +349,7 @@ def main():
             import subprocess
             subprocess.run([
                 "python3", 
-                "./generate_subway_graph.py",
+                os.path.join(project_dir, "generate_subway_graph.py"),
                 "--highlight",
                 result_json_path
             ])

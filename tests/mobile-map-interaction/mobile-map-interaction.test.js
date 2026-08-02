@@ -4,7 +4,7 @@ const fs = require("fs");
 const windowLike = {};
 new Function("window", fs.readFileSync("mobile-map-interaction.js", "utf8"))(windowLike);
 
-const { createDeferredRefresh, shouldUseCompactCustomDrawer } = windowLike.MobileMapInteraction;
+const { createDeferredRefresh, shouldUseCompactCustomDrawer, getPanUnitsPerCssPixel } = windowLike.MobileMapInteraction;
 let nextTimerId = 0;
 const timers = new Map();
 let refreshCount = 0;
@@ -36,5 +36,11 @@ assert.strictEqual(timers.size, 0);
 assert.strictEqual(shouldUseCompactCustomDrawer(true, 390), true);
 assert.strictEqual(shouldUseCompactCustomDrawer(true, 1025), false);
 assert.strictEqual(shouldUseCompactCustomDrawer(false, 390), false);
+
+assert.deepStrictEqual(
+    getPanUnitsPerCssPixel({ width: 1200, height: 900 }, { width: 400, height: 300 }),
+    { x: 3, y: 3 }
+);
+assert.deepStrictEqual(getPanUnitsPerCssPixel(null, { width: 400, height: 300 }), { x: 1, y: 1 });
 
 console.log("mobile map interaction contract ok");
