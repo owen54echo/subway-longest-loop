@@ -1231,6 +1231,78 @@ input:checked + .slider:before {
     grid-column: 1 / -1;
 }
 
+.share-sheet :is(.share-mode-tab, .share-sheet-actions button, .drawer-close) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: 42px;
+    margin: 0;
+    padding: 8px 12px;
+    border: 1px solid var(--button-glass-edge);
+    border-radius: 12px;
+    background: var(--button-glass-surface);
+    box-shadow: inset 0 1px 0 var(--button-glass-highlight), inset 0 -1px 0 rgba(0, 0, 0, 0.10), var(--button-glass-shadow);
+    color: var(--text-primary);
+    font-family: inherit;
+    line-height: 1.2;
+    text-align: center;
+    backdrop-filter: blur(18px) saturate(130%);
+    -webkit-backdrop-filter: blur(18px) saturate(130%);
+    transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
+
+.share-sheet .share-mode-tab,
+.share-sheet .share-sheet-actions button {
+    width: 100%;
+}
+
+.share-sheet .drawer-close {
+    width: 36px;
+    min-height: 36px;
+    padding: 0;
+    flex: 0 0 36px;
+}
+
+.share-sheet .share-mode-tab.active {
+    border-color: var(--button-glass-highlight);
+    background: var(--button-glass-selected);
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.share-sheet .share-sheet-actions .btn-primary {
+    border-color: var(--button-glass-highlight);
+    background: var(--button-glass-primary);
+    color: var(--bg-page);
+}
+
+.theme-dark .share-sheet .share-sheet-actions .btn-primary {
+    color: var(--text-primary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .share-sheet :is(.share-mode-tab, .share-sheet-actions button, .drawer-close):not(:disabled):hover {
+        border-color: var(--button-glass-highlight);
+        background: var(--button-glass-surface-hover);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), inset 0 -1px 0 rgba(0, 0, 0, 0.08), 0 12px 26px rgba(0, 0, 0, 0.18);
+        filter: brightness(1.06);
+        transform: scale(1.02);
+    }
+}
+
+.share-sheet :is(.share-mode-tab, .share-sheet-actions button, .drawer-close):not(:disabled):active {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 3px 8px rgba(0, 0, 0, 0.16);
+    transform: scale(0.96);
+}
+
+.share-sheet :is(.share-mode-tab, .share-sheet-actions button, .drawer-close):disabled {
+    cursor: not-allowed;
+    filter: none;
+    opacity: 0.46;
+    transform: none;
+}
+
 .share-large-viewer {
     position: fixed;
     inset: 0;
