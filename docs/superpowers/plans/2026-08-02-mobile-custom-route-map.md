@@ -353,4 +353,3 @@ git commit -m "style: optimize mobile custom route drawer"
 - Spec coverage: Task 2 provides compact state, map gesture deferral, station hit areas, and route confirmation preservation. Task 3 provides the mobile layout and responsive verification. Task 1 provides direct behavioral coverage for timing logic.
 - Placeholder scan: no unresolved implementation placeholders remain.
 - Type consistency: `MobileMapInteraction`, `createDeferredRefresh`, and `shouldUseCompactCustomDrawer` use the same names in all tasks.
-
