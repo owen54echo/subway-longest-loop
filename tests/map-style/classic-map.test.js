@@ -30,5 +30,8 @@ assert.ok(html.includes('src="station-label-layout.js"'), "Label layout module i
 assert.ok(html.includes("function refreshStationLabels()"), "Collision-aware label refresh hook is missing");
 assert.ok(html.includes("window.StationLabelLayout.place"), "Map does not use collision-free label layout");
 assert.ok(!html.includes('leader.setAttribute("class", "station-label-leader")'), "Station label leader lines should not be rendered");
+assert.ok(css.includes(".station-hit-area"), "Station touch target style is missing");
+assert.ok(css.includes("drawer-custom-route-active.drawer-custom-route-collapsed"), "Compact custom drawer style is missing");
+assert.ok(css.includes("height: 96px"), "Compact custom drawer height is missing");
 
 console.log("classic shared map contract ok");
