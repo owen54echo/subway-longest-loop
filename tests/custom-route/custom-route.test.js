@@ -43,6 +43,17 @@ assert.strictEqual(confirmed.transfers, 1);
 assert.strictEqual(confirmed.distanceKm, 7);
 assert.strictEqual(undoDraft(jump.draft).segments.length, 1);
 
+const throughNodes = ["站马屯", "南四环", "十八里河"].map(name => ({ name }));
+const throughEdges = [
+    { u: "站马屯", v: "南四环", mapU: "站马屯", mapV: "南四环(郑州航空港站)", throughServiceGroups: ["南四环"], throughServiceEndpointGroups: { "南四环(郑州航空港站)": "南四环" }, line: "2号线", straightLengthKm: 2.339 },
+    { u: "南四环", v: "十八里河", mapU: "南四环(贾河)", mapV: "十八里河", throughServiceGroups: ["南四环"], throughServiceEndpointGroups: { "南四环(贾河)": "南四环" }, line: "城郊线", straightLengthKm: 1.645 }
+];
+const throughGraph = createGraph(throughNodes, throughEdges);
+const throughDraft = appendSelection(createDraft("站马屯"), "十八里河", throughGraph).draft;
+const throughConfirmed = confirmDraft(throughDraft, throughGraph);
+assert.deepStrictEqual(throughConfirmed.path_stations, ["站马屯", "南四环", "十八里河"]);
+assert.strictEqual(throughConfirmed.transfers, 0);
+
 let repeatDraft = appendSelection(createDraft("A"), "B", graph).draft;
 repeatDraft = appendSelection(repeatDraft, "A", graph).draft;
 assert.deepStrictEqual(confirmDraft(repeatDraft, graph).path_stations, ["A", "B", "A"]);

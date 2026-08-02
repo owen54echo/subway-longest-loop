@@ -623,6 +623,7 @@
     <script src="subway_data.js"></script>
     <script src="city_extremes_results.js"></script>
     <script src="mobile-map-interaction.js"></script>
+    <script src="calculation-topology.js"></script>
     <script src="custom-route.js"></script>
     <script src="station-label-layout.js"></script>
     <script src="share-export.js"></script>
@@ -637,6 +638,7 @@
                 return;
             }
             document.title = "地铁路网线路研究";
+            let calculationTopology = window.CalculationTopology.create(selectedCity, data.nodes, data.edges);
 
             // Planning state is the single source of truth for every map marker, form control and solver request.
             let selectedStartStation = "";
@@ -648,7 +650,7 @@
             const selectedAvoids = new Set();
             let activeWorker = null;
             let isCustomRouteMode = false;
-            let customRouteGraph = window.CustomRoute.createGraph(data.nodes, data.edges);
+            let customRouteGraph = window.CustomRoute.createGraph(calculationTopology.nodes, calculationTopology.edges);
             let customRouteDraft = window.CustomRoute.createDraft();
             let currentConfirmedResult = null;
             let confirmedRouteSource = "solver";
@@ -914,11 +916,11 @@
 
             let lastResultStations = [];
             function isStationTraversed(name) {
-                return lastResultStations.includes(name);
+                return lastResultStations.includes(calculationTopology.normalizeStation(name));
             }
 
             function getStationLabelPriority(node) {
-                if (node.name === hoveredStationName || node.name === clickedStationName || node.name === customRouteDraft.current) return 600;
+                if (node.name === hoveredStationName || node.name === clickedStationName || calculationTopology.normalizeStation(node.name) === customRouteDraft.current) return 600;
                 if (node.name === selectedStartStation || node.name === selectedEndStation) return 500;
                 if (node.lines.length > 1) return 400;
                 if (isStationTraversed(node.name)) return 300;
@@ -1185,9 +1187,10 @@
                     
                     selectedCity = selected;
                     data = window.subwayDataMap[selectedCity];
+                    calculationTopology = window.CalculationTopology.create(selectedCity, data.nodes, data.edges);
                     isCustomRouteMode = false;
                     appContainer.classList.remove("custom-route-mode");
-                    customRouteGraph = window.CustomRoute.createGraph(data.nodes, data.edges);
+                    customRouteGraph = window.CustomRoute.createGraph(calculationTopology.nodes, calculationTopology.edges);
                     customRouteDraft = window.CustomRoute.createDraft();
                     currentConfirmedResult = null;
                     document.title = "地铁路网线路研究";
@@ -1338,14 +1341,14 @@
                 }
                 const preview = window.CustomRoute.confirmDraft(customRouteDraft, customRouteGraph);
                 lastResultStations = preview.path_stations;
-                highlightPathOnSvgMap(preview, data.edges);
+                highlightPathOnSvgMap(preview, calculationTopology.edges);
                 refreshStationLabels();
             }
 
             function beginCustomRouteMode() {
                 if (isCustomRouteMode) return;
                 isCustomRouteMode = true;
-                customRouteGraph = window.CustomRoute.createGraph(data.nodes, data.edges);
+                customRouteGraph = window.CustomRoute.createGraph(calculationTopology.nodes, calculationTopology.edges);
                 customRouteDraft = window.CustomRoute.createDraft();
                 lastResultStations = [];
                 mapPopup.style.display = "none";
@@ -1375,7 +1378,8 @@
                     showMapPopup(stationName, event.clientX, event.clientY);
                     return;
                 }
-                const result = window.CustomRoute.appendSelection(customRouteDraft, stationName, customRouteGraph);
+                const calculationStation = calculationTopology.normalizeStation(stationName);
+                const result = window.CustomRoute.appendSelection(customRouteDraft, calculationStation, customRouteGraph);
                 if (!result.ok) {
                     showCustomRouteError(result.error);
                     return;
@@ -1403,7 +1407,7 @@
                 confirmedRouteSource = "custom";
                 appContainer.classList.remove("custom-route-mode");
                 drawer.classList.remove("drawer-custom-route-collapsed");
-                displayResults(confirmed, data.edges);
+                displayResults(confirmed, calculationTopology.edges);
                 openDrawer("drawer-roadbook", "路书");
             });
 
@@ -1489,7 +1493,7 @@
                 const isEnd = selectedEndStation === stationName;
                 const isWaypoint = selectedWaypoints.has(stationName);
                 const isAvoid = selectedAvoids.has(stationName);
-                const isTraversed = lastResultStations.includes(stationName);
+                const isTraversed = isStationTraversed(stationName);
                 
                 const btnEnd = document.getElementById("popup-btn-end");
                 if (btnEnd) {
@@ -2011,23 +2015,27 @@
 
                 const limitTransfers = document.getElementById("limit-transfers-toggle").checked;
                 const limitLines = document.getElementById("limit-lines-toggle").checked;
+                const calculationAvoids = new Set(
+                    Array.from(selectedAvoids, station => calculationTopology.normalizeStation(station))
+                );
+                const calculationEdges = calculationTopology.edges.filter(edge => {
+                    const isAvoidedLine = selectedAvoids.has(edge.line);
+                    const isAvoidedU = calculationAvoids.has(edge.u);
+                    const isAvoidedV = calculationAvoids.has(edge.v);
+                    return !isAvoidedLine && !isAvoidedU && !isAvoidedV;
+                });
 
                 const solverConfig = {
-                    start_station: selectedStartStation,
-                    end_station: (routeMode === "path" && selectedEndStation) ? selectedEndStation : null,
+                    start_station: calculationTopology.normalizeStation(selectedStartStation),
+                    end_station: (routeMode === "path" && selectedEndStation) ? calculationTopology.normalizeStation(selectedEndStation) : null,
                     mode: routeMode,
                     allow_station_reuse: document.getElementById("allow-station-reuse").checked,
                     max_transfers: limitTransfers ? parseInt(document.getElementById("max-transfers").value) : null,
                     max_lines: limitLines ? parseInt(document.getElementById("max-lines").value) : null,
-                    waypoints: Array.from(selectedWaypoints),
+                    waypoints: [...new Set(Array.from(selectedWaypoints, station => calculationTopology.normalizeStation(station)))],
                     optimize_metric: optimizeMetric,
-                    nodes: data.nodes,
-                    edges: data.edges.filter(edge => {
-                        const isAvoidedLine = selectedAvoids.has(edge.line);
-                        const isAvoidedU = selectedAvoids.has(edge.u);
-                        const isAvoidedV = selectedAvoids.has(edge.v);
-                        return !isAvoidedLine && !isAvoidedU && !isAvoidedV;
-                    }),
+                    nodes: calculationTopology.nodes,
+                    edges: calculationEdges,
                     timeout: 10
                 };
 
@@ -2123,7 +2131,9 @@
             function countPathTransfers(pathEdges, edges) {
                 return pathEdges.reduce((count, edgeIndex, index) => {
                     if (index === 0) return count;
-                    return count + (edges[edgeIndex]?.line !== edges[pathEdges[index - 1]]?.line ? 1 : 0);
+                    const previousEdge = edges[pathEdges[index - 1]];
+                    const edge = edges[edgeIndex];
+                    return count + (edge?.line !== previousEdge?.line && !calculationTopology.isThroughServiceTransition(previousEdge, edge) ? 1 : 0);
                 }, 0);
             }
 
@@ -2436,6 +2446,8 @@
                     
                     if (!currentSegment || currentSegment.line !== lineName) {
                         if (currentSegment) {
+                            const previousEdge = filteredEdges[currentSegment.edgeIds[currentSegment.edgeIds.length - 1]];
+                            currentSegment.continuesDirectly = calculationTopology.isThroughServiceTransition(previousEdge, edge);
                             segments.push(currentSegment);
                         }
                         currentSegment = {
@@ -2465,6 +2477,7 @@
                     const endStation = seg.stations[seg.stations.length - 1];
                     const intermediateStations = seg.stations.slice(1, -1);
                     const endEdge = filteredEdges[seg.edgeIds[seg.edgeIds.length - 1]];
+                    const continuesDirectly = Boolean(seg.continuesDirectly);
                     
                     let nextSegLine = "";
                     let nextSegColor = "";
@@ -2524,11 +2537,11 @@
                                     ${renderSectionDistance(endEdge)}
                                     <div class="station-name-row">
                                         <span class="station-name">${endStation}</span>
-                                        ${isLast ? '<span class="badge badge-end">终点</span>' : '<span class="badge badge-transfer">换乘站</span>'}
+                                        ${isLast ? '<span class="badge badge-end">终点</span>' : `<span class="badge badge-transfer">${continuesDirectly ? '直通站' : '换乘站'}</span>`}
                                     </div>
                                     ${!isLast ? `
                                         <div class="transfer-action-info">
-                                            请换乘 <span class="next-line-badge" style="background-color: ${nextSegColor};">${nextSegLine}</span>
+                                            ${continuesDirectly ? '无需下车，直通' : '请换乘'} <span class="next-line-badge" style="background-color: ${nextSegColor};">${nextSegLine}</span>
                                         </div>
                                     ` : ''}
                                 </div>
@@ -2552,10 +2565,12 @@
 
                 const traversedStationSeq = {};
                 result.path_stations.forEach((name, idx) => {
-                    if (!traversedStationSeq[name]) {
-                        traversedStationSeq[name] = [];
-                    }
-                    traversedStationSeq[name].push(idx + 1);
+                    calculationTopology.getMapStationNames(name).forEach(mapStationName => {
+                        if (!traversedStationSeq[mapStationName]) {
+                            traversedStationSeq[mapStationName] = [];
+                        }
+                        traversedStationSeq[mapStationName].push(idx + 1);
+                    });
                 });
 
                 // Fade base lines further
@@ -2564,8 +2579,10 @@
                     if (lineEl) {
                         const isTraversed = result.path_edges.some(solverEdgeIdx => {
                             const solverEdge = filteredEdges[solverEdgeIdx];
+                            const solverU = solverEdge?.mapU || solverEdge?.u;
+                            const solverV = solverEdge?.mapV || solverEdge?.v;
                             return solverEdge && 
-                                   ((solverEdge.u === edge.u && solverEdge.v === edge.v) || (solverEdge.u === edge.v && solverEdge.v === edge.u)) &&
+                                   ((solverU === edge.u && solverV === edge.v) || (solverU === edge.v && solverV === edge.u)) &&
                                    solverEdge.line === edge.line;
                         });
 
@@ -2596,8 +2613,10 @@
                 result.path_edges.forEach(solverEdgeIdx => {
                     const edge = filteredEdges[solverEdgeIdx];
                     if (edge) {
-                        const uNode = data.nodes.find(n => n.name === edge.u);
-                        const vNode = data.nodes.find(n => n.name === edge.v);
+                        const mapU = edge.mapU || edge.u;
+                        const mapV = edge.mapV || edge.v;
+                        const uNode = data.nodes.find(n => n.name === mapU);
+                        const vNode = data.nodes.find(n => n.name === mapV);
                         if (uNode && vNode) {
                             // A dark backing separates the active route at crossings without a glow.
                             const backingLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -2635,7 +2654,7 @@
                         // Find first traversed edge color
                         const firstEdgeIdx = result.path_edges.find(solverEdgeIdx => {
                             const edge = filteredEdges[solverEdgeIdx];
-                            return edge && (edge.u === name || edge.v === name);
+                            return edge && ((edge.mapU || edge.u) === name || (edge.mapV || edge.v) === name);
                         });
                         const firstEdge = firstEdgeIdx !== undefined ? filteredEdges[firstEdgeIdx] : null;
                         const lineStrokeColor = firstEdge ? firstEdge.color : "var(--accent-color)";
@@ -2840,12 +2859,49 @@
                     return;
                 }
 
-                cruisePathPoints = lastResultStations.map(name => {
-                    const node = data.nodes.find(n => n.name === name);
-                    return node ? { x: node.x, y: node.y, name: name } : null;
-                }).filter(p => p !== null);
+                if (!cruisePreviousViewport) {
+                    cruisePreviousViewport = { scale, translateX, translateY };
+                }
+                scale = Math.max(scale, CRUISE_MIN_SCALE);
+                setCruiseMapMode(true);
 
-                if (cruisePathPoints.length < 2) return;
+                const routeResult = currentConfirmedResult?.result;
+                const routeEdges = currentConfirmedResult?.edges;
+                const mapPoint = stationName => {
+                    const node = data.nodes.find(candidate => candidate.name === stationName);
+                    return node ? { x: node.x, y: node.y, name: stationName } : null;
+                };
+
+                if (routeResult?.path_edges?.length && routeEdges) {
+                    cruisePathPoints = [];
+                    routeResult.path_edges.forEach((edgeIndex, index) => {
+                        const edge = routeEdges[edgeIndex];
+                        if (!edge) return;
+                        const mapU = edge.mapU || edge.u;
+                        const mapV = edge.mapV || edge.v;
+                        const logicalStart = routeResult.path_stations[index];
+                        const forward = calculationTopology.normalizeStation(mapU) === logicalStart;
+                        const [fromStation, toStation] = forward ? [mapU, mapV] : [mapV, mapU];
+                        const fromPoint = mapPoint(fromStation);
+                        const toPoint = mapPoint(toStation);
+                        if (fromPoint && cruisePathPoints.at(-1)?.name !== fromStation) cruisePathPoints.push(fromPoint);
+                        if (toPoint) cruisePathPoints.push(toPoint);
+                    });
+                } else {
+                    cruisePathPoints = lastResultStations
+                        .map(name => mapPoint(calculationTopology.getMapStationNames(name)[0]))
+                        .filter(Boolean);
+                }
+
+                if (cruisePathPoints.length < 2) {
+                    if (cruisePreviousViewport) {
+                        ({ scale, translateX, translateY } = cruisePreviousViewport);
+                        cruisePreviousViewport = null;
+                        updateViewportTransform();
+                    }
+                    setCruiseMapMode(false);
+                    return;
+                }
 
                 cruiseSegments = [];
                 for (let i = 0; i < cruisePathPoints.length - 1; i++) {
@@ -2877,11 +2933,6 @@
                 if (cruisePanel) {
                     cruisePanel.style.display = "flex";
                 }
-                if (!cruisePreviousViewport) {
-                    cruisePreviousViewport = { scale, translateX, translateY };
-                }
-                scale = Math.max(scale, CRUISE_MIN_SCALE);
-                setCruiseMapMode(true);
                 focusMapOn(cruiseSegments[0].from.x, cruiseSegments[0].from.y);
 
                 document.querySelectorAll(".speed-btn").forEach(btn => {
@@ -3353,6 +3404,12 @@
             // This analysis is intentionally separate from the longest-path worker: it computes all-pairs shortest paths on demand.
             let matrixSelectedCity = selectedCity;
 
+            function getCalculationCityData(cityKey) {
+                const city = window.subwayDataMap[cityKey] || data;
+                const topology = window.CalculationTopology.create(cityKey, city.nodes, city.edges);
+                return { ...city, nodes: topology.nodes, edges: topology.edges, topology };
+            }
+
             function populateAnalysisCities(selectId, selectedValue) {
                 const select = document.getElementById(selectId);
                 if (!select) return;
@@ -3420,6 +3477,7 @@
                 const nodes = cityData.nodes;
                 const edges = cityData.edges;
                 const V = nodes.length;
+                const avoidedStations = new Set(Array.from(selectedAvoids, station => cityData.topology?.normalizeStation(station) || station));
 
                 const adj = Array.from({ length: V }, () => []);
                 const nodeNameToId = {};
@@ -3429,8 +3487,8 @@
 
                 edges.forEach(edge => {
                     const isAvoidedLine = selectedAvoids.has(edge.line);
-                    const isAvoidedU = selectedAvoids.has(edge.u);
-                    const isAvoidedV = selectedAvoids.has(edge.v);
+                    const isAvoidedU = avoidedStations.has(edge.u);
+                    const isAvoidedV = avoidedStations.has(edge.v);
                     if (!isAvoidedLine && !isAvoidedU && !isAvoidedV) {
                         const uId = nodeNameToId[edge.u];
                         const vId = nodeNameToId[edge.v];
@@ -3479,6 +3537,7 @@
                 stationsPath.reverse();
 
                 const pathEdges = [];
+                const avoidedStations = new Set(Array.from(selectedAvoids, station => cityData.topology?.normalizeStation(station) || station));
                 for (let i = 0; i < stationsPath.length - 1; i++) {
                     const uName = stationsPath[i];
                     const vName = stationsPath[i+1];
@@ -3486,8 +3545,8 @@
                         const matches = (edge.u === uName && edge.v === vName) || (edge.u === vName && edge.v === uName);
                         if (!matches) return false;
                         const isAvoidedLine = selectedAvoids.has(edge.line);
-                        const isAvoidedU = selectedAvoids.has(edge.u);
-                        const isAvoidedV = selectedAvoids.has(edge.v);
+                        const isAvoidedU = avoidedStations.has(edge.u);
+                        const isAvoidedV = avoidedStations.has(edge.v);
                         return !isAvoidedLine && !isAvoidedU && !isAvoidedV;
                     });
                     if (edgeIdx !== -1) {
@@ -3510,11 +3569,11 @@
                     filterInput.value = 1;
                 }
 
-                const matrixData = window.subwayDataMap[matrixSelectedCity] || data;
+                const matrixData = getCalculationCityData(matrixSelectedCity);
                 const { dist, parent, nodeNameToId } = computeShortestPaths(matrixData);
                 const nodes = matrixData.nodes;
                 const V = nodes.length;
-                const selectedStart = document.getElementById("matrix-start-select").value;
+                const selectedStart = matrixData.topology.normalizeStation(document.getElementById("matrix-start-select").value);
                 const selectedStartId = selectedStart ? nodeNameToId[selectedStart] : undefined;
 
                 // Collect all valid station pairs
@@ -3607,7 +3666,7 @@
                             renderSvgMap();
                             
                             openDrawer("drawer-roadbook", "路书");
-                            displayResults(shortestPathResult, data.edges);
+                            displayResults(shortestPathResult, getCalculationCityData(matrixSelectedCity).edges);
 
                             document.getElementById("matrix-modal").style.display = "none";
                         }
@@ -3679,13 +3738,16 @@
                 Object.entries(results).flatMap(([ruleKey, entry]) => {
                     const parsedKey = parseCityExtremeCacheRuleKey(ruleKey);
                     const city = window.subwayDataMap[cityKey];
-                    if (!city || !isCityExtremeResultCompatible(entry.result, city.edges)) {
+                    const topology = city && window.CalculationTopology.create(cityKey, city.nodes, city.edges);
+                    if (!city || !isCityExtremeResultCompatible(entry.result, topology.edges)) {
                         return [];
                     }
                     return [[`${cityKey}|${parsedKey.ruleKey}|${parsedKey.metricKey}`, {
                     ...entry,
                     cityKey,
                     city,
+                    edges: topology.edges,
+                    topology,
                     rule: { key: parsedKey.ruleKey, ...cityExtremeRules[parsedKey.ruleKey] },
                     metric: { key: parsedKey.metricKey, ...cityExtremeMetrics[parsedKey.metricKey] },
                     completed: entry.total,
@@ -3750,10 +3812,12 @@
                 return `${cityKey}|${rule.key}|${metric.key}`;
             }
 
-            function countRouteTransfers(result, edges) {
+            function countRouteTransfers(result, edges, topology = calculationTopology) {
                 return result.path_edges.reduce((count, edgeIndex, index) => {
                     if (index === 0) return count;
-                    return count + (edges[edgeIndex]?.line !== edges[result.path_edges[index - 1]]?.line ? 1 : 0);
+                    const previousEdge = edges[result.path_edges[index - 1]];
+                    const edge = edges[edgeIndex];
+                    return count + (edge?.line !== previousEdge?.line && !topology.isThroughServiceTransition(previousEdge, edge) ? 1 : 0);
                 }, 0);
             }
 
@@ -3763,7 +3827,8 @@
                 const start = stations[0] || "-";
                 const end = entry.rule.mode === "loop" ? start : (stations[stations.length - 1] || "-");
                 const sourceNote = entry.precomputed ? "已载入预计算结果；" : "";
-                const routeDistanceKm = calculateRouteDistanceKm(result.path_edges, entry.city.edges);
+                const routeEdges = entry.edges || entry.city.edges;
+                const routeDistanceKm = calculateRouteDistanceKm(result.path_edges, routeEdges);
                 const completionNote = entry.timedOutStarts > 0
                     ? `${sourceNote}已扫描 ${entry.completed}/${entry.total} 个起点；部分起点受时间预算限制，展示当前最佳路线。`
                     : `${sourceNote}已完成 ${entry.total} 个起点扫描。`;
@@ -3775,10 +3840,10 @@
                         <div class="city-extremes-metric"><span>优化目标</span><strong>${entry.metric.label}</strong></div>
                         <div class="city-extremes-metric"><span>起点</span><strong>${start}</strong></div>
                         <div class="city-extremes-metric"><span>${entry.rule.mode === "loop" ? "闭环站点" : "终点"}</span><strong>${end}</strong></div>
-                        <div class="city-extremes-metric"><span>经过区间 / 换乘</span><strong>${result.path_edges.length} / ${countRouteTransfers(result, entry.city.edges)}</strong></div>
+                        <div class="city-extremes-metric"><span>经过区间 / 换乘</span><strong>${result.path_edges.length} / ${countRouteTransfers(result, routeEdges, entry.topology)}</strong></div>
                         <div class="city-extremes-metric"><span>估算距离</span><strong>${formatDistanceKm(routeDistanceKm)}</strong></div>
                         <div class="city-extremes-metric"><span>途经车站</span><strong>${stations.length}</strong></div>
-                        <div class="city-extremes-metric"><span>涉及线路</span><strong>${new Set(result.path_edges.map(id => entry.city.edges[id]?.line)).size}</strong></div>
+                        <div class="city-extremes-metric"><span>涉及线路</span><strong>${new Set(result.path_edges.map(id => routeEdges[id]?.line)).size}</strong></div>
                         <button class="btn-primary" id="btn-view-city-extreme" type="button">在地图查看并打开路书</button>
                     </div>`;
                 document.getElementById("btn-view-city-extreme").addEventListener("click", () => viewCityExtremeOnMap(entry));
@@ -3798,6 +3863,7 @@
                 cancelCityExtremeRun();
                 const cityKey = cityExtremesCitySelect.value;
                 const city = window.subwayDataMap[cityKey];
+                const topology = window.CalculationTopology.create(cityKey, city.nodes, city.edges);
                 const rule = getSelectedCityExtremeRule();
                 const metric = getSelectedCityExtremeMetric();
                 const cacheKey = getCityExtremeCacheKey(cityKey, rule, metric);
@@ -3811,10 +3877,12 @@
                     cancelled: false,
                     workers: new Set(),
                     city,
+                    edges: topology.edges,
+                    topology,
                     cityKey,
                     rule,
                     metric,
-                    starts: city.nodes.map(node => node.name),
+                    starts: topology.nodes.map(node => node.name),
                     nextStart: 0,
                     completed: 0,
                     timedOutStarts: 0,
@@ -3870,8 +3938,8 @@
                             max_lines: null,
                             waypoints: [],
                             optimize_metric: metric.optimizeMetric,
-                            nodes: city.nodes,
-                            edges: city.edges,
+                            nodes: topology.nodes,
+                            edges: topology.edges,
                             timeout: CITY_EXTREME_TIMEOUT_SECONDS
                         });
                     }
@@ -3897,7 +3965,7 @@
                 document.getElementById("metric-distance").classList.toggle("active", optimizeMetric === "distance");
                 cityExtremesModal.style.display = "none";
                 renderSvgMap();
-                displayResults(entry.result, data.edges);
+                displayResults(entry.result, entry.edges || calculationTopology.edges);
                 openDrawer("drawer-roadbook", "路书");
             }
 

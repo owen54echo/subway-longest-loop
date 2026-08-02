@@ -4,8 +4,10 @@ const path = require('path');
 
 const projectDir = __dirname;
 const shardCount = Number(process.argv[2] || 1);
+const replaceCity = process.argv[3] || "";
 const outputPath = path.join(projectDir, 'city_extremes_results.js');
 const output = {};
+const replacedCities = new Set();
 if (fs.existsSync(outputPath)) {
     const existingCode = fs.readFileSync(outputPath, 'utf8');
     const startMarker = 'window.cityExtremeResults = ';
@@ -19,6 +21,29 @@ if (fs.existsSync(outputPath)) {
 for (let shard = 0; shard < shardCount; shard++) {
     const shardData = JSON.parse(fs.readFileSync(path.join(projectDir, `city_extremes_results_${shard}.json`), 'utf8'));
     for (const [cityKey, cityResults] of Object.entries(shardData)) {
+        if (cityKey === replaceCity && !replacedCities.has(cityKey)) {
+            output[cityKey] = {};
+            replacedCities.add(cityKey);
+        }
+        if (cityKey === replaceCity) {
+            const mergedRules = output[cityKey] || {};
+            for (const [ruleKey, incoming] of Object.entries(cityResults)) {
+                const current = mergedRules[ruleKey];
+                if (!current) {
+                    mergedRules[ruleKey] = { ...incoming };
+                } else {
+                    const best = (incoming.result?.weight ?? -Infinity) > (current.result?.weight ?? -Infinity)
+                        ? incoming
+                        : current;
+                    mergedRules[ruleKey] = {
+                        ...best,
+                        timedOutStarts: (current.timedOutStarts || 0) + (incoming.timedOutStarts || 0)
+                    };
+                }
+            }
+            output[cityKey] = mergedRules;
+            continue;
+        }
         output[cityKey] = { ...(output[cityKey] || {}), ...cityResults };
     }
 }

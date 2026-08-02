@@ -4,9 +4,12 @@ const path = require('path');
 
 const projectDir = __dirname;
 const dataCode = fs.readFileSync(path.join(projectDir, 'subway_data.js'), 'utf8');
+const topologyCode = fs.readFileSync(path.join(projectDir, 'calculation-topology.js'), 'utf8');
 const workerCode = fs.readFileSync(path.join(projectDir, 'solver-worker.js'), 'utf8');
 const dataWindow = new Function('window', `${dataCode}\nreturn window;`)({});
 const cities = dataWindow.subwayDataMap;
+const topologyWindow = {};
+new Function('window', topologyCode)(topologyWindow);
 
 function runSolver(config) {
     let result = null;
@@ -38,6 +41,9 @@ const shard = Number(process.argv[2] || 0);
 const shardCount = Number(process.argv[3] || 1);
 const metricFilter = process.argv[4] || "all";
 const cityFilter = process.argv[5] || "";
+const nodeShard = Number(process.argv[6] || 0);
+const nodeShardCount = Number(process.argv[7] || 1);
+const outputShard = Number(process.argv[8] || shard);
 const allCityEntries = Object.entries(cities);
 const cityEntries = allCityEntries
     .filter(([cityKey]) => !cityFilter || cityKey === cityFilter)
@@ -45,15 +51,21 @@ const cityEntries = allCityEntries
 const selectedRules = Object.fromEntries(Object.entries(rules).filter(([, rule]) =>
     metricFilter === "all" || rule.optimizeMetric === metricFilter
 ));
-const totalRuns = cityEntries.reduce((sum, [, city]) => sum + city.nodes.length * Object.keys(selectedRules).length, 0);
+const totalRuns = cityEntries.reduce((sum, [cityKey, city]) => {
+    const topology = topologyWindow.CalculationTopology.create(cityKey, city.nodes, city.edges);
+    const scopedCount = topology.nodes.filter((_, index) => index % nodeShardCount === nodeShard).length;
+    return sum + scopedCount * Object.keys(selectedRules).length;
+}, 0);
 let completedRuns = 0;
 
 for (const [cityKey, city] of cityEntries) {
+    const topology = topologyWindow.CalculationTopology.create(cityKey, city.nodes, city.edges);
+    const scopedNodes = topology.nodes.filter((_, index) => index % nodeShardCount === nodeShard);
     output[cityKey] = {};
     for (const [ruleKey, rule] of Object.entries(selectedRules)) {
         let best = null;
         let timedOutStarts = 0;
-        for (const node of city.nodes) {
+        for (const node of scopedNodes) {
             const result = runSolver({
                 start_station: node.name,
                 end_station: null,
@@ -63,8 +75,8 @@ for (const [cityKey, city] of cityEntries) {
                 max_lines: null,
                 waypoints: [],
                 optimize_metric: rule.optimizeMetric,
-                nodes: city.nodes,
-                edges: city.edges,
+                nodes: topology.nodes,
+                edges: topology.edges,
                 timeout
             });
             completedRuns++;
@@ -74,7 +86,7 @@ for (const [cityKey, city] of cityEntries) {
         }
         output[cityKey][ruleKey] = {
             result: best,
-            total: city.nodes.length,
+            total: topology.nodes.length,
             timedOutStarts,
             searchTimeoutSeconds: timeout
         };
@@ -82,5 +94,5 @@ for (const [cityKey, city] of cityEntries) {
     }
 }
 
-fs.writeFileSync(path.join(projectDir, `city_extremes_results_${shard}.json`), JSON.stringify(output));
-console.log(`Wrote shard ${shard}`);
+fs.writeFileSync(path.join(projectDir, `city_extremes_results_${outputShard}.json`), JSON.stringify(output));
+console.log(`Wrote shard ${outputShard}`);

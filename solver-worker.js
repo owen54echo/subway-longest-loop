@@ -234,7 +234,25 @@ onmessage = function(e) {
     let remainingTotalWeight = totalNetworkWeight; // 全网尚未使用的边总权重上限，用于全局上界剪枝
     let stepCount = 0;
 
-    function dfs(u, pathLen, currentWeight, lastLineId, transferCount) {
+    function isThroughServiceTransition(previousEdgeId, nextEdgeId) {
+        if (previousEdgeId === -1 || nextEdgeId === -1) return false;
+        const previousEdge = edges[previousEdgeId];
+        const nextEdge = edges[nextEdgeId];
+        const previousGroups = previousEdge?.throughServiceGroups || [];
+        const nextGroups = nextEdge?.throughServiceGroups || [];
+        const sharedGroup = previousGroups.find(group => nextGroups.includes(group));
+        if (!sharedGroup) return false;
+
+        const previousStations = [previousEdge.mapU || previousEdge.u, previousEdge.mapV || previousEdge.v]
+            .filter(station => previousEdge.throughServiceEndpointGroups?.[station] === sharedGroup);
+        const nextStations = [nextEdge.mapU || nextEdge.u, nextEdge.mapV || nextEdge.v]
+            .filter(station => nextEdge.throughServiceEndpointGroups?.[station] === sharedGroup);
+
+        return previousStations.length > 0 && nextStations.length > 0 &&
+            !previousStations.some(station => nextStations.includes(station));
+    }
+
+    function dfs(u, pathLen, currentWeight, lastLineId, lastEdgeId, transferCount) {
         stepCount++;
         
         // 每 5000 步进行一次超时判定与进度反馈，防止阻塞并提供 UI 交互体验
@@ -358,7 +376,7 @@ onmessage = function(e) {
             // 计算换乘次数限制
             const lineId = edgeLine[id];
             let newTransferCount = transferCount;
-            if (lastLineId !== -1 && lastLineId !== lineId) {
+            if (lastLineId !== -1 && lastLineId !== lineId && !isThroughServiceTransition(lastEdgeId, id)) {
                 newTransferCount += 1;
             }
             if (max_transfers !== null && newTransferCount > max_transfers) {
@@ -395,7 +413,7 @@ onmessage = function(e) {
                 });
             }
 
-            dfs(v, pathLen + 1, currentWeight + edgeWeight[id], lineId, newTransferCount);
+            dfs(v, pathLen + 1, currentWeight + edgeWeight[id], lineId, id, newTransferCount);
 
             // 11. 回溯：完全还原现场状态
             remainingTotalWeight += edgeWeight[id];
@@ -415,7 +433,7 @@ onmessage = function(e) {
     }
 
     // 启动求解器搜索
-    dfs(startId, 0, 0.0, -1, 0);
+    dfs(startId, 0, 0.0, -1, -1, 0);
 
     // 将最终计算出的最优解传回主线程
     postMessage({

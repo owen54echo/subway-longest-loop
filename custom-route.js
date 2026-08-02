@@ -7,6 +7,21 @@
         return a.hops - b.hops || a.distance - b.distance || a.signature.localeCompare(b.signature);
     }
 
+    function isThroughServiceTransition(previousEdge, nextEdge) {
+        const previousGroups = previousEdge?.throughServiceGroups || [];
+        const nextGroups = nextEdge?.throughServiceGroups || [];
+        const sharedGroup = previousGroups.find(group => nextGroups.includes(group));
+        if (!sharedGroup) return false;
+
+        const previousStations = [previousEdge.mapU || previousEdge.u, previousEdge.mapV || previousEdge.v]
+            .filter(station => previousEdge.throughServiceEndpointGroups?.[station] === sharedGroup);
+        const nextStations = [nextEdge.mapU || nextEdge.u, nextEdge.mapV || nextEdge.v]
+            .filter(station => nextEdge.throughServiceEndpointGroups?.[station] === sharedGroup);
+
+        return previousStations.length > 0 && nextStations.length > 0 &&
+            !previousStations.some(station => nextStations.includes(station));
+    }
+
     function createGraph(nodes, edges) {
         const byStation = new Map(nodes.map(node => [node.name, []]));
 
@@ -139,7 +154,9 @@
         const distanceKm = path_edges.reduce((sum, edgeIndex) => sum + edgeDistance(graph.edges[edgeIndex]), 0);
         const transfers = path_edges.reduce((count, edgeIndex, offset) => {
             if (!offset) return count;
-            return graph.edges[edgeIndex].line !== graph.edges[path_edges[offset - 1]].line ? count + 1 : count;
+            const previousEdge = graph.edges[path_edges[offset - 1]];
+            const edge = graph.edges[edgeIndex];
+            return edge.line !== previousEdge.line && !isThroughServiceTransition(previousEdge, edge) ? count + 1 : count;
         }, 0);
 
         return { ok: true, path_stations, path_edges, distanceKm, transfers, source: "custom" };
