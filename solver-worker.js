@@ -21,7 +21,8 @@ onmessage = function(e) {
         optimize_metric,        // 优化度量维度："distance" (估算距离) 或 "edges"/"stations" (区间数/站数)
         nodes,                  // 地铁车站节点数据数组
         edges,                  // 地铁区间边数据数组
-        end_station             // 终点车站名称
+        end_station,            // 终点车站名称
+        root_edge_ids = null    // 并行精确搜索时，此 Worker 负责的首条边 ID 列表
     } = config;
 
     const V = nodes.length;     // 车站总数
@@ -107,6 +108,89 @@ onmessage = function(e) {
         });
     }
 
+    // 静态桥边分解：桥边一旦经过就不能原路返回。将图拆成桥连通分量后，
+    // 后续路径在桥树上只能沿一条简单链前进，可提供严格的未来权重上界。
+    const bridgeMask = new Uint8Array(E);
+    const discovery = new Int32Array(V);
+    const lowLink = new Int32Array(V);
+    let discoveryToken = 0;
+
+    function findBridges(u, parentEdgeId) {
+        discovery[u] = lowLink[u] = ++discoveryToken;
+        for (const edge of nodeEdges[u]) {
+            const v = edge.to;
+            if (edge.id === parentEdgeId) continue;
+            if (discovery[v] === 0) {
+                findBridges(v, edge.id);
+                lowLink[u] = Math.min(lowLink[u], lowLink[v]);
+                if (lowLink[v] > discovery[u]) bridgeMask[edge.id] = 1;
+            } else {
+                lowLink[u] = Math.min(lowLink[u], discovery[v]);
+            }
+        }
+    }
+
+    for (let u = 0; u < V; u++) {
+        if (discovery[u] === 0) findBridges(u, -1);
+    }
+
+    const bridgeComponentId = new Int32Array(V).fill(-1);
+    const componentQueue = new Int32Array(V);
+    let bridgeComponentCount = 0;
+    for (let start = 0; start < V; start++) {
+        if (bridgeComponentId[start] !== -1) continue;
+        let queueHead = 0;
+        let queueTail = 0;
+        componentQueue[queueTail++] = start;
+        bridgeComponentId[start] = bridgeComponentCount;
+        while (queueHead < queueTail) {
+            const u = componentQueue[queueHead++];
+            for (const edge of nodeEdges[u]) {
+                if (bridgeMask[edge.id] || bridgeComponentId[edge.to] !== -1) continue;
+                bridgeComponentId[edge.to] = bridgeComponentCount;
+                componentQueue[queueTail++] = edge.to;
+            }
+        }
+        bridgeComponentCount++;
+    }
+
+    const bridgeForest = Array.from({ length: bridgeComponentCount }, () => []);
+    const componentRemainingWeight = new Float64Array(bridgeComponentCount);
+    let bridgeCount = 0;
+    for (let id = 0; id < E; id++) {
+        const componentU = bridgeComponentId[edgeU[id]];
+        const componentV = bridgeComponentId[edgeV[id]];
+        if (bridgeMask[id]) {
+            bridgeCount++;
+            bridgeForest[componentU].push({ to: componentV, id });
+            bridgeForest[componentV].push({ to: componentU, id });
+        } else {
+            componentRemainingWeight[componentU] += edgeWeight[id];
+        }
+    }
+
+    function getBridgeRayUpperBound(componentId, parentComponentId = -1) {
+        let bestContinuation = 0;
+        for (const bridge of bridgeForest[componentId]) {
+            if (bridge.to === parentComponentId || visitedEdges[bridge.id] === 1) continue;
+            const continuation = edgeWeight[bridge.id] + getBridgeRayUpperBound(bridge.to, componentId);
+            if (continuation > bestContinuation) bestContinuation = continuation;
+        }
+        return componentRemainingWeight[componentId] + bestContinuation;
+    }
+
+    function getBridgePathUpperBound(componentId, targetComponentId, parentComponentId = -1) {
+        if (componentId === targetComponentId) return componentRemainingWeight[componentId];
+        for (const bridge of bridgeForest[componentId]) {
+            if (bridge.to === parentComponentId || visitedEdges[bridge.id] === 1) continue;
+            const continuation = getBridgePathUpperBound(bridge.to, targetComponentId, componentId);
+            if (continuation >= 0) {
+                return componentRemainingWeight[componentId] + edgeWeight[bridge.id] + continuation;
+            }
+        }
+        return -1;
+    }
+
     // 5. 构建前向星 (Forward Star) 图数据结构
     // head[u] 存储节点 u 的第一条出边在 to/edgeId/next 数组中的索引偏移量
     const head = new Int32Array(V).fill(-1);
@@ -134,6 +218,13 @@ onmessage = function(e) {
     const visitedEdges = new Uint8Array(E); // 标记边是否已访问
     const visitedStationsCount = new Int32Array(V); // 记录每个车站的访问次数
     visitedStationsCount[startId] = 1; // 标记起点已访问一次
+
+    const rootEdgeMask = Array.isArray(root_edge_ids) ? new Uint8Array(E) : null;
+    if (rootEdgeMask) {
+        for (const id of root_edge_ids) {
+            if (Number.isInteger(id) && id >= 0 && id < E) rootEdgeMask[id] = 1;
+        }
+    }
 
     // 预分配用于 BFS 连通性校验的队列与标记数组，杜绝 BFS 时动态 new Array() 或 new Set()
     const bfsQueue = new Int32Array(V);
@@ -235,6 +326,7 @@ onmessage = function(e) {
     // 8. 核心 DFS 回溯搜索算法
     let remainingTotalWeight = totalNetworkWeight; // 全网尚未使用的边总权重上限，用于全局上界剪枝
     let stepCount = 0;
+    let bridgeUpperPrunes = 0;
 
     // A fixed-endpoint simple path is especially sensitive to DFS branch order. Seed it with
     // a deterministic randomized walk to establish a strong lower bound before exhaustive search.
@@ -306,8 +398,9 @@ onmessage = function(e) {
                 let halfEdge = head[current];
                 while (halfEdge !== -1) {
                     const v = to[halfEdge];
-                    if (!seedVisited[v] && canReachEnd(v)) {
-                        candidates.push({ v, id: edgeId[halfEdge], score: remainingDegreeScore(v) });
+                    const id = edgeId[halfEdge];
+                    if ((pathLength > 0 || !rootEdgeMask || rootEdgeMask[id] === 1) && !seedVisited[v] && canReachEnd(v)) {
+                        candidates.push({ v, id, score: remainingDegreeScore(v) });
                     }
                     halfEdge = next[halfEdge];
                 }
@@ -418,6 +511,27 @@ onmessage = function(e) {
             return;
         }
 
+        // 静态桥树上界比“所有剩余可达边”更严格：开放路径只能沿桥树的一条链
+        // 前进；回路完全不能使用桥边；固定终点只能沿其唯一桥树路径前进。
+        const currentComponentId = bridgeComponentId[u];
+        let bridgeUpperBound;
+        if (mode === "loop") {
+            bridgeUpperBound = currentComponentId === bridgeComponentId[startId]
+                ? componentRemainingWeight[currentComponentId]
+                : -1;
+        } else if (endId !== undefined) {
+            bridgeUpperBound = getBridgePathUpperBound(
+                currentComponentId,
+                bridgeComponentId[endId]
+            );
+        } else {
+            bridgeUpperBound = getBridgeRayUpperBound(currentComponentId);
+        }
+        if (bridgeUpperBound < 0 || currentWeight + bridgeUpperBound <= bestWeight) {
+            bridgeUpperPrunes++;
+            return;
+        }
+
         // [剪枝 2] O(1) 必经站死胡同剪枝
         // 如果某个必经站尚未被访问，但是在当前的子图中其“剩余可用度数 (Degree)”已经归零 (意味着没有任何可用边可以连通它)
         // 那么未来绝对不可能再连通该站，这条分支必定无解，果断回溯
@@ -455,6 +569,11 @@ onmessage = function(e) {
         while (e !== -1) {
             const v = to[e];
             const id = edgeId[e];
+
+            if (pathLen === 0 && rootEdgeMask && rootEdgeMask[id] === 0) {
+                e = next[e];
+                continue;
+            }
 
             // 过滤已被占用的边
             if (visitedEdges[id] === 1) {
@@ -508,6 +627,9 @@ onmessage = function(e) {
             remainingDegree[u]--;
             remainingDegree[v]--;
             remainingTotalWeight -= edgeWeight[id];
+            if (bridgeMask[id] === 0) {
+                componentRemainingWeight[bridgeComponentId[u]] -= edgeWeight[id];
+            }
             currentPath[pathLen] = id;
             currentStationsPath[pathLen + 1] = v;
 
@@ -529,6 +651,9 @@ onmessage = function(e) {
             remainingDegree[v]++;
             visitedStationsCount[v]--;
             visitedEdges[id] = 0;
+            if (bridgeMask[id] === 0) {
+                componentRemainingWeight[bridgeComponentId[u]] += edgeWeight[id];
+            }
             if (trackLineUsage) {
                 removeLineUsage(lineId);
             }
@@ -551,6 +676,11 @@ onmessage = function(e) {
         path_edges: bestPath,
         path_stations: bestStations,
         weight: bestWeight,
-        timeout_reached: timeoutReached
+        timeout_reached: timeoutReached,
+        search_stats: {
+            explored_states: stepCount,
+            bridge_count: bridgeCount,
+            bridge_upper_prunes: bridgeUpperPrunes
+        }
     });
 };

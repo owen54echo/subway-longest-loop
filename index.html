@@ -656,7 +656,7 @@
             let showOfficialLineColors = false;
             const selectedWaypoints = new Set();
             const selectedAvoids = new Set();
-            let activeWorker = null;
+            const activeWorkers = new Set();
             let isCustomRouteMode = false;
             let customRouteGraph = window.CustomRoute.createGraph(calculationTopology.nodes, calculationTopology.edges);
             let customRouteDraft = window.CustomRoute.createDraft();
@@ -2010,11 +2010,11 @@
 
                 stopCruise();
 
-                // If there's an active worker, terminate it first to avoid concurrency
-                if (activeWorker) {
+                // A new request invalidates every root branch from the previous exact search.
+                if (activeWorkers.size > 0) {
                     console.log("%c🛑 [Solver] Terminating previous running calculation...", "color: #ff007f;");
-                    activeWorker.terminate();
-                    activeWorker = null;
+                    activeWorkers.forEach(worker => worker.terminate());
+                    activeWorkers.clear();
                 }
 
                 // Show spinner
@@ -2051,75 +2051,110 @@
                 console.log("%c🚀 [Solver] Starting path planning with config:", "color: #00f0ff; font-weight: bold;", solverConfig);
                 const startTime = Date.now();
 
-                try {
-                    activeWorker = new Worker("solver-worker.js");
-                } catch (err) {
-                    console.error("%c❌ [Solver] Failed to construct Web Worker:", "color: #ff007f; font-weight: bold;", err);
-                    loadingOverlay.style.display = "none";
-                    alert("⚠️ 浏览器本地安全限制：\n由于浏览器的安全策略（CORS 限制），直接双击运行本地 HTML 文件（file:// 协议）无法加载后台 Web Worker 线程。\n\n请在当前项目目录下运行以下命令启动本地服务，然后访问 http://localhost:8000 查看：\npython3 -m http.server 8000");
-                    return;
-                }
-                
                 // Reset progress UI
                 document.getElementById("solver-progress-bar").style.width = "0%";
                 document.getElementById("solver-progress-text").textContent = "已探索 0 个状态 (0%)";
-                
-                activeWorker.postMessage(solverConfig);
+                const startStation = solverConfig.start_station;
+                const rootEdgeIds = solverConfig.edges.reduce((ids, edge, index) => {
+                    if (edge.u === startStation || edge.v === startStation) ids.push(index);
+                    return ids;
+                }, []);
+                const isMobileDevice = window.matchMedia("(pointer: coarse)").matches || window.innerWidth <= 768;
+                const deviceConcurrency = Math.max(1, navigator.hardwareConcurrency || 1);
+                const workerCap = isMobileDevice ? 2 : 4;
+                const workerCount = Math.max(1, Math.min(rootEdgeIds.length, deviceConcurrency, workerCap));
+                const rootEdgeGroups = Array.from({ length: workerCount }, () => []);
+                rootEdgeIds.forEach((edgeId, index) => rootEdgeGroups[index % workerCount].push(edgeId));
 
-                activeWorker.onmessage = function(e) {
-                    const msg = e.data;
-                    if (msg.type === "progress") {
-                        document.getElementById("solver-progress-bar").style.width = `${msg.percent}%`;
-                        document.getElementById("solver-progress-text").textContent = `已探索 ${msg.step_count.toLocaleString()} 个状态 (${msg.percent}%)`;
-                        console.log(`%c⏳ [Solver] Progress: ${msg.step_count.toLocaleString()} states explored (${msg.percent}%)`, "color: #bd00ff;");
-                    } else if (msg.type === "result") {
-                        loadingOverlay.style.display = "none";
-                        const result = msg;
-                        const duration = Date.now() - startTime;
-                        
-                        if (result && result.weight > -1) {
-                            if (result.timeout_reached) {
-                                alert("精确搜索尚未完成，未输出临时路线。请继续等待或取消后调整规则。");
-                                if (activeWorker) {
-                                    activeWorker.terminate();
-                                    activeWorker = null;
-                                }
-                                return;
-                            }
-                            console.log(`%c✅ [Solver] Completed in ${duration}ms! Path weight: ${result.weight}, Stations: ${result.path_stations.length}, Timeout reached: ${result.timeout_reached}`, "color: #39ff14; font-weight: bold;");
-                            console.log("%c🔗 Traversed Route:", "color: #fff30a;", result.path_stations.join(" -> "));
-                            
-                            // Auto-open Roadbook drawer
-                            openDrawer("drawer-roadbook", "路书");
-                            displayResults(result, solverConfig.edges);
-                        } else {
-                            console.log("%c⚠️ [Solver] No valid path found matching constraints.", "color: #fff30a;");
-                            alert("该过滤条件下未找到任何可行路径，请调整后重试！");
-                        }
-                        if (activeWorker) {
-                            activeWorker.terminate();
-                            activeWorker = null;
-                        }
-                    }
-                };
+                let completedWorkers = 0;
+                let bestResult = null;
+                let hasWorkerError = false;
+                const progressByWorker = new Map();
 
-                activeWorker.onerror = function(err) {
+                function terminateSolverWorkers() {
+                    activeWorkers.forEach(worker => worker.terminate());
+                    activeWorkers.clear();
+                }
+
+                function updateParallelProgress() {
+                    let exploredStates = 0;
+                    let progressTotal = 0;
+                    progressByWorker.forEach(progress => {
+                        exploredStates += progress.stepCount;
+                        progressTotal += progress.percent;
+                    });
+                    const percent = Math.round(progressTotal / rootEdgeGroups.length);
+                    document.getElementById("solver-progress-bar").style.width = `${percent}%`;
+                    document.getElementById("solver-progress-text").textContent = `已探索 ${exploredStates.toLocaleString()} 个状态 (${percent}%)`;
+                }
+
+                function finishExactSearch() {
                     loadingOverlay.style.display = "none";
-                    console.error("%c❌ [Solver] Worker Thread Error:", "color: #ff007f; font-weight: bold;", err);
-                    alert("算法求解线程发生异常！");
-                    if (activeWorker) {
-                        activeWorker.terminate();
-                        activeWorker = null;
+                    const duration = Date.now() - startTime;
+                    if (bestResult && bestResult.weight > -1) {
+                        console.log(`%c✅ [Solver] Completed in ${duration}ms! Path weight: ${bestResult.weight}, Stations: ${bestResult.path_stations.length}`, "color: #39ff14; font-weight: bold;");
+                        console.log("%c🔗 Traversed Route:", "color: #fff30a;", bestResult.path_stations.join(" -> "));
+                        openDrawer("drawer-roadbook", "路书");
+                        displayResults(bestResult, solverConfig.edges);
+                    } else {
+                        console.log("%c⚠️ [Solver] No valid path found matching constraints.", "color: #fff30a;");
+                        alert("该过滤条件下未找到任何可行路径，请调整后重试！");
                     }
-                };
+                    terminateSolverWorkers();
+                }
+
+                for (let workerIndex = 0; workerIndex < rootEdgeGroups.length; workerIndex++) {
+                    let worker;
+                    try {
+                        worker = new Worker("solver-worker.js");
+                    } catch (err) {
+                        console.error("%c❌ [Solver] Failed to construct Web Worker:", "color: #ff007f; font-weight: bold;", err);
+                        loadingOverlay.style.display = "none";
+                        terminateSolverWorkers();
+                        alert("⚠️ 浏览器本地安全限制：\n由于浏览器的安全策略（CORS 限制），直接双击运行本地 HTML 文件（file:// 协议）无法加载后台 Web Worker 线程。\n\n请在当前项目目录下运行以下命令启动本地服务，然后访问 http://localhost:8000 查看：\npython3 -m http.server 8000");
+                        return;
+                    }
+                    activeWorkers.add(worker);
+                    progressByWorker.set(worker, { stepCount: 0, percent: 0 });
+                    worker.onmessage = function(e) {
+                        const msg = e.data;
+                        if (msg.type === "progress") {
+                            progressByWorker.set(worker, { stepCount: msg.step_count, percent: msg.percent });
+                            updateParallelProgress();
+                            return;
+                        }
+                        if (msg.type !== "result" || hasWorkerError) return;
+                        if (msg.timeout_reached) {
+                            hasWorkerError = true;
+                            loadingOverlay.style.display = "none";
+                            terminateSolverWorkers();
+                            alert("精确搜索尚未完成，未输出临时路线。请继续等待或取消后调整规则。");
+                            return;
+                        }
+                        if (msg.weight > (bestResult?.weight ?? -1)) bestResult = msg;
+                        completedWorkers++;
+                        activeWorkers.delete(worker);
+                        worker.terminate();
+                        if (completedWorkers === rootEdgeGroups.length) finishExactSearch();
+                    };
+                    worker.onerror = function(err) {
+                        if (hasWorkerError) return;
+                        hasWorkerError = true;
+                        loadingOverlay.style.display = "none";
+                        console.error("%c❌ [Solver] Worker Thread Error:", "color: #ff007f; font-weight: bold;", err);
+                        terminateSolverWorkers();
+                        alert("算法求解线程发生异常！");
+                    };
+                    worker.postMessage({ ...solverConfig, root_edge_ids: rootEdgeGroups[workerIndex] });
+                }
             });
 
             // Cancel Solver Trigger
             document.getElementById("btn-cancel-solver").addEventListener("click", () => {
-                if (activeWorker) {
+                if (activeWorkers.size > 0) {
                     console.log("%c🛑 [Solver] Calculation cancelled by user.", "color: #ff007f; font-weight: bold;");
-                    activeWorker.terminate();
-                    activeWorker = null;
+                    activeWorkers.forEach(worker => worker.terminate());
+                    activeWorkers.clear();
                 }
                 document.getElementById("loading-overlay").style.display = "none";
             });
