@@ -186,6 +186,71 @@ onmessage = function(e) {
         );
     }
 
+    // 无重复车站的闭环一定完全位于包含起点的一个点双连通分量中。
+    // 提前排除其它分量的边，不影响可行的简单环，也避免 DFS 进入只能在割点折返的支路。
+    let startBiconnectedEdgeMask = null;
+    if (mode === "loop" && !allow_station_reuse) {
+        startBiconnectedEdgeMask = new Uint8Array(E);
+        const bccDiscovery = new Int32Array(V);
+        const bccLowLink = new Int32Array(V);
+        const bccEdgeStack = new Int32Array(E);
+        let bccDiscoveryToken = 0;
+        let bccEdgeStackLength = 0;
+
+        function findStartBiconnectedBlocks(u, parentEdgeId) {
+            bccDiscovery[u] = bccLowLink[u] = ++bccDiscoveryToken;
+            for (const edge of nodeEdges[u]) {
+                const v = edge.to;
+                if (edge.id === parentEdgeId) continue;
+
+                if (bccDiscovery[v] === 0) {
+                    const blockStart = bccEdgeStackLength;
+                    bccEdgeStack[bccEdgeStackLength++] = edge.id;
+                    findStartBiconnectedBlocks(v, edge.id);
+                    bccLowLink[u] = Math.min(bccLowLink[u], bccLowLink[v]);
+
+                    if (bccLowLink[v] >= bccDiscovery[u]) {
+                        let containsStart = false;
+                        for (let index = blockStart; index < bccEdgeStackLength; index++) {
+                            const blockEdgeId = bccEdgeStack[index];
+                            if (edgeU[blockEdgeId] === startId || edgeV[blockEdgeId] === startId) {
+                                containsStart = true;
+                                break;
+                            }
+                        }
+                        if (containsStart) {
+                            for (let index = blockStart; index < bccEdgeStackLength; index++) {
+                                startBiconnectedEdgeMask[bccEdgeStack[index]] = 1;
+                            }
+                        }
+                        bccEdgeStackLength = blockStart;
+                    }
+                } else if (bccDiscovery[v] < bccDiscovery[u]) {
+                    bccEdgeStack[bccEdgeStackLength++] = edge.id;
+                    bccLowLink[u] = Math.min(bccLowLink[u], bccDiscovery[v]);
+                }
+            }
+        }
+
+        for (let u = 0; u < V; u++) {
+            if (bccDiscovery[u] === 0) findStartBiconnectedBlocks(u, -1);
+        }
+    }
+
+    // 只有两个相邻区间且二者同属一条逻辑线路的普通站，进入后没有新的路线选择。
+    // 起终点和必经站必须保留为显式搜索节点，确保所有既有约束与输出语义不变。
+    const forcedCorridorStation = new Uint8Array(V);
+    const protectedSearchStation = new Uint8Array(V);
+    protectedSearchStation[startId] = 1;
+    if (endId !== undefined) protectedSearchStation[endId] = 1;
+    for (const waypointId of waypointIds) protectedSearchStation[waypointId] = 1;
+    for (let u = 0; u < V; u++) {
+        if (protectedSearchStation[u] || nodeEdges[u].length !== 2) continue;
+        if (nodeEdges[u][0].lineId === nodeEdges[u][1].lineId) {
+            forcedCorridorStation[u] = 1;
+        }
+    }
+
     // 5. 构建前向星 (Forward Star) 图数据结构
     // head[u] 存储节点 u 的第一条出边在 to/edgeId/next 数组中的索引偏移量
     const head = new Int32Array(V).fill(-1);
@@ -322,6 +387,8 @@ onmessage = function(e) {
     let remainingTotalWeight = totalNetworkWeight; // 全网尚未使用的边总权重上限，用于全局上界剪枝
     let stepCount = 0;
     let bridgeEdgeRejections = 0;
+    let biconnectedEdgeRejections = 0;
+    let forcedCorridorEdges = 0;
 
     // A fixed-endpoint simple path is especially sensitive to DFS branch order. Seed it with
     // a deterministic randomized walk to establish a strong lower bound before exhaustive search.
@@ -551,6 +618,12 @@ onmessage = function(e) {
                 continue;
             }
 
+            if (startBiconnectedEdgeMask && startBiconnectedEdgeMask[id] === 0) {
+                biconnectedEdgeRejections++;
+                e = next[e];
+                continue;
+            }
+
             // A closed trail cannot use a bridge because it would need to cross the same edge
             // again to return. A fixed-endpoint trail can only use bridges on its unique block-tree path.
             if (bridgeMask[id] === 1 && (mode === "loop" || (endId !== undefined && endpointBridgeMask[id] === 0))) {
@@ -624,16 +697,63 @@ onmessage = function(e) {
                 });
             }
 
-            dfs(v, pathLen + 1, currentWeight + edgeWeight[id], lineId, id, newTransferCount);
+            // 同逻辑线路的二度普通站没有新的路线选择。一次推进整段区间，
+            // 但仍按原始边逐条记录，保证路书、距离和换乘输出完全一致。
+            let advancedNode = v;
+            let advancedPathLen = pathLen + 1;
+            let advancedWeight = currentWeight + edgeWeight[id];
+            let advancedLastEdgeId = id;
+            while (forcedCorridorStation[advancedNode] === 1) {
+                const firstCorridorEdge = nodeEdges[advancedNode][0];
+                const secondCorridorEdge = nodeEdges[advancedNode][1];
+                const forcedEdge = firstCorridorEdge.id === advancedLastEdgeId
+                    ? secondCorridorEdge
+                    : firstCorridorEdge;
+                const forcedId = forcedEdge.id;
+                const forcedTarget = forcedEdge.to;
 
-            // 11. 回溯：完全还原现场状态
-            remainingTotalWeight += edgeWeight[id];
-            remainingDegree[u]++;
-            remainingDegree[v]++;
-            visitedStationsCount[v]--;
-            visitedEdges[id] = 0;
-            if (trackLineUsage) {
-                removeLineUsage(lineId);
+                // 静态过滤必须与正常候选边保持一致；若无法继续，交还 DFS
+                // 处理该站的终止或其它规则，从而不改变任何可行解。
+                if (edgeLine[forcedId] !== lineId ||
+                    visitedEdges[forcedId] === 1 ||
+                    (startBiconnectedEdgeMask && startBiconnectedEdgeMask[forcedId] === 0) ||
+                    (bridgeMask[forcedId] === 1 &&
+                        (mode === "loop" || (endId !== undefined && endpointBridgeMask[forcedId] === 0))) ||
+                    (!allow_station_reuse &&
+                        !(forcedTarget === startId && mode === "loop") &&
+                        visitedStationsCount[forcedTarget] > 0)) {
+                    break;
+                }
+
+                visitedEdges[forcedId] = 1;
+                visitedStationsCount[forcedTarget]++;
+                remainingDegree[advancedNode]--;
+                remainingDegree[forcedTarget]--;
+                remainingTotalWeight -= edgeWeight[forcedId];
+                currentPath[advancedPathLen] = forcedId;
+                currentStationsPath[advancedPathLen + 1] = forcedTarget;
+                if (trackLineUsage) addLineUsage(lineId);
+
+                forcedCorridorEdges++;
+                advancedNode = forcedTarget;
+                advancedLastEdgeId = forcedId;
+                advancedPathLen++;
+                advancedWeight += edgeWeight[forcedId];
+            }
+
+            dfs(advancedNode, advancedPathLen, advancedWeight, lineId, advancedLastEdgeId, newTransferCount);
+
+            // 11. 回溯：完全还原现场状态，包括自动推进的原始区间。
+            for (let restorePathIndex = advancedPathLen - 1; restorePathIndex >= pathLen; restorePathIndex--) {
+                const restoreId = currentPath[restorePathIndex];
+                const restoreFrom = currentStationsPath[restorePathIndex];
+                const restoreTarget = currentStationsPath[restorePathIndex + 1];
+                remainingTotalWeight += edgeWeight[restoreId];
+                remainingDegree[restoreFrom]++;
+                remainingDegree[restoreTarget]++;
+                visitedStationsCount[restoreTarget]--;
+                visitedEdges[restoreId] = 0;
+                if (trackLineUsage) removeLineUsage(edgeLine[restoreId]);
             }
 
             // 如果超时标记已被点亮，立刻向上层返回，终止所有深层计算
@@ -658,7 +778,9 @@ onmessage = function(e) {
         search_stats: {
             explored_states: stepCount,
             bridge_count: bridgeCount,
-            bridge_edge_rejections: bridgeEdgeRejections
+            bridge_edge_rejections: bridgeEdgeRejections,
+            biconnected_edge_rejections: biconnectedEdgeRejections,
+            forced_corridor_edges: forcedCorridorEdges
         }
     });
 };
