@@ -93,7 +93,7 @@ const bridgeLoop = config(
 const loopResult = runSolver(bridgeLoop);
 assert.strictEqual(loopResult.weight, 3, "Exact loop search must exclude a one-way bridge and retain its cycle");
 assert.strictEqual(loopResult.search_stats.bridge_count, 1, "Worker must identify original graph bridges for exact bounds");
-assert(loopResult.search_stats.bridge_upper_prunes > 0, "Bridge upper bound must prune impossible loop branches");
+assert(loopResult.search_stats.bridge_edge_rejections > 0, "Loop search must reject bridge edges before entering them");
 assertMatchesBruteForce(bridgeLoop);
 
 assertMatchesBruteForce(config(
@@ -101,6 +101,16 @@ assertMatchesBruteForce(config(
     [["A", "B"], ["B", "C"], ["C", "A"], ["C", "D"], ["D", "E"], ["E", "F"], ["F", "D"]],
     { end_station: "F" }
 ));
+
+const fixedEndpointBridge = config(
+    ["A", "B", "C", "D", "E"],
+    [["A", "B"], ["B", "C"], ["C", "D"], ["B", "E"]],
+    { end_station: "D" }
+);
+const fixedEndpointResult = runSolver(fixedEndpointBridge);
+assert.strictEqual(fixedEndpointResult.weight, 3, "Fixed-endpoint path must retain the required bridge chain");
+assert(fixedEndpointResult.search_stats.bridge_edge_rejections > 0, "Fixed-endpoint search must reject off-route bridge branches");
+assertMatchesBruteForce(fixedEndpointBridge);
 
 const rootSplit = config(
     ["A", "B", "C", "D", "E"],
@@ -112,6 +122,7 @@ assert.strictEqual(fullResult.weight, 3, "Reference exact search must retain the
 assert.strictEqual(shortBranchResult.weight, 1, "A root-worker must search only its assigned first edge");
 assert.deepStrictEqual(shortBranchResult.path_edges, [3], "Assigned root branch must be preserved in the result");
 assert(!workerCode.includes("if (rootEdgeMask || mode"), "Fixed-endpoint root workers must retain an assigned-branch seed search");
+assert(!workerCode.includes("getBridgeRayUpperBound"), "Bridge filtering must not recurse through the bridge forest at every DFS state");
 
 assert(html.includes("const activeWorkers = new Set()"), "UI must track every active exact-search worker");
 assert(html.includes("navigator.hardwareConcurrency"), "UI must cap parallelism using the device concurrency hint");

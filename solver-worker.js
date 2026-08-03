@@ -155,7 +155,6 @@ onmessage = function(e) {
     }
 
     const bridgeForest = Array.from({ length: bridgeComponentCount }, () => []);
-    const componentRemainingWeight = new Float64Array(bridgeComponentCount);
     let bridgeCount = 0;
     for (let id = 0; id < E; id++) {
         const componentU = bridgeComponentId[edgeU[id]];
@@ -164,31 +163,27 @@ onmessage = function(e) {
             bridgeCount++;
             bridgeForest[componentU].push({ to: componentV, id });
             bridgeForest[componentV].push({ to: componentU, id });
-        } else {
-            componentRemainingWeight[componentU] += edgeWeight[id];
         }
     }
 
-    function getBridgeRayUpperBound(componentId, parentComponentId = -1) {
-        let bestContinuation = 0;
+    const endpointBridgeMask = endId === undefined ? null : new Uint8Array(E);
+    let endpointBridgePathExists = true;
+    function markEndpointBridgePath(componentId, targetComponentId, parentComponentId = -1) {
+        if (componentId === targetComponentId) return true;
         for (const bridge of bridgeForest[componentId]) {
-            if (bridge.to === parentComponentId || visitedEdges[bridge.id] === 1) continue;
-            const continuation = edgeWeight[bridge.id] + getBridgeRayUpperBound(bridge.to, componentId);
-            if (continuation > bestContinuation) bestContinuation = continuation;
-        }
-        return componentRemainingWeight[componentId] + bestContinuation;
-    }
-
-    function getBridgePathUpperBound(componentId, targetComponentId, parentComponentId = -1) {
-        if (componentId === targetComponentId) return componentRemainingWeight[componentId];
-        for (const bridge of bridgeForest[componentId]) {
-            if (bridge.to === parentComponentId || visitedEdges[bridge.id] === 1) continue;
-            const continuation = getBridgePathUpperBound(bridge.to, targetComponentId, componentId);
-            if (continuation >= 0) {
-                return componentRemainingWeight[componentId] + edgeWeight[bridge.id] + continuation;
+            if (bridge.to === parentComponentId) continue;
+            if (markEndpointBridgePath(bridge.to, targetComponentId, componentId)) {
+                endpointBridgeMask[bridge.id] = 1;
+                return true;
             }
         }
-        return -1;
+        return false;
+    }
+    if (endpointBridgeMask) {
+        endpointBridgePathExists = markEndpointBridgePath(
+            bridgeComponentId[startId],
+            bridgeComponentId[endId]
+        );
     }
 
     // 5. 构建前向星 (Forward Star) 图数据结构
@@ -326,7 +321,7 @@ onmessage = function(e) {
     // 8. 核心 DFS 回溯搜索算法
     let remainingTotalWeight = totalNetworkWeight; // 全网尚未使用的边总权重上限，用于全局上界剪枝
     let stepCount = 0;
-    let bridgeUpperPrunes = 0;
+    let bridgeEdgeRejections = 0;
 
     // A fixed-endpoint simple path is especially sensitive to DFS branch order. Seed it with
     // a deterministic randomized walk to establish a strong lower bound before exhaustive search.
@@ -511,26 +506,7 @@ onmessage = function(e) {
             return;
         }
 
-        // 静态桥树上界比“所有剩余可达边”更严格：开放路径只能沿桥树的一条链
-        // 前进；回路完全不能使用桥边；固定终点只能沿其唯一桥树路径前进。
-        const currentComponentId = bridgeComponentId[u];
-        let bridgeUpperBound;
-        if (mode === "loop") {
-            bridgeUpperBound = currentComponentId === bridgeComponentId[startId]
-                ? componentRemainingWeight[currentComponentId]
-                : -1;
-        } else if (endId !== undefined) {
-            bridgeUpperBound = getBridgePathUpperBound(
-                currentComponentId,
-                bridgeComponentId[endId]
-            );
-        } else {
-            bridgeUpperBound = getBridgeRayUpperBound(currentComponentId);
-        }
-        if (bridgeUpperBound < 0 || currentWeight + bridgeUpperBound <= bestWeight) {
-            bridgeUpperPrunes++;
-            return;
-        }
+        if (endId !== undefined && !endpointBridgePathExists) return;
 
         // [剪枝 2] O(1) 必经站死胡同剪枝
         // 如果某个必经站尚未被访问，但是在当前的子图中其“剩余可用度数 (Degree)”已经归零 (意味着没有任何可用边可以连通它)
@@ -571,6 +547,14 @@ onmessage = function(e) {
             const id = edgeId[e];
 
             if (pathLen === 0 && rootEdgeMask && rootEdgeMask[id] === 0) {
+                e = next[e];
+                continue;
+            }
+
+            // A closed trail cannot use a bridge because it would need to cross the same edge
+            // again to return. A fixed-endpoint trail can only use bridges on its unique block-tree path.
+            if (bridgeMask[id] === 1 && (mode === "loop" || (endId !== undefined && endpointBridgeMask[id] === 0))) {
+                bridgeEdgeRejections++;
                 e = next[e];
                 continue;
             }
@@ -627,9 +611,6 @@ onmessage = function(e) {
             remainingDegree[u]--;
             remainingDegree[v]--;
             remainingTotalWeight -= edgeWeight[id];
-            if (bridgeMask[id] === 0) {
-                componentRemainingWeight[bridgeComponentId[u]] -= edgeWeight[id];
-            }
             currentPath[pathLen] = id;
             currentStationsPath[pathLen + 1] = v;
 
@@ -651,9 +632,6 @@ onmessage = function(e) {
             remainingDegree[v]++;
             visitedStationsCount[v]--;
             visitedEdges[id] = 0;
-            if (bridgeMask[id] === 0) {
-                componentRemainingWeight[bridgeComponentId[u]] += edgeWeight[id];
-            }
             if (trackLineUsage) {
                 removeLineUsage(lineId);
             }
@@ -680,7 +658,7 @@ onmessage = function(e) {
         search_stats: {
             explored_states: stepCount,
             bridge_count: bridgeCount,
-            bridge_upper_prunes: bridgeUpperPrunes
+            bridge_edge_rejections: bridgeEdgeRejections
         }
     });
 };
