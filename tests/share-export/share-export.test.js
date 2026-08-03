@@ -4,7 +4,7 @@ const fs = require("fs");
 const windowLike = {};
 new Function("window", fs.readFileSync("share-export.js", "utf8"))(windowLike);
 
-const { createSnapshot, createCardModel, createPrintHtml } = windowLike.RouteShare;
+const { createSnapshot, createCardModel, createPrintHtml, calculateSegmentLayout } = windowLike.RouteShare;
 const snapshot = createSnapshot({
     cityName: "广州",
     source: "custom",
@@ -31,5 +31,18 @@ assert.strictEqual(createCardModel(snapshot, "complete").stations.length, 3);
 const printHtml = createPrintHtml(createCardModel(snapshot, "complete"));
 assert.ok(printHtml.includes("@media print"));
 assert.ok(printHtml.includes("1号线"), "Complete print output should include route segments");
+
+assert.strictEqual(typeof calculateSegmentLayout, "function", "Share exports need a segment layout helper");
+const normalLayout = calculateSegmentLayout([
+    { line: "14号线支线(知识城线)" },
+    { line: "南海有轨电车1号线" }
+], { lineX: 116, defaultRouteX: 300, maxRouteX: 460, lineFontSize: 24, gap: 28 });
+assert(normalLayout.routeX >= 396, "Long route names must move station names to the right");
+assert(normalLayout.routeX <= 460, "Station text needs a bounded reading area");
+
+const completeLayout = calculateSegmentLayout([
+    { line: "14号线支线(知识城线)" }
+], { lineX: 170, defaultRouteX: 390, maxRouteX: 650, lineFontSize: 30, gap: 34 });
+assert(completeLayout.routeX >= 518, "Complete exports need the same long-name clearance");
 
 console.log("route share contract ok");

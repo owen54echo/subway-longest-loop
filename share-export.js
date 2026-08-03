@@ -49,6 +49,15 @@
             .replace(/'/g, "&#039;");
     }
 
+    function calculateSegmentLayout(segments, options) {
+        const { lineX, defaultRouteX, maxRouteX, lineFontSize, gap } = options;
+        const longestLineWidth = Math.max(0, ...segments.map(segment => Array.from(String(segment.line || ""))
+            .reduce((width, character) => width + (/^[\x00-\x7F]$/.test(character) ? 0.62 : 1), 0)));
+        const routeX = Math.min(maxRouteX, Math.max(defaultRouteX,
+            Math.ceil(lineX + longestLineWidth * lineFontSize + gap)));
+        return { routeX };
+    }
+
     function createPrintHtml(model) {
         const segments = model.segments
             .map(segment => `<li><strong>${escapeHtml(segment.line)}</strong><span>${escapeHtml(segment.stations[0])} - ${escapeHtml(segment.stations[segment.stations.length - 1])}</span></li>`)
@@ -100,5 +109,5 @@ li span { color: #1d8b68; font-variant-numeric: tabular-nums; width: 24px; }
         }
     }
 
-    window.RouteShare = { createSnapshot, createCardModel, createPrintHtml, svgToPngBlob };
+    window.RouteShare = { createSnapshot, createCardModel, createPrintHtml, calculateSegmentLayout, svgToPngBlob };
 })();

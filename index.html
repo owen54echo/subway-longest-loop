@@ -2261,6 +2261,9 @@
                 const mapHeight = 1180;
                 const statsY = mapY + mapHeight + 48;
                 const text = (value) => escapeShareXml(value);
+                const segmentLayout = window.RouteShare.calculateSegmentLayout(model.segments, {
+                    lineX: 170, defaultRouteX: 390, maxRouteX: 650, lineFontSize: 30, gap: 34
+                });
                 let segmentCursorY = statsY + 170;
                 const segmentLines = model.segments.map(segment => {
                     const routeLines = wrapShareText(`${segment.stations[0]} → ${segment.stations[segment.stations.length - 1]}`, 28);
@@ -2268,8 +2271,8 @@
                     const y = segmentCursorY;
                     segmentCursorY += rowHeight;
                     const distance = Number(segment.distanceKm || 0).toFixed(1);
-                    const routeText = routeLines.map((line, index) => `<tspan x="390" dy="${index === 0 ? 0 : 31}">${text(line)}</tspan>`).join("");
-                    return `<line x1="132" y1="${y - 22}" x2="132" y2="${y + rowHeight - 34}" stroke="${text(segment.color || "#1d8b68")}" stroke-width="10" stroke-linecap="round"/><text x="170" y="${y}" fill="#17201b" font-size="30" font-weight="700">${text(segment.line)}</text><text x="390" y="${y}" fill="#4d554e" font-size="28">${routeText}</text><text x="1760" y="${y + rowHeight - 34}" fill="#4d554e" font-size="26" text-anchor="end">${text(`${segment.stations.length - 1} 站 · ${distance} km`)}</text>`;
+                    const routeText = routeLines.map((line, index) => `<tspan x="${segmentLayout.routeX}" dy="${index === 0 ? 0 : 31}">${text(line)}</tspan>`).join("");
+                    return `<line x1="132" y1="${y - 22}" x2="132" y2="${y + rowHeight - 34}" stroke="${text(segment.color || "#1d8b68")}" stroke-width="10" stroke-linecap="round"/><text x="170" y="${y}" fill="#17201b" font-size="30" font-weight="700">${text(segment.line)}</text><text x="${segmentLayout.routeX}" y="${y}" fill="#4d554e" font-size="28">${routeText}</text><text x="1760" y="${y + rowHeight - 34}" fill="#4d554e" font-size="26" text-anchor="end">${text(`${segment.stations.length - 1} 站 · ${distance} km`)}</text>`;
                 }).join("");
                 let stationCursorY = segmentCursorY + 24;
                 const stationList = model.stations.map((station, index) => {
@@ -2311,6 +2314,9 @@
                 const thumbnailHeight = hasThumbnail ? 300 : 0;
                 const statsY = hasThumbnail ? 194 + thumbnailHeight + 30 : 412;
                 const segmentStartY = statsY + 160;
+                const segmentLayout = window.RouteShare.calculateSegmentLayout(model.segments, {
+                    lineX: 116, defaultRouteX: 300, maxRouteX: 460, lineFontSize: 24, gap: 28
+                });
                 let segmentCursorY = segmentStartY;
                 const segmentLines = model.mode === "compact" ? "" : model.segments.map(segment => {
                     const routeLines = wrapShareText(`${segment.stations[0]} → ${segment.stations[segment.stations.length - 1]}`, 16);
@@ -2318,8 +2324,8 @@
                     const y = segmentCursorY;
                     segmentCursorY += rowHeight;
                     const distance = Number(segment.distanceKm || 0).toFixed(1);
-                    const routeText = routeLines.map((line, index) => `<tspan x="300" dy="${index === 0 ? 0 : 27}">${text(line)}</tspan>`).join("");
-                    return `<line x1="88" y1="${y - 18}" x2="88" y2="${y + rowHeight - 30}" stroke="${text(segment.color || "#1d8b68")}" stroke-width="8" stroke-linecap="round"/><text x="116" y="${y}" fill="#17201b" font-size="24" font-weight="700">${text(segment.line)}</text><text x="300" y="${y}" fill="#4d554e" font-size="22">${routeText}</text><text x="1000" y="${y + rowHeight - 30}" fill="#4d554e" font-size="20" text-anchor="end">${text(`${segment.stations.length - 1} 站 · ${distance} km`)}</text>`;
+                    const routeText = routeLines.map((line, index) => `<tspan x="${segmentLayout.routeX}" dy="${index === 0 ? 0 : 27}">${text(line)}</tspan>`).join("");
+                    return `<line x1="88" y1="${y - 18}" x2="88" y2="${y + rowHeight - 30}" stroke="${text(segment.color || "#1d8b68")}" stroke-width="8" stroke-linecap="round"/><text x="116" y="${y}" fill="#17201b" font-size="24" font-weight="700">${text(segment.line)}</text><text x="${segmentLayout.routeX}" y="${y}" fill="#4d554e" font-size="22">${routeText}</text><text x="1000" y="${y + rowHeight - 30}" fill="#4d554e" font-size="20" text-anchor="end">${text(`${segment.stations.length - 1} 站 · ${distance} km`)}</text>`;
                 }).join("");
                 const stationListOffset = segmentCursorY + (model.segments.length ? 18 : 0);
                 let stationCursorY = stationListOffset;

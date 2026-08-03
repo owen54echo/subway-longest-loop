@@ -70922,6 +70922,16 @@ window.subwayDataMap = {
         ]
       },
       {
+        "name": "北运河",
+        "x": 447,
+        "y": 566,
+        "lng": 117.178231,
+        "lat": 39.16441,
+        "lines": [
+          "6号线"
+        ]
+      },
+      {
         "name": "北竹林",
         "x": 390,
         "y": 566,
@@ -72917,10 +72927,17 @@ window.subwayDataMap = {
       },
       {
         "u": "天泰路",
+        "v": "北运河",
+        "line": "6号线",
+        "color": "#A61D7F",
+        "straightLengthKm": 0.61
+      },
+      {
+        "u": "北运河",
         "v": "北竹林",
         "line": "6号线",
         "color": "#A61D7F",
-        "straightLengthKm": 1.276
+        "straightLengthKm": 0.667
       },
       {
         "u": "北竹林",
