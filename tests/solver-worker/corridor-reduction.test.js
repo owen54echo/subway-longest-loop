@@ -3,10 +3,12 @@ const fs = require("fs");
 
 const workerCode = fs.readFileSync("solver-worker.js", "utf8");
 
-function runSolver(config) {
+function runSolverWithMessages(config) {
     let result = null;
+    const messages = [];
     const context = {
         postMessage(message) {
+            messages.push(message);
             if (message.type === "result") result = message;
         },
         onmessage: null
@@ -18,7 +20,11 @@ function runSolver(config) {
         this.onmessage = onmessage;
     `).call(context);
     context.onmessage({ data: config });
-    return result;
+    return { result, messages };
+}
+
+function runSolver(config) {
+    return runSolverWithMessages(config).result;
 }
 
 function config(nodes, edges, overrides = {}) {
@@ -85,6 +91,13 @@ assert.strictEqual(corridorResult.weight, bruteForceLoop(sameLineCorridor));
 assert.strictEqual(corridorResult.weight, 4, "The raw corridor cycle must remain available to the exact solver");
 assert.strictEqual(corridorResult.path_edges.length, 4, "The result must retain every original edge for route-book rendering");
 assert(corridorResult.search_stats.forced_corridor_edges > 0, "Same-line degree-two stations should be advanced in one search decision");
+
+const incumbentRun = runSolverWithMessages(sameLineCorridor);
+const incumbents = incumbentRun.messages.filter(message => message.type === "incumbent");
+assert(incumbents.length > 0, "A Worker must emit a candidate when it improves its local best route");
+assert(incumbents.every((message, index) => index === 0 || message.weight > incumbents[index - 1].weight), "Worker candidates must be strictly improving");
+assert.strictEqual(incumbents.at(-1).weight, incumbentRun.result.weight, "The final Worker result must match its latest candidate");
+assert.deepStrictEqual(incumbents.at(-1).path_edges, incumbentRun.result.path_edges, "Candidate paths must use the normal raw-edge result format");
 
 const noStartReuseInPath = config(
     ["A", "B", "C"],

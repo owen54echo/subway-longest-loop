@@ -389,6 +389,25 @@ onmessage = function(e) {
     let bridgeEdgeRejections = 0;
     let biconnectedEdgeRejections = 0;
     let forcedCorridorEdges = 0;
+    let lastReportedWeight = -1.0;
+
+    function emitIncumbent() {
+        if (bestWeight <= lastReportedWeight || bestPath.length === 0) return;
+        lastReportedWeight = bestWeight;
+        postMessage({
+            type: "incumbent",
+            path_edges: bestPath,
+            path_stations: bestStations,
+            weight: bestWeight,
+            search_stats: {
+                explored_states: stepCount,
+                bridge_count: bridgeCount,
+                bridge_edge_rejections: bridgeEdgeRejections,
+                biconnected_edge_rejections: biconnectedEdgeRejections,
+                forced_corridor_edges: forcedCorridorEdges
+            }
+        });
+    }
 
     // A fixed-endpoint simple path is especially sensitive to DFS branch order. Seed it with
     // a deterministic randomized walk to establish a strong lower bound before exhaustive search.
@@ -485,6 +504,7 @@ onmessage = function(e) {
                 bestWeight = pathWeight;
                 bestPath = Array.from(seedEdges.subarray(0, pathLength));
                 bestStations = Array.from(seedStations.subarray(0, pathLength + 1)).map(id => stationIdToName[id]);
+                emitIncumbent();
             }
         }
     }
@@ -539,6 +559,7 @@ onmessage = function(e) {
                     bestWeight = currentWeight;
                     bestPath = Array.from(currentPath.subarray(0, pathLen));
                     bestStations = Array.from(currentStationsPath.subarray(0, pathLen + 1)).map(id => stationIdToName[id]);
+                    emitIncumbent();
                 }
                 return;
             }
@@ -551,6 +572,7 @@ onmessage = function(e) {
                         bestWeight = currentWeight;
                         bestPath = Array.from(currentPath.subarray(0, pathLen));
                         bestStations = Array.from(currentStationsPath.subarray(0, pathLen + 1)).map(id => stationIdToName[id]);
+                        emitIncumbent();
                     }
                     // 如果不允许重复访问车站，到达终点后不可能再延伸出以该终点结尾的简单路径，可直接回溯
                     if (!allow_station_reuse) {
@@ -563,6 +585,7 @@ onmessage = function(e) {
                     bestWeight = currentWeight;
                     bestPath = Array.from(currentPath.subarray(0, pathLen));
                     bestStations = Array.from(currentStationsPath.subarray(0, pathLen + 1)).map(id => stationIdToName[id]);
+                    emitIncumbent();
                 }
             }
         }
