@@ -34,6 +34,7 @@ assert.deepStrictEqual(snapshot.stats, {
     transferCount: 1,
     distanceKm: 4.2
 });
+assert.strictEqual(snapshot.isApproximate, false, "A completed exact result must not gain an approximation marker by default");
 assert.ok(!JSON.stringify(snapshot).match(/location|token|url/i));
 assert.strictEqual(createCardModel(snapshot, "compact").stations.length, 2);
 assert.strictEqual(createCardModel(snapshot, "normal").segments.length, 2);

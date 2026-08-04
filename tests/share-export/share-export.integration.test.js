@@ -21,6 +21,7 @@ assert.ok(html.includes("function createCompleteShareSvg("), "Complete share nee
 assert.ok(html.includes('id="btn-share-expand"'), "Complete share needs an original-size viewer trigger");
 assert.ok(html.includes('id="route-approximation-badge"'), "The route book must expose the approximation marker");
 assert.ok(html.includes("isApproximate: result.isApproximate"), "Share snapshots must receive approximation state from the displayed route");
+assert.ok(html.includes('hidden = !Boolean(result.isApproximate)'), "Exact route rendering must hide the approximation marker");
 assert.ok(html.includes('font-family="STKaiti, KaiTi, cursive"'), "Shared SVG cards must render the compact handwriting-style approximation marker");
 assert.ok(css.includes(".route-approximation-badge"), "The route book approximation marker needs dedicated styling");
 assert.ok(css.includes(".share-sheet :is(.share-mode-tab, .share-sheet-actions button, .drawer-close)"), "Share sheet controls need their own glass surface");
