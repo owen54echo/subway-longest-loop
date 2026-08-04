@@ -8,6 +8,7 @@
         return Object.freeze({
             cityName: route.cityName,
             source: route.source === "custom" ? "自定义路线" : "规划路线",
+            isApproximate: Boolean(route.isApproximate),
             stations: [...route.path_stations],
             edges: [...route.path_edges],
             segments: clone(route.segments || []),
@@ -24,6 +25,7 @@
         const base = {
             cityName: snapshot.cityName,
             source: snapshot.source,
+            isApproximate: snapshot.isApproximate,
             stats: snapshot.stats,
             start: snapshot.stations[0],
             end: snapshot.stations[snapshot.stations.length - 1],
@@ -73,6 +75,7 @@
 * { box-sizing: border-box; }
 body { color: #161a18; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
 h1 { margin: 0; font-size: 24px; }
+.approx-label { display: inline-block; padding: 1px 5px; border: 1px solid #687068; border-radius: 3px; color: #52605a; font: 700 12px/1 "STKaiti", "KaiTi", cursive; vertical-align: middle; }
 .summary { color: #52605a; margin: 8px 0 20px; }
 ol { margin: 0; padding: 0; list-style: none; }
 li { display: flex; gap: 10px; min-height: 26px; align-items: center; border-bottom: 1px solid #d7ddd8; }
@@ -82,7 +85,7 @@ li span { color: #1d8b68; font-variant-numeric: tabular-nums; width: 24px; }
 .segments strong { color: #161a18; min-width: 64px; }
 @media print { .page-break { break-before: page; } }
 </style></head><body>
-<h1>${escapeHtml(model.cityName)} · ${escapeHtml(model.source)}</h1>
+<h1>${escapeHtml(model.cityName)} · ${escapeHtml(model.source)}${model.isApproximate ? ' <span class="approx-label" title="当前最佳路线，计算未完成">近似</span>' : ""}</h1>
 <p class="summary">${escapeHtml(model.start)} - ${escapeHtml(model.end)} · ${model.stats.stationCount} 站 · ${model.stats.transferCount} 次换乘 · ${model.stats.distanceKm.toFixed(1)} km</p>
 <ul class="segments">${segments}</ul>
 <ol>${stations}</ol>

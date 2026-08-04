@@ -316,7 +316,10 @@
                     
                     <div class="roadbook-container">
                         <div class="roadbook-title-row">
-                            <div class="roadbook-title">行车路书</div>
+                            <div class="roadbook-title-group">
+                                <div class="roadbook-title">行车路书</div>
+                                <span id="route-approximation-badge" class="route-approximation-badge" hidden title="当前最佳路线，计算未完成" aria-label="当前最佳路线，计算未完成">近似</span>
+                            </div>
                             <button class="roadbook-share-trigger" id="btn-roadbook-share" type="button" title="分享路线">分享</button>
                         </div>
                         <div class="roadbook-list" id="roadbook-list">
@@ -2307,7 +2310,8 @@
                     path_edges: result.path_edges,
                     distanceKm: calculateRouteDistanceKm(result.path_edges, currentConfirmedResult.edges),
                     transfers: countPathTransfers(result.path_edges, currentConfirmedResult.edges),
-                    segments: currentRouteSegments
+                    segments: currentRouteSegments,
+                    isApproximate: result.isApproximate
                 });
             }
 
@@ -2426,11 +2430,15 @@
                     const x = 96 + index * 432;
                     return `<rect x="${x}" y="${statsY}" width="384" height="112" rx="14" fill="#eef0eb"/><text x="${x + 22}" y="${statsY + 40}" fill="#687068" font-size="26">${text(label)}</text><text x="${x + 22}" y="${statsY + 86}" fill="#17201b" font-size="38" font-weight="700">${text(value)}</text>`;
                 }).join("");
+                const approximationBadge = model.isApproximate
+                    ? `<g aria-label="当前最佳路线，计算未完成"><rect x="1710" y="76" width="96" height="38" rx="5" fill="none" stroke="#687068" stroke-width="2"/><text x="1758" y="104" fill="#52605a" font-size="25" font-weight="700" text-anchor="middle" font-family="STKaiti, KaiTi, cursive">近似</text></g>`
+                    : "";
 
                 return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
                     <rect width="100%" height="100%" fill="#f8f7f2"/>
                     <rect x="40" y="40" width="1840" height="${height - 80}" rx="24" fill="#ffffff" stroke="#d8ddd5" stroke-width="2"/>
                     <text x="96" y="106" fill="#17201b" font-size="56" font-weight="700">${text(model.cityName)}地铁路书</text>
+                    ${approximationBadge}
                     <text x="96" y="152" fill="#687068" font-size="30">${text(model.source)} · 完整路线记录</text>
                     ${createShareThumbnailMap(model, 96, mapY, 1728, mapHeight, { fullNetwork: true, showBaseStations: true, maxLabels: 16 })}
                     ${stats}${segmentLines}${stationList}
@@ -2483,11 +2491,15 @@
                     const x = 64 + index * 248;
                     return `<rect x="${x}" y="${statsY}" width="224" height="98" rx="12" fill="#eef0eb"/><text x="${x + 18}" y="${statsY + 35}" fill="#687068" font-size="22">${text(label)}</text><text x="${x + 18}" y="${statsY + 74}" fill="#17201b" font-size="30" font-weight="700">${text(value)}</text>`;
                 }).join("");
+                const approximationBadge = model.isApproximate
+                    ? `<g aria-label="当前最佳路线，计算未完成"><rect x="900" y="66" width="72" height="30" rx="4" fill="none" stroke="#687068" stroke-width="1.5"/><text x="936" y="88" fill="#52605a" font-size="19" font-weight="700" text-anchor="middle" font-family="STKaiti, KaiTi, cursive">近似</text></g>`
+                    : "";
 
                 return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
                     <rect width="100%" height="100%" fill="#f8f7f2"/>
                     <rect x="28" y="28" width="1024" height="${height - 56}" rx="20" fill="#ffffff" stroke="#d8ddd5" stroke-width="2"/>
                     <text x="64" y="96" fill="#17201b" font-size="44" font-weight="700">${text(model.cityName)}地铁路书</text>
+                    ${approximationBadge}
                     <text x="64" y="136" fill="#687068" font-size="24">${text(model.source)} · ${model.mode === "compact" ? "精简分享卡" : "详细分享卡"}</text>
                     ${hasThumbnail ? createShareThumbnailMap(model, 64, 164, 952, thumbnailHeight) : compactRoute}
                     ${stats}${segmentLines}${stationList}
@@ -2578,6 +2590,7 @@
                 currentConfirmedResult = { result: { ...result }, edges: filteredEdges };
                 if (result.source !== "custom") confirmedRouteSource = "solver";
                 setRoadbookAvailability(true);
+                document.getElementById("route-approximation-badge").hidden = !Boolean(result.isApproximate);
 
                 document.getElementById("res-edges").textContent = `${result.path_edges.length} 个`;
                 document.getElementById("res-stations").textContent = `${result.path_stations.length} 个`;

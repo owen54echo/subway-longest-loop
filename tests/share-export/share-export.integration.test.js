@@ -19,6 +19,10 @@ assert.ok(html.includes("MAX_THUMBNAIL_LABELS"), "Thumbnail label density limit 
 assert.ok(html.includes("thumbnailHeight = hasThumbnail ? 300 : 0"), "Detailed share should use the larger share-card layout");
 assert.ok(html.includes("function createCompleteShareSvg("), "Complete share needs a dedicated wide export canvas");
 assert.ok(html.includes('id="btn-share-expand"'), "Complete share needs an original-size viewer trigger");
+assert.ok(html.includes('id="route-approximation-badge"'), "The route book must expose the approximation marker");
+assert.ok(html.includes("isApproximate: result.isApproximate"), "Share snapshots must receive approximation state from the displayed route");
+assert.ok(html.includes('font-family="STKaiti, KaiTi, cursive"'), "Shared SVG cards must render the compact handwriting-style approximation marker");
+assert.ok(css.includes(".route-approximation-badge"), "The route book approximation marker needs dedicated styling");
 assert.ok(css.includes(".share-sheet :is(.share-mode-tab, .share-sheet-actions button, .drawer-close)"), "Share sheet controls need their own glass surface");
 assert.ok(css.includes(".share-sheet .share-mode-tab.active"), "Share mode active state needs a glass treatment");
 assert.ok(css.includes(".share-sheet .share-sheet-actions .btn-primary"), "Share sheet primary action needs a glass treatment");

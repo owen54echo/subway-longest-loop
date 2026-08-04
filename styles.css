@@ -847,6 +847,28 @@ input:checked + .slider:before {
     margin-bottom: 8px;
 }
 
+.roadbook-title-group {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    gap: 6px;
+}
+
+.route-approximation-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 18px;
+    padding: 1px 5px;
+    border: 1px solid var(--text-muted);
+    border-radius: 3px;
+    color: var(--text-secondary);
+    font: 700 12px/1 "STKaiti", "KaiTi", cursive;
+}
+
+.route-approximation-badge[hidden] {
+    display: none;
+}
+
 .roadbook-title-row .roadbook-title {
     border-bottom: 0;
     margin-bottom: 0;

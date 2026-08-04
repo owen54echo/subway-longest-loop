@@ -17,6 +17,16 @@ const snapshot = createSnapshot({
         { line: "2号线", color: "#0a0", stations: ["B", "C"] }
     ]
 });
+const approximateSnapshot = createSnapshot({
+    cityName: "广州",
+    source: "solver",
+    path_stations: ["A", "B"],
+    path_edges: [0],
+    distanceKm: 1.2,
+    transfers: 0,
+    segments: [{ line: "1号线", color: "#f00", stations: ["A", "B"] }],
+    isApproximate: true
+});
 
 assert.deepStrictEqual(snapshot.stats, {
     stationCount: 3,
@@ -28,9 +38,12 @@ assert.ok(!JSON.stringify(snapshot).match(/location|token|url/i));
 assert.strictEqual(createCardModel(snapshot, "compact").stations.length, 2);
 assert.strictEqual(createCardModel(snapshot, "normal").segments.length, 2);
 assert.strictEqual(createCardModel(snapshot, "complete").stations.length, 3);
+assert.strictEqual(approximateSnapshot.isApproximate, true, "An unfinished result must preserve its approximation state in the share snapshot");
+assert.strictEqual(createCardModel(approximateSnapshot, "normal").isApproximate, true, "All share card modes must preserve approximation state");
 const printHtml = createPrintHtml(createCardModel(snapshot, "complete"));
 assert.ok(printHtml.includes("@media print"));
 assert.ok(printHtml.includes("1号线"), "Complete print output should include route segments");
+assert.ok(createPrintHtml(createCardModel(approximateSnapshot, "complete")).includes("近似"), "Approximate print output must carry the compact approximation marker");
 
 assert.strictEqual(typeof calculateSegmentLayout, "function", "Share exports need a segment layout helper");
 const normalLayout = calculateSegmentLayout([
