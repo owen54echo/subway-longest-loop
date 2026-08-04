@@ -44,7 +44,10 @@ assert.strictEqual(createCardModel(approximateSnapshot, "normal").isApproximate,
 const printHtml = createPrintHtml(createCardModel(snapshot, "complete"));
 assert.ok(printHtml.includes("@media print"));
 assert.ok(printHtml.includes("1号线"), "Complete print output should include route segments");
-assert.ok(createPrintHtml(createCardModel(approximateSnapshot, "complete")).includes("近似"), "Approximate print output must carry the compact approximation marker");
+const approximatePrintHtml = createPrintHtml(createCardModel(approximateSnapshot, "complete"));
+assert.ok(approximatePrintHtml.includes('class="current-best-ring"'), "Approximate print output must carry the current-best ring");
+assert.ok(!approximatePrintHtml.includes(">近似<"), "Approximate print output must not expose the retired label");
+assert.ok(!createPrintHtml(createCardModel(snapshot, "complete")).includes('<span class="current-best-ring"'), "Exact print output must not render a current-best marker");
 
 assert.strictEqual(typeof calculateSegmentLayout, "function", "Share exports need a segment layout helper");
 const normalLayout = calculateSegmentLayout([
