@@ -857,16 +857,38 @@ input:checked + .slider:before {
 .route-approximation-badge {
     display: inline-flex;
     align-items: center;
-    min-height: 18px;
-    padding: 1px 5px;
-    border: 1px solid var(--text-muted);
-    border-radius: 3px;
-    color: var(--text-secondary);
-    font: 700 12px/1 "STKaiti", "KaiTi", cursive;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
 }
 
 .route-approximation-badge[hidden] {
     display: none;
+}
+
+.route-approximation-ring {
+    position: relative;
+    width: 17px;
+    height: 17px;
+    border: 2px dashed var(--text-muted);
+    border-radius: 50%;
+    animation: route-approximation-spin 4s linear infinite;
+}
+
+.route-approximation-ring::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    background: var(--state-end);
+}
+
+@keyframes route-approximation-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .route-approximation-ring { animation: none; }
 }
 
 .roadbook-title-row .roadbook-title {

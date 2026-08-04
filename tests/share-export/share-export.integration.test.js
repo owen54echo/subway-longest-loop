@@ -22,7 +22,9 @@ assert.ok(html.includes('id="btn-share-expand"'), "Complete share needs an origi
 assert.ok(html.includes('id="route-approximation-badge"'), "The route book must expose the approximation marker");
 assert.ok(html.includes("isApproximate: result.isApproximate"), "Share snapshots must receive approximation state from the displayed route");
 assert.ok(html.includes('hidden = !Boolean(result.isApproximate)'), "Exact route rendering must hide the approximation marker");
-assert.ok(html.includes('font-family="STKaiti, KaiTi, cursive"'), "Shared SVG cards must render the compact handwriting-style approximation marker");
+assert.ok(html.includes('class="route-approximation-ring"'), "The route book must use the dashed-ring current-best marker");
+assert.ok(html.includes('stroke-dasharray="5 4"'), "Shared SVG cards must use the static dashed-ring marker");
+assert.ok(!html.includes('font-family="STKaiti, KaiTi, cursive"'), "Shared SVG cards must not render the retired handwriting marker");
 assert.ok(css.includes(".route-approximation-badge"), "The route book approximation marker needs dedicated styling");
 assert.ok(css.includes(".share-sheet :is(.share-mode-tab, .share-sheet-actions button, .drawer-close)"), "Share sheet controls need their own glass surface");
 assert.ok(css.includes(".share-sheet .share-mode-tab.active"), "Share mode active state needs a glass treatment");

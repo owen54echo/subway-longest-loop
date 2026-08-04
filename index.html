@@ -318,7 +318,7 @@
                         <div class="roadbook-title-row">
                             <div class="roadbook-title-group">
                                 <div class="roadbook-title">行车路书</div>
-                                <span id="route-approximation-badge" class="route-approximation-badge" hidden title="当前最佳路线，计算未完成" aria-label="当前最佳路线，计算未完成">近似</span>
+                                <span id="route-approximation-badge" class="route-approximation-badge" hidden title="当前最佳路线，计算未完成" aria-label="当前最佳路线，计算未完成"><span class="route-approximation-ring" aria-hidden="true"></span></span>
                             </div>
                             <button class="roadbook-share-trigger" id="btn-roadbook-share" type="button" title="分享路线">分享</button>
                         </div>
@@ -2431,7 +2431,7 @@
                     return `<rect x="${x}" y="${statsY}" width="384" height="112" rx="14" fill="#eef0eb"/><text x="${x + 22}" y="${statsY + 40}" fill="#687068" font-size="26">${text(label)}</text><text x="${x + 22}" y="${statsY + 86}" fill="#17201b" font-size="38" font-weight="700">${text(value)}</text>`;
                 }).join("");
                 const approximationBadge = model.isApproximate
-                    ? `<g aria-label="当前最佳路线，计算未完成"><rect x="1710" y="76" width="96" height="38" rx="5" fill="none" stroke="#687068" stroke-width="2"/><text x="1758" y="104" fill="#52605a" font-size="25" font-weight="700" text-anchor="middle" font-family="STKaiti, KaiTi, cursive">近似</text></g>`
+                    ? `<g aria-label="当前最佳路线，计算未完成"><circle cx="1758" cy="95" r="16" fill="none" stroke="#687068" stroke-width="2" stroke-dasharray="5 4"/><circle cx="1758" cy="95" r="4" fill="#1d8b68"/></g>`
                     : "";
 
                 return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
@@ -2492,7 +2492,7 @@
                     return `<rect x="${x}" y="${statsY}" width="224" height="98" rx="12" fill="#eef0eb"/><text x="${x + 18}" y="${statsY + 35}" fill="#687068" font-size="22">${text(label)}</text><text x="${x + 18}" y="${statsY + 74}" fill="#17201b" font-size="30" font-weight="700">${text(value)}</text>`;
                 }).join("");
                 const approximationBadge = model.isApproximate
-                    ? `<g aria-label="当前最佳路线，计算未完成"><rect x="900" y="66" width="72" height="30" rx="4" fill="none" stroke="#687068" stroke-width="1.5"/><text x="936" y="88" fill="#52605a" font-size="19" font-weight="700" text-anchor="middle" font-family="STKaiti, KaiTi, cursive">近似</text></g>`
+                    ? `<g aria-label="当前最佳路线，计算未完成"><circle cx="936" cy="81" r="12" fill="none" stroke="#687068" stroke-width="1.5" stroke-dasharray="5 4"/><circle cx="936" cy="81" r="3" fill="#1d8b68"/></g>`
                     : "";
 
                 return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
