@@ -400,6 +400,16 @@
                 <div class="progress-bar" id="solver-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)); box-shadow: 0 0 8px var(--neon-blue); transition: width 0.1s ease;"></div>
             </div>
             <div class="loading-subtext" id="solver-progress-text" style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">已探索 0 个状态 (0%)</div>
+            <div class="solver-elapsed-time" id="solver-elapsed-time" aria-live="polite">计算用时 00:00</div>
+            <section class="solver-decision-dialog" id="solver-decision-dialog" role="dialog" aria-modal="true" aria-labelledby="solver-decision-title" hidden>
+                <h2 id="solver-decision-title">计算仍在进行</h2>
+                <p id="solver-decision-copy">正在继续寻找更长路线。</p>
+                <div class="solver-decision-actions">
+                    <button class="btn-primary" id="btn-use-current-best" type="button">使用当前最佳路线</button>
+                    <button id="btn-continue-solver" type="button">继续计算</button>
+                    <button class="btn-cancel-solver" id="btn-cancel-decision" type="button">取消计算</button>
+                </div>
+            </section>
             <button class="btn-cancel-solver" id="btn-cancel-solver">取消计算</button>
         </div>
 
@@ -635,6 +645,7 @@
     <script src="custom-route.js"></script>
     <script src="station-label-layout.js"></script>
     <script src="share-export.js"></script>
+    <script src="solver-progress.js"></script>
     
     <!-- Page Controller script -->
     <script>
@@ -657,6 +668,7 @@
             const selectedWaypoints = new Set();
             const selectedAvoids = new Set();
             const activeWorkers = new Set();
+            let activeSolverSession = null;
             let isCustomRouteMode = false;
             let customRouteGraph = window.CustomRoute.createGraph(calculationTopology.nodes, calculationTopology.edges);
             let customRouteDraft = window.CustomRoute.createDraft();
@@ -2011,7 +2023,9 @@
                 stopCruise();
 
                 // A new request invalidates every root branch from the previous exact search.
-                if (activeWorkers.size > 0) {
+                if (activeSolverSession) {
+                    activeSolverSession.cancel();
+                } else if (activeWorkers.size > 0) {
                     console.log("%c🛑 [Solver] Terminating previous running calculation...", "color: #ff007f;");
                     activeWorkers.forEach(worker => worker.terminate());
                     activeWorkers.clear();
@@ -2050,10 +2064,19 @@
 
                 console.log("%c🚀 [Solver] Starting path planning with config:", "color: #00f0ff; font-weight: bold;", solverConfig);
                 const startTime = Date.now();
+                const elapsedTime = document.getElementById("solver-elapsed-time");
+                const decisionDialog = document.getElementById("solver-decision-dialog");
+                const decisionCopy = document.getElementById("solver-decision-copy");
+                const useCurrentBestButton = document.getElementById("btn-use-current-best");
+                const cancelDecisionButton = document.getElementById("btn-cancel-decision");
+                const cancelSolverButton = document.getElementById("btn-cancel-solver");
 
                 // Reset progress UI
                 document.getElementById("solver-progress-bar").style.width = "0%";
                 document.getElementById("solver-progress-text").textContent = "已探索 0 个状态 (0%)";
+                elapsedTime.textContent = "计算用时 00:00";
+                decisionDialog.hidden = true;
+                cancelSolverButton.hidden = false;
                 const startStation = solverConfig.start_station;
                 const rootEdgeIds = solverConfig.edges.reduce((ids, edge, index) => {
                     if (edge.u === startStation || edge.v === startStation) ids.push(index);
@@ -2068,13 +2091,84 @@
 
                 let completedWorkers = 0;
                 let bestResult = null;
+                let bestCandidateResult = null;
                 let hasWorkerError = false;
+                let terminal = false;
+                let scheduler = null;
+                let solverSession = null;
                 const progressByWorker = new Map();
 
                 function terminateSolverWorkers() {
                     activeWorkers.forEach(worker => worker.terminate());
                     activeWorkers.clear();
                 }
+
+                function hideSolverDecision() {
+                    decisionDialog.hidden = true;
+                    cancelSolverButton.hidden = false;
+                }
+
+                function cleanupSolverSession() {
+                    if (terminal) return false;
+                    terminal = true;
+                    scheduler?.stop();
+                    terminateSolverWorkers();
+                    hideSolverDecision();
+                    if (activeSolverSession === solverSession) activeSolverSession = null;
+                    return true;
+                }
+
+                function acceptIncumbent(candidate) {
+                    if (candidate.weight > (bestCandidateResult?.weight ?? -1)) {
+                        bestCandidateResult = candidate;
+                    }
+                }
+
+                function showSolverDecision() {
+                    if (terminal) return;
+                    const hasCandidate = Boolean(bestCandidateResult && bestCandidateResult.weight > -1);
+                    useCurrentBestButton.hidden = !hasCandidate;
+                    cancelDecisionButton.hidden = hasCandidate;
+                    cancelSolverButton.hidden = true;
+                    decisionCopy.textContent = hasCandidate
+                        ? "已找到当前最佳路线，你可以直接查看或继续等待。"
+                        : "暂未找到可行路线，你可以继续等待或取消计算。";
+                    decisionDialog.hidden = false;
+                }
+
+                function finishCurrentBestSearch() {
+                    if (!bestCandidateResult || !cleanupSolverSession()) return;
+                    loadingOverlay.style.display = "none";
+                    displayResults({ ...bestCandidateResult, isApproximate: true }, solverConfig.edges);
+                    openDrawer("drawer-roadbook", "路书");
+                }
+
+                function cancelSolverSession() {
+                    if (!cleanupSolverSession()) return;
+                    loadingOverlay.style.display = "none";
+                }
+
+                function continueSolverSearch() {
+                    if (terminal) return;
+                    hideSolverDecision();
+                    scheduler.continueWaiting();
+                }
+
+                solverSession = {
+                    cancel: cancelSolverSession,
+                    continueWaiting: continueSolverSearch,
+                    finishCurrentBestSearch
+                };
+                activeSolverSession = solverSession;
+                scheduler = window.SolverProgress.createPromptScheduler({
+                    onTick(elapsed) {
+                        elapsedTime.textContent = `计算用时 ${window.SolverProgress.formatElapsed(elapsed)}`;
+                    },
+                    onPrompt() {
+                        showSolverDecision();
+                    }
+                });
+                scheduler.start();
 
                 function updateParallelProgress() {
                     let exploredStates = 0;
@@ -2089,6 +2183,7 @@
                 }
 
                 function finishExactSearch() {
+                    if (!cleanupSolverSession()) return;
                     loadingOverlay.style.display = "none";
                     const duration = Date.now() - startTime;
                     if (bestResult && bestResult.weight > -1) {
@@ -2100,7 +2195,6 @@
                         console.log("%c⚠️ [Solver] No valid path found matching constraints.", "color: #fff30a;");
                         alert("该过滤条件下未找到任何可行路径，请调整后重试！");
                     }
-                    terminateSolverWorkers();
                 }
 
                 for (let workerIndex = 0; workerIndex < rootEdgeGroups.length; workerIndex++) {
@@ -2109,8 +2203,8 @@
                         worker = new Worker("solver-worker.js");
                     } catch (err) {
                         console.error("%c❌ [Solver] Failed to construct Web Worker:", "color: #ff007f; font-weight: bold;", err);
+                        cleanupSolverSession();
                         loadingOverlay.style.display = "none";
-                        terminateSolverWorkers();
                         alert("⚠️ 浏览器本地安全限制：\n由于浏览器的安全策略（CORS 限制），直接双击运行本地 HTML 文件（file:// 协议）无法加载后台 Web Worker 线程。\n\n请在当前项目目录下运行以下命令启动本地服务，然后访问 http://localhost:8000 查看：\npython3 -m http.server 8000");
                         return;
                     }
@@ -2118,16 +2212,21 @@
                     progressByWorker.set(worker, { stepCount: 0, percent: 0 });
                     worker.onmessage = function(e) {
                         const msg = e.data;
+                        if (terminal) return;
                         if (msg.type === "progress") {
                             progressByWorker.set(worker, { stepCount: msg.step_count, percent: msg.percent });
                             updateParallelProgress();
                             return;
                         }
+                        if (msg.type === "incumbent") {
+                            acceptIncumbent(msg);
+                            return;
+                        }
                         if (msg.type !== "result" || hasWorkerError) return;
                         if (msg.timeout_reached) {
                             hasWorkerError = true;
+                            cleanupSolverSession();
                             loadingOverlay.style.display = "none";
-                            terminateSolverWorkers();
                             alert("精确搜索尚未完成，未输出临时路线。请继续等待或取消后调整规则。");
                             return;
                         }
@@ -2140,9 +2239,9 @@
                     worker.onerror = function(err) {
                         if (hasWorkerError) return;
                         hasWorkerError = true;
+                        cleanupSolverSession();
                         loadingOverlay.style.display = "none";
                         console.error("%c❌ [Solver] Worker Thread Error:", "color: #ff007f; font-weight: bold;", err);
-                        terminateSolverWorkers();
                         alert("算法求解线程发生异常！");
                     };
                     worker.postMessage({ ...solverConfig, root_edge_ids: rootEdgeGroups[workerIndex] });
@@ -2151,13 +2250,11 @@
 
             // Cancel Solver Trigger
             document.getElementById("btn-cancel-solver").addEventListener("click", () => {
-                if (activeWorkers.size > 0) {
-                    console.log("%c🛑 [Solver] Calculation cancelled by user.", "color: #ff007f; font-weight: bold;");
-                    activeWorkers.forEach(worker => worker.terminate());
-                    activeWorkers.clear();
-                }
-                document.getElementById("loading-overlay").style.display = "none";
+                activeSolverSession?.cancel();
             });
+            document.getElementById("btn-use-current-best").addEventListener("click", () => activeSolverSession?.finishCurrentBestSearch());
+            document.getElementById("btn-continue-solver").addEventListener("click", () => activeSolverSession?.continueWaiting());
+            document.getElementById("btn-cancel-decision").addEventListener("click", () => activeSolverSession?.cancel());
 
             // Results are translated once into route segments, then reused by the roadbook, SVG highlight and cruise mode.
             function getEdgeDistanceKm(edge) {
