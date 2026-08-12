@@ -10,6 +10,6 @@ assert.match(ignore, /analytics-worker\/\*\.sqlite/);
 assert.match(ignore, /analytics-worker\/\.wrangler\//);
 assert.match(workerConfig, /database_id\s*=\s*"REPLACE_WITH_D1_DATABASE_ID"/);
 assert.doesNotMatch(workerConfig, /ANALYTICS_(?:ADMIN_PASSWORD|TOKEN_SECRET|VISITOR_HMAC_KEY)\s*=\s*[^\s<]/);
-assert.match(config, /endpoint:\s*"\/analytics-api"/);
+assert.match(config, /endpoint:\s*"https:\/\/subway-longest-loop\.290573525\.workers\.dev"/);
 
 console.log("analytics release safety tests passed");
