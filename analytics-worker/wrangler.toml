@@ -1,0 +1,14 @@
+name = "subway-analytics"
+main = "src/index.mjs"
+compatibility_date = "2026-08-11"
+
+# Used when deploying the standalone Worker. Pages deployments use the same
+# D1 binding and environment variable names through the Pages dashboard.
+
+[[d1_databases]]
+binding = "DB"
+database_name = "subway-analytics"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+[triggers]
+crons = ["0 0 * * *"]
