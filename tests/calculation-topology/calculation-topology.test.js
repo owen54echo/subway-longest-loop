@@ -47,4 +47,46 @@ assert(zhengzhou.nodes.some(node => node.name === "南四环(贾河)"));
 assert(zhengzhou.edges.some(edge => edge.u === "站马屯" && edge.v === "南四环(郑州航空港站)"));
 assert(zhengzhou.edges.some(edge => edge.u === "南四环(贾河)" && edge.v === "十八里河"));
 
+const bajiaoNodes = [
+    { name: "古城", lines: ["1号线八通线"] },
+    {
+        name: "八角游乐园",
+        lines: ["1号线八通线"],
+        wiki: {
+            operationalStatus: {
+                state: "temporarily_closed",
+                calculation: {
+                    mode: "pass_through",
+                    line: "1号线八通线",
+                    from: "古城",
+                    to: "八宝山"
+                }
+            }
+        }
+    },
+    { name: "八宝山", lines: ["1号线八通线"] }
+];
+const bajiaoEdges = [
+    { u: "古城", v: "八角游乐园", line: "1号线八通线", color: "#CC0000", straightLengthKm: 1.906 },
+    { u: "八角游乐园", v: "八宝山", line: "1号线八通线", color: "#CC0000", straightLengthKm: 1.984 }
+];
+const bajiaoTopology = create("beijing", bajiaoNodes, bajiaoEdges);
+assert.strictEqual(bajiaoTopology.isStationUnavailable("八角游乐园"), true);
+assert.strictEqual(bajiaoTopology.nodes.some(node => node.name === "八角游乐园"), false);
+assert.strictEqual(bajiaoTopology.edges.some(edge => edge.u === "八角游乐园" || edge.v === "八角游乐园"), false);
+assert.deepStrictEqual(bajiaoTopology.edges[0], {
+    u: "古城",
+    v: "八宝山",
+    mapU: "古城",
+    mapV: "八宝山",
+    line: "1号线八通线",
+    logicalLine: "1号线/八通线",
+    color: "#CC0000",
+    straightLengthKm: 3.89,
+    throughServiceGroups: [],
+    throughServiceEndpointGroups: {},
+    throughService: true,
+    skippedStations: ["八角游乐园"]
+});
+
 console.log("calculation topology contract ok");
