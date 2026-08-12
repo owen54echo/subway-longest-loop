@@ -698,6 +698,10 @@
                 return getStationOperationalStatus(nodeOrName, cityData)?.state === "temporarily_closed";
             }
 
+            function getRouteMapSegments(edge) {
+                return calculationTopology.getMapSegments(edge);
+            }
+
             // Cruise state is deliberately separate from route planning so pausing an animation never changes a route.
             let cruiseIsPlaying = false;
             let cruiseSpeedMultiplier = 1;
@@ -2873,11 +2877,10 @@
                     if (lineEl) {
                         const isTraversed = result.path_edges.some(solverEdgeIdx => {
                             const solverEdge = filteredEdges[solverEdgeIdx];
-                            const solverU = solverEdge?.mapU || solverEdge?.u;
-                            const solverV = solverEdge?.mapV || solverEdge?.v;
-                            return solverEdge && 
-                                   ((solverU === edge.u && solverV === edge.v) || (solverU === edge.v && solverV === edge.u)) &&
-                                   solverEdge.line === edge.line;
+                            return solverEdge && getRouteMapSegments(solverEdge).some(segment =>
+                                ((segment.u === edge.u && segment.v === edge.v) || (segment.u === edge.v && segment.v === edge.u)) &&
+                                segment.line === edge.line
+                            );
                         });
 
                         if (isTraversed) {
@@ -2907,11 +2910,10 @@
                 result.path_edges.forEach(solverEdgeIdx => {
                     const edge = filteredEdges[solverEdgeIdx];
                     if (edge) {
-                        const mapU = edge.mapU || edge.u;
-                        const mapV = edge.mapV || edge.v;
-                        const uNode = data.nodes.find(n => n.name === mapU);
-                        const vNode = data.nodes.find(n => n.name === mapV);
-                        if (uNode && vNode) {
+                        getRouteMapSegments(edge).forEach(segment => {
+                            const uNode = data.nodes.find(n => n.name === segment.u);
+                            const vNode = data.nodes.find(n => n.name === segment.v);
+                            if (!uNode || !vNode) return;
                             // A dark backing separates the active route at crossings without a glow.
                             const backingLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
                             backingLine.setAttribute("x1", uNode.x);
@@ -2929,13 +2931,13 @@
                             routeLine.setAttribute("y1", uNode.y);
                             routeLine.setAttribute("x2", vNode.x);
                             routeLine.setAttribute("y2", vNode.y);
-                            routeLine.setAttribute("stroke", edge.color);
+                            routeLine.setAttribute("stroke", segment.color || edge.color);
                             routeLine.setAttribute("stroke-width", "5.5");
                             routeLine.setAttribute("stroke-linecap", "round");
                             routeLine.setAttribute("opacity", "1");
                             routeLine.setAttribute("class", "route-line-active");
                             hlEdgesGroup.appendChild(routeLine);
-                        }
+                        });
                     }
                 });
 
@@ -2948,7 +2950,7 @@
                         // Find first traversed edge color
                         const firstEdgeIdx = result.path_edges.find(solverEdgeIdx => {
                             const edge = filteredEdges[solverEdgeIdx];
-                            return edge && ((edge.mapU || edge.u) === name || (edge.mapV || edge.v) === name);
+                            return edge && getRouteMapSegments(edge).some(segment => segment.u === name || segment.v === name);
                         });
                         const firstEdge = firstEdgeIdx !== undefined ? filteredEdges[firstEdgeIdx] : null;
                         const lineStrokeColor = firstEdge ? firstEdge.color : "var(--accent-color)";
@@ -3171,15 +3173,18 @@
                     routeResult.path_edges.forEach((edgeIndex, index) => {
                         const edge = routeEdges[edgeIndex];
                         if (!edge) return;
-                        const mapU = edge.mapU || edge.u;
-                        const mapV = edge.mapV || edge.v;
                         const logicalStart = routeResult.path_stations[index];
-                        const forward = calculationTopology.normalizeStation(mapU) === logicalStart;
-                        const [fromStation, toStation] = forward ? [mapU, mapV] : [mapV, mapU];
-                        const fromPoint = mapPoint(fromStation);
-                        const toPoint = mapPoint(toStation);
-                        if (fromPoint && cruisePathPoints.at(-1)?.name !== fromStation) cruisePathPoints.push(fromPoint);
-                        if (toPoint) cruisePathPoints.push(toPoint);
+                        const mapSegments = getRouteMapSegments(edge);
+                        const forward = calculationTopology.normalizeStation(mapSegments[0].u) === logicalStart;
+                        const orderedSegments = forward
+                            ? mapSegments
+                            : [...mapSegments].reverse().map(segment => ({ ...segment, u: segment.v, v: segment.u }));
+                        orderedSegments.forEach(segment => {
+                            const fromPoint = mapPoint(segment.u);
+                            const toPoint = mapPoint(segment.v);
+                            if (fromPoint && cruisePathPoints.at(-1)?.name !== segment.u) cruisePathPoints.push(fromPoint);
+                            if (toPoint) cruisePathPoints.push(toPoint);
+                        });
                     });
                 } else {
                     cruisePathPoints = lastResultStations
@@ -3701,9 +3706,7 @@
             function getCalculationCityData(cityKey) {
                 const city = window.subwayDataMap[cityKey] || data;
                 const unavailableNames = new Set(city.nodes.filter(node => isStationUnavailable(node, city)).map(node => node.name));
-                const activeNodes = city.nodes.filter(node => !unavailableNames.has(node.name));
-                const activeEdges = city.edges.filter(edge => !unavailableNames.has(edge.u) && !unavailableNames.has(edge.v));
-                const topology = window.CalculationTopology.create(cityKey, activeNodes, activeEdges);
+                const topology = window.CalculationTopology.create(cityKey, city.nodes, city.edges);
                 return { ...city, rawCity: city, nodes: topology.nodes, edges: topology.edges, topology, unavailableNames };
             }
 

@@ -74,19 +74,16 @@ const bajiaoTopology = create("beijing", bajiaoNodes, bajiaoEdges);
 assert.strictEqual(bajiaoTopology.isStationUnavailable("八角游乐园"), true);
 assert.strictEqual(bajiaoTopology.nodes.some(node => node.name === "八角游乐园"), false);
 assert.strictEqual(bajiaoTopology.edges.some(edge => edge.u === "八角游乐园" || edge.v === "八角游乐园"), false);
-assert.deepStrictEqual(bajiaoTopology.edges[0], {
-    u: "古城",
-    v: "八宝山",
-    mapU: "古城",
-    mapV: "八宝山",
-    line: "1号线八通线",
-    logicalLine: "1号线/八通线",
-    color: "#CC0000",
-    straightLengthKm: 3.89,
-    throughServiceGroups: [],
-    throughServiceEndpointGroups: {},
-    throughService: true,
-    skippedStations: ["八角游乐园"]
-});
+const bypassEdge = bajiaoTopology.edges[0];
+assert.strictEqual(bypassEdge.u, "古城");
+assert.strictEqual(bypassEdge.v, "八宝山");
+assert.strictEqual(bypassEdge.logicalLine, "1号线/八通线");
+assert.strictEqual(bypassEdge.straightLengthKm, 3.89);
+assert.strictEqual(bypassEdge.throughService, true);
+assert.deepStrictEqual(bypassEdge.skippedStations, ["八角游乐园"]);
+assert.deepStrictEqual(bajiaoTopology.getMapSegments(bypassEdge), [
+    { u: "古城", v: "八角游乐园", line: "1号线八通线", color: "#CC0000" },
+    { u: "八角游乐园", v: "八宝山", line: "1号线八通线", color: "#CC0000" }
+]);
 
 console.log("calculation topology contract ok");
