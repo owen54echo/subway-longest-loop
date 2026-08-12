@@ -123,6 +123,12 @@ window.subwayDataMap = {
             "effectiveFrom": "2025-06-02",
             "expectedResume": "2027-05-03",
             "reviewedAt": "2026-08-12",
+            "calculation": {
+              "mode": "pass_through",
+              "line": "1号线八通线",
+              "from": "古城",
+              "to": "八宝山"
+            },
             "sources": [
               {
                 "publisher": "北京地铁",
