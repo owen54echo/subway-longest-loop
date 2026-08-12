@@ -6,6 +6,8 @@ import time
 import math
 import os
 
+from sync_station_surroundings import merge_station_status, merge_surroundings
+
 ssl._create_default_https_context = ssl._create_unverified_context
 
 CITIES = [
@@ -295,6 +297,20 @@ def main():
 
     restored_wiki_count = restore_existing_wiki(compiled_data, existing_wiki_by_city)
     print(f"Restored wiki metadata for {restored_wiki_count} stations.")
+
+    surroundings_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "station_surroundings.json")
+    if os.path.exists(surroundings_path):
+        with open(surroundings_path, encoding="utf-8") as surroundings_file:
+            surroundings_data = json.load(surroundings_file)
+        surroundings_count = merge_surroundings(compiled_data, surroundings_data)
+        print(f"Merged surroundings metadata for {surroundings_count} stations.")
+
+    status_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "station_status.json")
+    if os.path.exists(status_path):
+        with open(status_path, encoding="utf-8") as status_file:
+            status_data = json.load(status_file)
+        status_count = merge_station_status(compiled_data, status_data)
+        print(f"Merged operational status for {status_count} stations.")
     
     js_content = [
         "// Consolidated subway data for multiple cities.",

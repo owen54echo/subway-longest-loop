@@ -27,3 +27,9 @@ __pycache__/
 .superpowers/
 history_conversation.md
 city_extremes_results_*.json
+
+# Private Cloudflare analytics development artifacts
+analytics-worker/.dev.vars
+analytics-worker/*.sqlite
+analytics-worker/*.sqlite-*
+analytics-worker/.wrangler/

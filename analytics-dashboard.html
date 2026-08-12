@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow">
+    <title>访问统计</title>
+    <link rel="stylesheet" href="analytics-dashboard.css">
+</head>
+<body>
+    <main class="analytics-shell">
+        <section class="analytics-login" id="analytics-login" aria-labelledby="analytics-login-title">
+            <p class="analytics-kicker">SUBWAY NETWORK / PRIVATE</p>
+            <h1 id="analytics-login-title">访问统计</h1>
+            <p class="analytics-login-copy">输入管理密码后查看运行概览。</p>
+            <form id="analytics-login-form" class="analytics-login-form">
+                <label for="analytics-password">管理密码</label>
+                <input id="analytics-password" type="password" autocomplete="current-password" required>
+                <p class="analytics-form-error" id="analytics-login-error" role="alert" hidden></p>
+                <button type="submit">进入统计</button>
+            </form>
+        </section>
+
+        <section id="analytics-app" class="analytics-app" hidden aria-live="polite">
+            <header class="analytics-header">
+                <div>
+                    <p class="analytics-kicker">SUBWAY NETWORK / PRIVATE</p>
+                    <h1>访问统计</h1>
+                </div>
+                <div class="analytics-header-actions">
+                    <span class="analytics-timezone">Asia/Shanghai</span>
+                    <button class="analytics-text-button" type="button" id="analytics-sign-out">退出</button>
+                </div>
+            </header>
+
+            <section class="analytics-toolbar" aria-label="日期范围">
+                <div class="analytics-range-buttons">
+                    <button type="button" class="analytics-range-button active" data-range="7">7 天</button>
+                    <button type="button" class="analytics-range-button" data-range="30">30 天</button>
+                    <button type="button" class="analytics-range-button" data-range="custom">自定义</button>
+                </div>
+                <form id="custom-range" class="analytics-custom-range" hidden>
+                    <label>开始 <input type="date" id="analytics-range-from" required></label>
+                    <label>结束 <input type="date" id="analytics-range-to" required></label>
+                    <button type="submit">应用</button>
+                </form>
+                <p id="analytics-status" class="analytics-status"></p>
+            </section>
+
+            <section class="analytics-metrics" aria-label="关键指标">
+                <article class="analytics-metric"><span>页面浏览</span><strong id="metric-page-views">--</strong><small>所选日期范围</small></article>
+                <article class="analytics-metric"><span>大致独立访客</span><strong id="metric-visitors">--</strong><small>按浏览器估算</small></article>
+                <article class="analytics-metric"><span>生成路线</span><strong id="metric-routes">--</strong><small>成功打开路书</small></article>
+                <article class="analytics-metric"><span>手机占比</span><strong id="metric-mobile-share">--</strong><small>页面浏览占比</small></article>
+            </section>
+
+            <section class="analytics-grid analytics-grid-primary">
+                <article class="analytics-panel analytics-panel-trend">
+                    <div class="analytics-panel-heading"><div><span>趋势</span><h2>页面浏览与路线生成</h2></div><div class="analytics-legend"><span><i class="analytics-dot analytics-dot-cyan"></i>页面浏览</span><span><i class="analytics-dot analytics-dot-pink"></i>路线生成</span></div></div>
+                    <svg id="analytics-trend-chart" viewBox="0 0 720 250" role="img" aria-label="页面浏览与路线生成趋势"></svg>
+                </article>
+                <article class="analytics-panel">
+                    <div class="analytics-panel-heading"><div><span>终端</span><h2>设备分布</h2></div></div>
+                    <div id="device-breakdown" class="analytics-device-breakdown"></div>
+                </article>
+            </section>
+
+            <section class="analytics-grid analytics-grid-secondary">
+                <article class="analytics-panel">
+                    <div class="analytics-panel-heading"><div><span>地区</span><h2>国家或地区</h2></div></div>
+                    <ol id="country-ranking" class="analytics-ranking"></ol>
+                </article>
+                <article class="analytics-panel">
+                    <div class="analytics-panel-heading"><div><span>功能入口使用</span><h2>底部 Tab</h2></div></div>
+                    <ol id="tab-usage-list" class="analytics-ranking"></ol>
+                </article>
+                <article class="analytics-panel">
+                    <div class="analytics-panel-heading"><div><span>访问时间</span><h2>活跃时段</h2></div></div>
+                    <ol id="hour-usage-list" class="analytics-ranking"></ol>
+                </article>
+            </section>
+        </section>
+    </main>
+    <script src="analytics-config.js"></script>
+    <script src="analytics-dashboard.js"></script>
+</body>
+</html>

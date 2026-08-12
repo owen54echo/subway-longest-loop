@@ -17,6 +17,7 @@
     --base-station-color: #8c8a81; /* High contrast node ring */
     --station-fill: #ffffff;
     --station-outline: #18191c;
+    --station-disabled: #8d8d88;
     --route-backing: #f6f4ee;
     
     --state-start: #d92626;
@@ -53,6 +54,7 @@
     --base-station-color: #64646e; /* CRT phosphor node ring */
     --station-fill: #f7f7f4;
     --station-outline: #0b0c0e;
+    --station-disabled: #626268;
     --route-backing: #0c0c0d;
     
     --state-start: #ff2a2a;
@@ -1260,6 +1262,18 @@ input:checked + .slider:before {
     vector-effect: non-scaling-stroke;
 }
 
+.station-unavailable .station-marker-primary,
+.station-unavailable .station-marker-inner {
+    fill: var(--station-disabled) !important;
+    stroke: var(--station-disabled) !important;
+    opacity: 0.72 !important;
+}
+
+.station-unavailable .station-label {
+    fill: var(--station-disabled) !important;
+    opacity: 0.9 !important;
+}
+
 .custom-route-summary {
     font-size: 12px;
     color: var(--text-secondary);
@@ -1508,6 +1522,15 @@ input:checked + .slider:before {
     padding-bottom: 4px;
     border-bottom: 1px solid var(--border-color);
     margin-bottom: 4px;
+}
+
+.map-popup-status {
+    color: var(--station-disabled);
+    font-size: 10px;
+    line-height: 1.45;
+    padding: 2px 4px 5px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 2px;
 }
 
 .map-popup-btn {

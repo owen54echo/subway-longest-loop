@@ -378,6 +378,7 @@
         <!-- Floating interactive popup on map clicks -->
         <div class="map-popup" id="map-popup">
             <div class="map-popup-header" id="popup-station-name">车站名称</div>
+            <div class="map-popup-status" id="popup-station-status" hidden></div>
             <button class="map-popup-btn" id="popup-btn-start">设为起点</button>
             <button class="map-popup-btn" id="popup-btn-end">设为终点</button>
             <button class="map-popup-btn" id="popup-btn-waypoint">设为必经打卡站</button>
@@ -649,6 +650,8 @@
     <script src="station-label-layout.js"></script>
     <script src="share-export.js"></script>
     <script src="solver-progress.js"></script>
+    <script src="analytics-config.js"></script>
+    <script src="analytics-client.js"></script>
     
     <!-- Page Controller script -->
     <script>
@@ -660,7 +663,7 @@
                 return;
             }
             document.title = "地铁路网线路研究";
-            let calculationTopology = window.CalculationTopology.create(selectedCity, data.nodes, data.edges);
+            let calculationTopology = getCalculationCityData(selectedCity).topology;
 
             // Planning state is the single source of truth for every map marker, form control and solver request.
             let selectedStartStation = "";
@@ -681,6 +684,19 @@
             let currentRouteSegments = [];
             let shareMode = "normal";
             let sharePreviewUrl = "";
+
+            function getStationOperationalStatus(nodeOrName, cityData = data) {
+                const rawCity = cityData?.rawCity || cityData;
+                if (!rawCity?.nodes) return null;
+                const node = typeof nodeOrName === "string"
+                    ? rawCity.nodes.find(item => item.name === nodeOrName)
+                    : nodeOrName;
+                return node?.wiki?.operationalStatus || null;
+            }
+
+            function isStationUnavailable(nodeOrName, cityData = data) {
+                return getStationOperationalStatus(nodeOrName, cityData)?.state === "temporarily_closed";
+            }
 
             // Cruise state is deliberately separate from route planning so pausing an animation never changes a route.
             let cruiseIsPlaying = false;
@@ -786,11 +802,12 @@
                     const isTransfer = node.lines.length > 1;
 
                     const stationGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-                    stationGroup.setAttribute("class", "svg-station");
+                    const isUnavailable = isStationUnavailable(node);
+                    stationGroup.setAttribute("class", `svg-station${isUnavailable ? " station-unavailable" : ""}`);
                     stationGroup.setAttribute("id", `station-node-${node.name}`);
                     stationGroup.setAttribute("role", "button");
                     stationGroup.setAttribute("tabindex", "0");
-                    stationGroup.setAttribute("aria-label", `选择车站 ${node.name}`);
+                    stationGroup.setAttribute("aria-label", isUnavailable ? `${node.name}，暂停服务，不参与路线计算` : `选择车站 ${node.name}`);
                     
                     // The SVG map remains directly operable without a mouse: keyboard users can
                     // open the same station action menu with Enter or Space.
@@ -877,7 +894,7 @@
                     const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
                     text.setAttribute("x", node.x);
                     text.setAttribute("y", node.y - (isTransfer ? 8 : 6));
-                    text.setAttribute("fill", isTransfer ? "var(--text-primary)" : "var(--text-secondary)");
+                    text.setAttribute("fill", isUnavailable ? "var(--station-disabled)" : (isTransfer ? "var(--text-primary)" : "var(--text-secondary)"));
                     text.setAttribute("font-size", isTransfer ? "6.5" : "4.5");
                     text.setAttribute("font-family", "inherit");
                     text.setAttribute("text-anchor", "middle");
@@ -943,6 +960,7 @@
             }
 
             function getStationLabelPriority(node) {
+                if (isStationUnavailable(node)) return 450;
                 if (node.name === hoveredStationName || node.name === clickedStationName || calculationTopology.normalizeStation(node.name) === customRouteDraft.current) return 600;
                 if (node.name === selectedStartStation || node.name === selectedEndStation) return 500;
                 if (node.lines.length > 1) return 400;
@@ -1005,7 +1023,7 @@
                     const { label, node } = candidate;
                     label.setAttribute("x", item.x);
                     label.setAttribute("y", item.y);
-                    label.setAttribute("fill", node.lines.length > 1 || candidate.priority >= 500 ? "var(--text-primary)" : "var(--text-secondary)");
+                    label.setAttribute("fill", isStationUnavailable(node) ? "var(--station-disabled)" : (node.lines.length > 1 || candidate.priority >= 500 ? "var(--text-primary)" : "var(--text-secondary)"));
                     label.setAttribute("opacity", "1");
                 });
             }
@@ -1210,7 +1228,7 @@
                     
                     selectedCity = selected;
                     data = window.subwayDataMap[selectedCity];
-                    calculationTopology = window.CalculationTopology.create(selectedCity, data.nodes, data.edges);
+                    calculationTopology = getCalculationCityData(selectedCity).topology;
                     isCustomRouteMode = false;
                     appContainer.classList.remove("custom-route-mode");
                     customRouteGraph = window.CustomRoute.createGraph(calculationTopology.nodes, calculationTopology.edges);
@@ -1247,7 +1265,7 @@
                     closeDrawer();
                     
                     // Re-initialize autocomplete variables
-                    stationNames = data.nodes.map(n => n.name);
+                    stationNames = data.nodes.filter(n => !isStationUnavailable(n)).map(n => n.name);
                     lineNames = [...new Set(data.edges.map(e => e.line))];
                     searchAvoidItems = [...stationNames, ...lineNames];
                     
@@ -1298,6 +1316,7 @@
                         openDrawer(targetPaneId, paneName);
                         navItems.forEach(n => n.classList.remove("active"));
                         item.classList.add("active");
+                        window.SiteAnalytics?.trackTabOpen(item.id.replace("nav-", ""));
                     }
                 });
             });
@@ -1430,7 +1449,7 @@
                 confirmedRouteSource = "custom";
                 appContainer.classList.remove("custom-route-mode");
                 drawer.classList.remove("drawer-custom-route-collapsed");
-                displayResults(confirmed, calculationTopology.edges);
+                displayResults(confirmed, calculationTopology.edges, { trackGeneration: true });
                 openDrawer("drawer-roadbook", "路书");
             });
 
@@ -1538,6 +1557,16 @@
                 // Only show Wiki option if the station explicitly contains wiki metadata
                 const currentData = window.subwayDataMap[selectedCity];
                 const node = currentData ? currentData.nodes.find(n => n.name === stationName) : null;
+                const operationalStatus = getStationOperationalStatus(node, currentData);
+                const statusBox = document.getElementById("popup-station-status");
+                if (statusBox) {
+                    statusBox.hidden = !operationalStatus;
+                    statusBox.textContent = operationalStatus ? `${operationalStatus.label || "暂停服务"}：${operationalStatus.reason || "当前不参与路线计算。"}` : "";
+                }
+                ["popup-btn-start", "popup-btn-end", "popup-btn-waypoint", "popup-btn-avoid"].forEach(id => {
+                    const button = document.getElementById(id);
+                    if (button) button.style.display = operationalStatus ? "none" : "block";
+                });
                 const hasWiki = node && node.wiki;
                 const btnWiki = document.getElementById("popup-btn-wiki");
                 if (btnWiki) {
@@ -1619,6 +1648,83 @@
                 return clean;
             }
 
+            function escapeHtml(value) {
+                return String(value ?? '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            function renderSourceMeta(source, reviewedAt) {
+                if (!source) return '';
+                const url = typeof source.url === 'string' && /^https?:\/\//i.test(source.url)
+                    ? source.url
+                    : '#';
+                const checkedAt = reviewedAt || source.accessedAt || '日期待补充';
+                return `<span class="wiki-source-meta">来源：<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(source.publisher || source.title || '公开资料')}</a> · 核对 ${escapeHtml(checkedAt)}</span>`;
+            }
+
+            function renderSurroundings(surroundings) {
+                if (!surroundings || typeof surroundings !== 'object') {
+                    return '<div class="wiki-empty-note">该站周边资料正在整理。</div>';
+                }
+
+                const sources = Array.isArray(surroundings.sources) ? surroundings.sources : [];
+                const sourceMap = new Map(sources.map(source => [source.id, source]));
+                const renderDistance = (item) => {
+                    if (item.distanceType === 'map_estimate') {
+                        const parts = [];
+                        if (Number.isFinite(item.walkingDistanceM)) parts.push(`${Math.round(item.walkingDistanceM)} m`);
+                        if (Number.isFinite(item.walkingMinutes)) parts.push(`${Math.round(item.walkingMinutes)} 分钟`);
+                        return `<span class="wiki-distance">${escapeHtml(parts.join(' · ') || '地图估算')} <b>地图估算</b></span>`;
+                    }
+                    if (item.distanceType === 'official') {
+                        const parts = [];
+                        if (Number.isFinite(item.walkingDistanceM)) parts.push(`${Math.round(item.walkingDistanceM)} m`);
+                        if (Number.isFinite(item.walkingMinutes)) parts.push(`${Math.round(item.walkingMinutes)} 分钟`);
+                        return `<span class="wiki-distance">${escapeHtml(parts.join(' · ') || '官方信息')}</span>`;
+                    }
+                    return '<span class="wiki-distance wiki-distance-muted">距离待补充</span>';
+                };
+                const renderItem = (item) => {
+                    const exits = Array.isArray(item.recommendedExits) && item.recommendedExits.length
+                        ? `<span class="wiki-item-meta">建议出口：${escapeHtml(item.recommendedExits.join('、'))}</span>`
+                        : '';
+                    const sourceMeta = (Array.isArray(item.sourceIds) ? item.sourceIds : [])
+                        .map(id => renderSourceMeta(sourceMap.get(id), item.reviewedAt || surroundings.reviewedAt))
+                        .filter(Boolean)
+                        .join('');
+                    return `<article class="wiki-surrounding-card">
+                        <div class="wiki-item-heading"><span class="wiki-item-type">${escapeHtml(item.type || '周边信息')}</span><strong>${escapeHtml(item.name || '未命名地点')}</strong></div>
+                        <p>${escapeHtml(cleanLatexForWeb(item.description || '暂无简介。'))}</p>
+                        <div class="wiki-item-footer">${exits}${renderDistance(item)}</div>
+                        <div class="wiki-source-list">${sourceMeta || '<span class="wiki-source-meta">来源待补充</span>'}</div>
+                    </article>`;
+                };
+
+                const places = Array.isArray(surroundings.places) ? surroundings.places : [];
+                const connections = Array.isArray(surroundings.connections) ? surroundings.connections : [];
+                const placesHtml = places.length
+                    ? places.map(renderItem).join('')
+                    : '<div class="wiki-empty-note">该站周边亮点正在整理。</div>';
+                const connectionsHtml = connections.length
+                    ? connections.map(renderItem).join('')
+                    : '<div class="wiki-empty-note">暂无独立记录的接驳对象。</div>';
+                const status = surroundings.verification === 'verified' ? '已核验' : '待复核';
+
+                return `<section class="wiki-surroundings">
+                    <div class="wiki-surroundings-summary"><div><span class="stat-label">周边亮点</span><strong>${escapeHtml(status)}</strong></div><p>${escapeHtml(surroundings.summary || '暂无周边概览。')}</p></div>
+                    <div class="wiki-section-title">周边亮点</div>
+                    <div class="wiki-surrounding-list">${placesHtml}</div>
+                    <div class="wiki-section-title">出口与接驳</div>
+                    <div class="wiki-surrounding-list">${connectionsHtml}</div>
+                    <div class="wiki-section-title">来源与核对日期</div>
+                    <div class="wiki-source-summary">${sources.map(source => renderSourceMeta(source, surroundings.reviewedAt)).join('') || '<span class="wiki-source-meta">来源待补充</span>'}</div>
+                </section>`;
+            }
+
             // Renders the station wiki information inside the right drawer pane
             function showStationWiki(stationName) {
                 const wikiContent = document.getElementById("wiki-content");
@@ -1629,6 +1735,15 @@
                 if (!node) return;
                 
                 const wiki = node.wiki || {};
+
+                const operationalStatus = wiki.operationalStatus;
+                const operationalStatusHtml = operationalStatus
+                    ? `<div class="stat-box station-operational-status" style="flex-direction:column; align-items:flex-start; text-align:left; padding:12px; gap:4px; border-color:var(--station-disabled);">
+                        <span class="stat-label">运营状态</span>
+                        <span class="stat-value" style="font-size:13px; color:var(--station-disabled);">${operationalStatus.label || "暂停服务"}</span>
+                        <span style="font-size:12px; color:var(--text-secondary); line-height:1.6;">${operationalStatus.reason || "当前不参与路线计算。"}</span>
+                    </div>`
+                    : "";
                 
                 // Helper to retrieve official color of a line
                 const getLineColor = (lineName) => {
@@ -1657,6 +1772,12 @@
                 
                 // 4. Surrounding features
                 const features = wiki.features || "本站交通组织有序，站内设有完备的安全设施，出入口可快捷直达周边主要街区。";
+                const surroundingsHtml = wiki.surroundings
+                    ? renderSurroundings(wiki.surroundings)
+                    : `<div class="stat-box" style="flex-direction:column; align-items:flex-start; text-align:left; padding:12px; gap:4px;">
+                        <span class="stat-label">设施与周边</span>
+                        <span style="font-size:12px; color:var(--text-secondary); line-height:1.5; margin-top:4px;">${cleanLatexForWeb(features)}</span>
+                    </div>`;
                 
                 // 5. Naming history - DO NOT FABRICATE (only show if explicitly provided)
                 let namingHtml = "";
@@ -1670,6 +1791,7 @@
                 }
                 
                 wikiContent.innerHTML = `
+                    ${operationalStatusHtml}
                     <div class="stat-box" style="flex-direction:column; align-items:flex-start; text-align:left; padding:12px; gap:4px;">
                         <span class="stat-label" style="font-weight:bold; color:var(--neon-blue);">车站概述</span>
                         <span style="font-size:12px; color:var(--text-primary); line-height:1.6; margin-top:4px;">${cleanLatexForWeb(desc)}</span>
@@ -1692,10 +1814,7 @@
                         </div>
                     </div>
                     
-                    <div class="stat-box" style="flex-direction:column; align-items:flex-start; text-align:left; padding:12px; gap:4px;">
-                        <span class="stat-label">设施与周边</span>
-                        <span style="font-size:12px; color:var(--text-secondary); line-height:1.5; margin-top:4px;">${cleanLatexForWeb(features)}</span>
-                    </div>
+                    ${surroundingsHtml}
                     
                     ${namingHtml}
                 `;
@@ -1705,6 +1824,7 @@
 
             // Selection helpers update both the visual marker and the matching text input.
             function setStartStation(name) {
+                if (name && isStationUnavailable(name)) return;
                 if (selectedStartStation) {
                     const prevNode = document.getElementById(`station-node-${selectedStartStation}`);
                     if (prevNode) {
@@ -1736,6 +1856,7 @@
 
             // End Station setups
             function setEndStation(name) {
+                if (name && isStationUnavailable(name)) return;
                 if (selectedEndStation) {
                     const prevNode = document.getElementById(`station-node-${selectedEndStation}`);
                     if (prevNode) {
@@ -1767,6 +1888,7 @@
 
             // Waypoints logic
             function addWaypoint(name) {
+                if (isStationUnavailable(name)) return;
                 if (selectedAvoids.has(name)) {
                     alert("此站已在避让黑名单中！");
                     return;
@@ -1796,6 +1918,7 @@
 
             // Avoid list logic
             function addAvoid(nameOrLine) {
+                if (!nameOrLine || (isStationUnavailable(nameOrLine) && !lineNames.includes(nameOrLine))) return;
                 if (selectedWaypoints.has(nameOrLine)) {
                     alert("此项目已被设定为必经站点！");
                     return;
@@ -1906,7 +2029,7 @@
                 });
             }
 
-            let stationNames = data.nodes.map(n => n.name);
+            let stationNames = data.nodes.filter(n => !isStationUnavailable(n)).map(n => n.name);
             let lineNames = [...new Set(data.edges.map(e => e.line))];
             let searchAvoidItems = [...stationNames, ...lineNames];
 
@@ -2142,7 +2265,7 @@
                 function finishCurrentBestSearch() {
                     if (!bestCandidateResult || !cleanupSolverSession()) return;
                     loadingOverlay.style.display = "none";
-                    displayResults({ ...bestCandidateResult, isApproximate: true }, solverConfig.edges);
+                    displayResults({ ...bestCandidateResult, isApproximate: true }, solverConfig.edges, { trackGeneration: true });
                     openDrawer("drawer-roadbook", "路书");
                 }
 
@@ -2193,7 +2316,7 @@
                         console.log(`%c✅ [Solver] Completed in ${duration}ms! Path weight: ${bestResult.weight}, Stations: ${bestResult.path_stations.length}`, "color: #39ff14; font-weight: bold;");
                         console.log("%c🔗 Traversed Route:", "color: #fff30a;", bestResult.path_stations.join(" -> "));
                         openDrawer("drawer-roadbook", "路书");
-                        displayResults(bestResult, solverConfig.edges);
+                        displayResults(bestResult, solverConfig.edges, { trackGeneration: true });
                     } else {
                         console.log("%c⚠️ [Solver] No valid path found matching constraints.", "color: #fff30a;");
                         alert("该过滤条件下未找到任何可行路径，请调整后重试！");
@@ -2585,11 +2708,12 @@
                 printWindow.print();
             }
 
-            function displayResults(result, filteredEdges) {
+            function displayResults(result, filteredEdges, { trackGeneration = false } = {}) {
                 lastResultStations = result.path_stations;
                 currentConfirmedResult = { result: { ...result }, edges: filteredEdges };
                 if (result.source !== "custom") confirmedRouteSource = "solver";
                 setRoadbookAvailability(true);
+                if (trackGeneration) window.SiteAnalytics?.trackRouteGenerated();
                 document.getElementById("route-approximation-badge").hidden = !Boolean(result.isApproximate);
 
                 document.getElementById("res-edges").textContent = `${result.path_edges.length} 个`;
@@ -3338,7 +3462,7 @@
 
 
             function renderCentralityTable() {
-                const analysisData = window.subwayDataMap[centralitySelectedCity] || data;
+                const analysisData = getCalculationCityData(centralitySelectedCity);
                 const space = document.querySelector('input[name="centrality-space"]:checked').value;
                 
                 const nValInput = document.getElementById("centrality-n-val");
@@ -3576,8 +3700,11 @@
 
             function getCalculationCityData(cityKey) {
                 const city = window.subwayDataMap[cityKey] || data;
-                const topology = window.CalculationTopology.create(cityKey, city.nodes, city.edges);
-                return { ...city, nodes: topology.nodes, edges: topology.edges, topology };
+                const unavailableNames = new Set(city.nodes.filter(node => isStationUnavailable(node, city)).map(node => node.name));
+                const activeNodes = city.nodes.filter(node => !unavailableNames.has(node.name));
+                const activeEdges = city.edges.filter(edge => !unavailableNames.has(edge.u) && !unavailableNames.has(edge.v));
+                const topology = window.CalculationTopology.create(cityKey, activeNodes, activeEdges);
+                return { ...city, rawCity: city, nodes: topology.nodes, edges: topology.edges, topology, unavailableNames };
             }
 
             function populateAnalysisCities(selectId, selectedValue) {
@@ -3908,15 +4035,16 @@
                 Object.entries(results).flatMap(([ruleKey, entry]) => {
                     const parsedKey = parseCityExtremeCacheRuleKey(ruleKey);
                     const city = window.subwayDataMap[cityKey];
-                    const topology = city && window.CalculationTopology.create(cityKey, city.nodes, city.edges);
-                    if (!city || !isCityExtremeResultCompatible(entry.result, topology.edges)) {
+                    const calculationCity = city && getCalculationCityData(cityKey);
+                    const topology = calculationCity?.topology;
+                    if (!city || !calculationCity || !isCityExtremeResultCompatible(entry.result, topology.edges)) {
                         return [];
                     }
                     return [[`${cityKey}|${parsedKey.ruleKey}|${parsedKey.metricKey}`, {
                     ...entry,
                     cityKey,
                     city,
-                    edges: topology.edges,
+                    edges: calculationCity.edges,
                     topology,
                     rule: { key: parsedKey.ruleKey, ...cityExtremeRules[parsedKey.ruleKey] },
                     metric: { key: parsedKey.metricKey, ...cityExtremeMetrics[parsedKey.metricKey] },
@@ -4035,7 +4163,8 @@
                 cancelCityExtremeRun();
                 const cityKey = cityExtremesCitySelect.value;
                 const city = window.subwayDataMap[cityKey];
-                const topology = window.CalculationTopology.create(cityKey, city.nodes, city.edges);
+                const calculationCity = getCalculationCityData(cityKey);
+                const topology = calculationCity.topology;
                 const rule = getSelectedCityExtremeRule();
                 const metric = getSelectedCityExtremeMetric();
                 const cacheKey = getCityExtremeCacheKey(cityKey, rule, metric);
@@ -4048,7 +4177,7 @@
                 const run = {
                     cancelled: false,
                     workers: new Set(),
-                    city,
+                    city: calculationCity,
                     edges: topology.edges,
                     topology,
                     cityKey,
@@ -4204,6 +4333,8 @@
             // Initialize rendering
             renderSvgMap();
             updateFloatingOverlay();
+            window.SiteAnalytics?.trackPageView();
+            window.SiteAnalytics?.bindPrivateEntry(document.getElementById("btn-reset-map"));
         });
     </script>
 </body>

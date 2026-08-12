@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-08-12",
+  "beijing": {
+    "八角游乐园": {
+      "state": "temporarily_closed",
+      "label": "暂停服务",
+      "reason": "配合北京地铁1号线支线工程施工，列车通过本站不停车。",
+      "effectiveFrom": "2025-06-02",
+      "expectedResume": "2027-05-03",
+      "reviewedAt": "2026-08-12",
+      "sources": [
+        {
+          "publisher": "北京地铁",
+          "title": "北京地铁1号线八角游乐园站改造施工公告",
+          "url": "https://bjsubway.com/news/qyxw/yyzd/2025-05-26/129660.html"
+        },
+        {
+          "publisher": "北京地铁",
+          "title": "北京地铁车站运营调整公告",
+          "url": "https://www.bjsubway.com/news/qyxw/yyzd/2026-05-16/129685.html"
+        }
+      ]
+    }
+  }
+}

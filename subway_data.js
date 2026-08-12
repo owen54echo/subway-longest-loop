@@ -114,7 +114,29 @@ window.subwayDataMap = {
         "lat": 39.907442,
         "lines": [
           "1号线八通线"
-        ]
+        ],
+        "wiki": {
+          "operationalStatus": {
+            "state": "temporarily_closed",
+            "label": "暂停服务",
+            "reason": "配合北京地铁1号线支线工程施工，列车通过本站不停车。",
+            "effectiveFrom": "2025-06-02",
+            "expectedResume": "2027-05-03",
+            "reviewedAt": "2026-08-12",
+            "sources": [
+              {
+                "publisher": "北京地铁",
+                "title": "北京地铁1号线八角游乐园站改造施工公告",
+                "url": "https://bjsubway.com/news/qyxw/yyzd/2025-05-26/129660.html"
+              },
+              {
+                "publisher": "北京地铁",
+                "title": "北京地铁车站运营调整公告",
+                "url": "https://www.bjsubway.com/news/qyxw/yyzd/2026-05-16/129685.html"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "八宝山",
@@ -234,7 +256,74 @@ window.subwayDataMap = {
         "lines": [
           "1号线八通线",
           "2号线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "多线换乘",
+              "金融商务"
+            ],
+            "summary": "复兴门是北京西二环重要的地铁换乘节点，连接1号线八通线和2号线，并服务金融街西侧片区。",
+            "places": [
+              {
+                "name": "金融街片区",
+                "type": "金融商务",
+                "description": "复兴门向北连接西城区金融街和金融商务设施密集区域，是北京西部重要通勤节点。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-government"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "复兴门内大街",
+                "type": "城市街区",
+                "description": "复兴门内大街属于北京市官方商业街资料中的西城区城市街道，连接西单与复兴门。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-government",
+                "publisher": "北京市人民政府",
+                "title": "北京市金融与商务片区相关资料",
+                "url": "https://www.beijing.gov.cn/zhengce/zfwj/zfwj2016/szfwj/202205/W020220519628058514480.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "北京市商业街名录相关资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "西单",
@@ -245,7 +334,74 @@ window.subwayDataMap = {
         "lines": [
           "1号线八通线",
           "4号线大兴线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "多线换乘",
+              "商业街区"
+            ],
+            "summary": "西单站连接1号线八通线和4号线大兴线，是北京西长安街和西单商业街区的重要换乘节点。",
+            "places": [
+              {
+                "name": "西单商业街",
+                "type": "商业街区",
+                "description": "西单商业街是北京市重点商业街区，位于西长安街西侧，商业、公共服务和交通设施集中。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "西长安街城市走廊",
+                "type": "城市街区",
+                "description": "西单位于西长安街走廊，向东连接天安门和王府井，向西连接复兴门。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-history"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "西单商业街资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-history",
+                "publisher": "北京市人民政府",
+                "title": "北京中轴线地标资料",
+                "url": "https://english.beijing.gov.cn/specials/centralaxis/landmarksalongthecentralaxis/index.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "天安门西",
@@ -261,7 +417,64 @@ window.subwayDataMap = {
           "platform": "地下岛式站台",
           "flow": "重点旅游窗口站（安检与防范极严格，客流稳定）",
           "features": "出站可直通国家大剧院地下一层通道，紧邻中山公园、人民大会堂及故宫西华门。",
-          "history": "直接因地处天安门城楼西侧而得名。"
+          "history": "直接因地处天安门城楼西侧而得名。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "城市地标",
+              "文化旅游"
+            ],
+            "summary": "天安门西站位于天安门广场西侧，连接中山公园、人民大会堂和北京中轴线公共空间。",
+            "places": [
+              {
+                "name": "中山公园",
+                "type": "城市公园",
+                "description": "中山公园位于天安门西侧，是天安门地区管理资料和北京市主要公园名录中的历史园林。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-tiananmen"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "天安门广场西侧公共空间",
+                "type": "城市地标",
+                "description": "车站服务天安门广场西侧和人民大会堂方向的公共交通，进入相关区域应以当日开放和安检安排为准。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-tiananmen"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-tiananmen",
+                "publisher": "北京市人民政府天安门地区管理委员会",
+                "title": "天安门地区服务",
+                "url": "https://tamgw.beijing.gov.cn/diqufuwu/",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -278,7 +491,72 @@ window.subwayDataMap = {
           "platform": "地下岛式站台",
           "flow": "重点旅游窗口站（日常安检级别极高，客流极其密集）",
           "features": "出站直达国家象征天安门广场、故宫博物院正门（午门）、中国国家博物馆以及劳动人民文化宫等核心名胜景点。",
-          "history": "直接以位于国家象征——天安门城楼东侧而得名。"
+          "history": "直接以位于国家象征——天安门城楼东侧而得名。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "城市地标",
+              "文化旅游"
+            ],
+            "summary": "天安门东站位于北京中轴线南段，服务天安门广场东侧和国家博物馆方向的公共交通出行。",
+            "places": [
+              {
+                "name": "天安门广场",
+                "type": "城市地标",
+                "description": "天安门广场位于北京城市中心，东侧为中国国家博物馆，西侧为人民大会堂，是北京中轴线的重要公共空间。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-tiananmen"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "中国国家博物馆",
+                "type": "博物馆",
+                "description": "中国国家博物馆位于天安门广场东侧，是国家级博物馆和天安门地区的重要文化设施。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-museum"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-tiananmen",
+                "publisher": "北京市人民政府天安门地区管理委员会",
+                "title": "天安门地区服务",
+                "url": "https://tamgw.beijing.gov.cn/diqufuwu/",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-museum",
+                "publisher": "中国国家博物馆",
+                "title": "中国国家博物馆服务信息",
+                "url": "https://www.chnmuseum.cn/cg/?eqid=a3920ff90000629800000003647448c2",
+                "accessedAt": "2026-08-11",
+                "type": "venue"
+              }
+            ]
+          }
         }
       },
       {
@@ -296,7 +574,72 @@ window.subwayDataMap = {
           "platform": "地下换乘岛式站台",
           "flow": "核心文旅枢纽（国内外游客极其集中）",
           "features": "地下通道直接连通王府中環、北京百货大楼、东方新天地等超级百货，出站即达繁华的王府井商业步行街及北京协和医院。",
-          "history": "因明代在此建有十座王府，并有一口甘甜的古井（即王府井）而得名。现今步行街旁仍保留有该古井的原址标志。"
+          "history": "因明代在此建有十座王府，并有一口甘甜的古井（即王府井）而得名。现今步行街旁仍保留有该古井的原址标志。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "商业街区",
+              "城市旅游"
+            ],
+            "summary": "王府井站位于北京核心商业和文化旅游片区，1号线八通线与8号线在此换乘。",
+            "places": [
+              {
+                "name": "王府井商业街",
+                "type": "商业街区",
+                "description": "王府井商业街是北京市重点商业街区，连接东长安街和历史文化旅游片区。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "王府井历史文化片区",
+                "type": "文化旅游",
+                "description": "王府井站周边连接天安门、故宫和东单方向的核心区公共空间，适合结合城市中轴线步行探索。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-history"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "王府井商业街资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-history",
+                "publisher": "北京市人民政府",
+                "title": "北京中轴线地标资料",
+                "url": "https://english.beijing.gov.cn/specials/centralaxis/landmarksalongthecentralaxis/index.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -308,7 +651,74 @@ window.subwayDataMap = {
         "lines": [
           "1号线八通线",
           "5号线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "多线换乘",
+              "商业街区"
+            ],
+            "summary": "东单站连接1号线八通线和5号线，位于东长安街与东单商业街区交汇区域。",
+            "places": [
+              {
+                "name": "东单商业街区",
+                "type": "商业街区",
+                "description": "东单北大街和东长安街构成北京中心城区重要商业走廊，车站是该片区的轨道交通节点。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "东单历史文化片区",
+                "type": "城市街区",
+                "description": "东单向西连接天安门和王府井，向东连接建国门，适合在中心城区进行步行和公共交通组合出行。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-history"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "东单商业街资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-history",
+                "publisher": "北京市人民政府",
+                "title": "北京中轴线地标资料",
+                "url": "https://english.beijing.gov.cn/specials/centralaxis/landmarksalongthecentralaxis/index.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "建国门",
@@ -324,7 +734,72 @@ window.subwayDataMap = {
           "desc": "建国门站是北京市地铁线网中的高介数交通节点，目前服务于轨道交通线路：1号线八通线、2号线。",
           "platform": "地下换乘枢纽站台",
           "flow": "核心换乘枢纽（预估日均 $P \\approx 12.0\\text{ 万人次}$）",
-          "features": "紧邻著名的建国门及都市绿化带。出站即可步行抵达公园正门或景区游客服务中心，周边绿意盎然，公共配套设施齐全，是市民游客观光与休闲锻炼的常去地。"
+          "features": "紧邻著名的建国门及都市绿化带。出站即可步行抵达公园正门或景区游客服务中心，周边绿意盎然，公共配套设施齐全，是市民游客观光与休闲锻炼的常去地。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "多线换乘",
+              "历史文化"
+            ],
+            "summary": "建国门是北京东二环重要换乘节点，2号线与1号线八通线在此交会，周边连接商务和历史文化设施。",
+            "places": [
+              {
+                "name": "建国门内大街商务走廊",
+                "type": "商务街区",
+                "description": "建国门内大街连接建国门与东单，是东城区和中心城区重要的城市商业与办公走廊。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "北京古观象台",
+                "type": "历史文化场所",
+                "description": "北京古观象台位于建国门地区，是北京中心城区具有代表性的历史文化设施。参观安排以场馆官方信息为准。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-museum"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "北京市商业街名录相关资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-museum",
+                "publisher": "北京市人民政府",
+                "title": "北京中轴线及历史文化地标资料",
+                "url": "https://english.beijing.gov.cn/specials/centralaxis/landmarksalongthecentralaxis/index.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -359,7 +834,64 @@ window.subwayDataMap = {
           "platform": "地下十字交叉岛式站台",
           "flow": "超级核心枢纽（常年客流居全市前三）",
           "features": "直通国贸商城、北京银泰中心、中国国际贸易中心等顶级地标商圈，周边高端商务写字楼及涉外酒店云集。",
-          "history": "因地处北京‘中国国际贸易中心’（简称国贸）正下方而得名。"
+          "history": "因地处北京‘中国国际贸易中心’（简称国贸）正下方而得名。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "城市枢纽",
+              "商务中心"
+            ],
+            "summary": "国贸站是北京中央商务区的核心轨道交通节点，1号线八通线和10号线在此换乘。",
+            "places": [
+              {
+                "name": "北京商务中心区（CBD）",
+                "type": "商务中心",
+                "description": "国贸站位于北京CBD核心区域，周边集中分布金融机构、总部办公和大型公共交通设施。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-cbd"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "中国国际贸易中心片区",
+                "type": "商务综合体",
+                "description": "中国国际贸易中心是国贸站周边的代表性商务综合体，车站服务其所在的建国门外商务片区。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-cbd"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-cbd",
+                "publisher": "北京市人民政府和朝阳区人民政府",
+                "title": "北京中央商务区介绍",
+                "url": "https://english.bjchy.gov.cn/central-business-district",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -376,7 +908,72 @@ window.subwayDataMap = {
           "desc": "大望路站是北京市地铁线网中的高介数交通节点，目前服务于轨道交通线路：1号线八通线、14号线。",
           "platform": "地下换乘枢纽站台",
           "flow": "核心换乘枢纽（预估日均 $P \\approx 12.0\\text{ 万人次}$）",
-          "features": "位于大望路主干道正下方。出站口无缝接驳多条地面公交接驳站台，周边主要环绕成熟的生活居住小区、商住两用公寓以及基础社区商业网点。"
+          "features": "位于大望路主干道正下方。出站口无缝接驳多条地面公交接驳站台，周边主要环绕成熟的生活居住小区、商住两用公寓以及基础社区商业网点。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "商务中心",
+              "商业综合体"
+            ],
+            "summary": "大望路站位于建国路和西大望路交会区域，是北京东部商务和消费活动密集的轨道交通节点。",
+            "places": [
+              {
+                "name": "建国路商务走廊",
+                "type": "商务片区",
+                "description": "大望路位于北京CBD东侧建国路走廊，连接国贸和东部商务办公片区。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-cbd"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "西大望路商业片区",
+                "type": "商业片区",
+                "description": "北京市官方商业街资料将建国路和西大望路列为朝阳区重要城市商业走廊，大望路站为其公共交通节点。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-cbd",
+                "publisher": "朝阳区人民政府",
+                "title": "北京中央商务区介绍",
+                "url": "https://english.bjchy.gov.cn/central-business-district",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "北京市商业街名录相关资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -392,7 +989,64 @@ window.subwayDataMap = {
           "desc": "四惠站是北京市地铁线网中的高介数交通节点，目前服务于轨道交通线路：1号线八通线。",
           "platform": "地下岛式站台",
           "flow": "常规服务站点（预估日均 $P \\approx 1.5\\text{ 万人次}$）",
-          "features": "交通基础设施完善，配有无障碍直梯与盲道设施。出站紧邻周边生活居住区及商铺，无缝对接地面公交接驳站，为市民提供安全便捷的出行服务。"
+          "features": "交通基础设施完善，配有无障碍直梯与盲道设施。出站紧邻周边生活居住区及商铺，无缝对接地面公交接驳站，为市民提供安全便捷的出行服务。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "综合交通",
+              "长途接驳"
+            ],
+            "summary": "四惠站是北京东部重要的轨道交通和长途客运接驳节点，服务中心城区与东部地区往来。",
+            "places": [
+              {
+                "name": "四惠交通枢纽",
+                "type": "综合交通枢纽",
+                "description": "四惠交通枢纽集地铁、长途客运、公交、出租车和自行车等交通方式于一体。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-transport"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "八王坟长途客运站区",
+                "type": "长途客运",
+                "description": "四惠东南侧站区承担省际长途客运接驳，换乘长途客运时应按照当日站区指引前往。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-transport"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-transport",
+                "publisher": "北京市交通委员会",
+                "title": "城市综合客运枢纽信息",
+                "url": "https://jtw.beijing.gov.cn/sjtl/202111/t20211118_2540162.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -559,7 +1213,74 @@ window.subwayDataMap = {
         "lines": [
           "1号线八通线",
           "7号线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "主题乐园",
+              "多线换乘"
+            ],
+            "summary": "环球度假区站是北京城市副中心文化旅游区的重要轨道交通节点，1号线八通线和7号线在此服务环球北京度假区。",
+            "places": [
+              {
+                "name": "北京环球度假区",
+                "type": "主题乐园",
+                "description": "北京环球度假区是通州文化旅游区的主题度假目的地，车站为游客进出园区提供轨道交通服务。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-universal"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "万盛西综合交通枢纽",
+                "type": "综合交通枢纽",
+                "description": "万盛西交通枢纽紧邻环球度假区方向，集轨道交通、公交、出租车和停车等接驳功能于一体。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-transport"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-universal",
+                "publisher": "北京环球度假区",
+                "title": "北京环球度假区官方网站",
+                "url": "https://www.universalbeijingresort.com/",
+                "accessedAt": "2026-08-11",
+                "type": "venue"
+              },
+              {
+                "id": "bj-transport",
+                "publisher": "北京市交通委员会",
+                "title": "城市综合客运枢纽信息",
+                "url": "https://jtw.beijing.gov.cn/sjtl/202111/t20211118_2540162.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "积水潭",
@@ -576,7 +1297,72 @@ window.subwayDataMap = {
           "platform": "地下换乘站台",
           "flow": "核心换乘站（日常通勤压力大）",
           "features": "紧邻积水潭医院、北京师范大学（北太平庄校区），出站即达什刹海景区西侧及北二环城市绿化带。",
-          "history": "因紧邻北京历史水系‘积水潭’而得名。积水潭是元代京杭大运河终点港口‘什刹海’的古称，漕运繁盛，水面辽阔。"
+          "history": "因紧邻北京历史水系‘积水潭’而得名。积水潭是元代京杭大运河终点港口‘什刹海’的古称，漕运繁盛，水面辽阔。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "医疗服务",
+              "历史城区"
+            ],
+            "summary": "积水潭站连接2号线和19号线，位于北京西北部历史城区和医疗服务片区。",
+            "places": [
+              {
+                "name": "北京积水潭医院",
+                "type": "医疗机构",
+                "description": "北京积水潭医院位于积水潭地区，是该站周边具有代表性的医疗服务设施，具体就诊入口以医院官方指引为准。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-hospital"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "积水潭—德胜门历史片区",
+                "type": "历史城区",
+                "description": "积水潭向北连接德胜门和西北二环历史城区，周边分布传统街区和城市公共空间。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-history"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-hospital",
+                "publisher": "北京积水潭医院",
+                "title": "北京积水潭医院官方网站",
+                "url": "https://www.jst-hosp.com.cn/",
+                "accessedAt": "2026-08-11",
+                "type": "venue"
+              },
+              {
+                "id": "bj-history",
+                "publisher": "北京市文物局",
+                "title": "北京旧城历史文化保护区资料",
+                "url": "https://wwj.beijing.gov.cn/bjww/362679/362686/622507/index.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -593,7 +1379,72 @@ window.subwayDataMap = {
           "desc": "鼓楼大街站是北京市地铁线网中的高介数交通节点，目前服务于轨道交通线路：2号线、8号线。",
           "platform": "地下换乘枢纽站台",
           "flow": "核心换乘枢纽（预估日均 $P \\approx 12.0\\text{ 万人次}$）",
-          "features": "出站可步行前往北京钟鼓楼、什刹海历史风貌区、烟袋斜街，周边胡同文化底蕴深厚，散落着大量特色咖啡馆与民宿。"
+          "features": "出站可步行前往北京钟鼓楼、什刹海历史风貌区、烟袋斜街，周边胡同文化底蕴深厚，散落着大量特色咖啡馆与民宿。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "多线换乘",
+              "中轴线"
+            ],
+            "summary": "鼓楼大街站连接2号线和8号线，位于北京中轴线北段和钟鼓楼历史文化片区。",
+            "places": [
+              {
+                "name": "钟楼和鼓楼",
+                "type": "历史文化地标",
+                "description": "钟楼和鼓楼位于北京中轴线北端，是国家级重点文物保护单位和北京代表性历史地标。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-central-axis"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "地安门—什刹海片区",
+                "type": "历史文化街区",
+                "description": "鼓楼大街向南连接地安门和什刹海，周边以胡同、历史建筑和公共水岸空间为主要特色。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-history"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-central-axis",
+                "publisher": "北京市人民政府",
+                "title": "北京中轴线沿线地标",
+                "url": "https://english.beijing.gov.cn/specials/centralaxis/landmarksalongthecentralaxis/index.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-history",
+                "publisher": "北京市文物局",
+                "title": "北京旧城历史文化保护区资料",
+                "url": "https://wwj.beijing.gov.cn/bjww/362679/362686/622507/index.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -626,7 +1477,72 @@ window.subwayDataMap = {
           "desc": "雍和宫站是北京市地铁线网中的高介数交通节点，目前服务于轨道交通线路：2号线、5号线。",
           "platform": "地下换乘枢纽站台",
           "flow": "核心换乘枢纽（预估日均 $P \\approx 12.0\\text{ 万人次}$）",
-          "features": "出站即达著名的藏传佛教寺院雍和宫、国子监大街（孔庙和国子监博物馆）以及地坛公园，周边多素食餐饮与传统文化商铺。"
+          "features": "出站即达著名的藏传佛教寺院雍和宫、国子监大街（孔庙和国子监博物馆）以及地坛公园，周边多素食餐饮与传统文化商铺。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "宗教文化",
+              "历史城区"
+            ],
+            "summary": "雍和宫站连接2号线和5号线，服务雍和宫、国子监和北新桥历史文化片区。",
+            "places": [
+              {
+                "name": "雍和宫",
+                "type": "宗教文化场所",
+                "description": "雍和宫是北京重要历史文化和宗教场所，前往参观时应以场馆官方开放与预约信息为准。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-history"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "国子监—孔庙片区",
+                "type": "历史文化街区",
+                "description": "雍和宫向南连接国子监、孔庙和五道营胡同等历史文化与特色街区。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-history",
+                "publisher": "北京市文物局",
+                "title": "北京旧城历史文化保护区资料",
+                "url": "https://wwj.beijing.gov.cn/bjww/362679/362686/622507/index.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "五道营胡同等商业街资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -645,7 +1561,72 @@ window.subwayDataMap = {
           "platform": "地下多层侧岛式站台",
           "flow": "超级核心枢纽（通勤与机场旅客交织）",
           "features": "紧邻东直门交通枢纽，出站即达著名的簋街美食街、银座MALL商圈，附近分布有众多使馆区及写字楼群。",
-          "history": "因车站位于北京内城东正门‘东直门’原址而命名，明清时期是转运砖石、木材的重要通道。"
+          "history": "因车站位于北京内城东正门‘东直门’原址而命名，明清时期是转运砖石、木材的重要通道。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "城市枢纽",
+              "机场接驳"
+            ],
+            "summary": "东直门是北京中心城区连接东北方向和首都机场的重要综合交通节点，地铁、公交和机场线在此汇集。",
+            "places": [
+              {
+                "name": "东直门交通枢纽",
+                "type": "综合交通枢纽",
+                "description": "枢纽包含地铁换乘区、公交车场和集散大厅，是中心城区与东北部地区的重要换乘节点。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-transport"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "簋街（东直门内大街）",
+                "type": "特色街区",
+                "description": "东直门内大街一带是北京官方商业街名录中的特色街区，适合作为东直门站周边餐饮与夜间步行目的地。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-transport",
+                "publisher": "北京市交通委员会",
+                "title": "城市综合客运枢纽信息",
+                "url": "https://jtw.beijing.gov.cn/sjtl/202111/t20211118_2540162.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "北京市商业街名录相关资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -673,7 +1654,72 @@ window.subwayDataMap = {
           "desc": "朝阳门站是北京市地铁线网中的高介数交通节点，目前服务于轨道交通线路：2号线、6号线。",
           "platform": "地下换乘枢纽站台",
           "flow": "核心换乘枢纽（预估日均 $P \\approx 12.0\\text{ 万人次}$）",
-          "features": "紧邻著名的朝阳门及都市绿化带。出站即可步行抵达公园正门或景区游客服务中心，周边绿意盎然，公共配套设施齐全，是市民游客观光与休闲锻炼的常去地。"
+          "features": "紧邻著名的朝阳门及都市绿化带。出站即可步行抵达公园正门或景区游客服务中心，周边绿意盎然，公共配套设施齐全，是市民游客观光与休闲锻炼的常去地。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "多线换乘",
+              "商务街区"
+            ],
+            "summary": "朝阳门连接2号线和6号线，是东城区与朝阳区之间的重要城市通勤节点。",
+            "places": [
+              {
+                "name": "朝阳门外大街",
+                "type": "商业街区",
+                "description": "朝阳门外大街是北京市官方商业街资料中的城市商业走廊，连接朝阳门与东大桥方向。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "东四历史文化片区",
+                "type": "历史街区",
+                "description": "朝阳门向西连接东四一带的历史街区和传统城市街道，适合结合东城区步行路线探索。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-history"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "北京市商业街名录相关资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-history",
+                "publisher": "北京市文物局",
+                "title": "北京旧城历史文化保护区资料",
+                "url": "https://wwj.beijing.gov.cn/bjww/362679/362686/622507/index.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -690,7 +1736,72 @@ window.subwayDataMap = {
           "platform": "地下岛式站台",
           "flow": "超级核心枢纽（节假日及春运客流巨大）",
           "features": "出站即是北京火车站站前广场。周边分布有明城墙遗址公园、北京站长途客运站，商业以火车站配套及传统商铺为主。",
-          "history": "直接因对接服务于全国铁路枢纽——北京火车站而得名。"
+          "history": "直接因对接服务于全国铁路枢纽——北京火车站而得名。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "铁路枢纽",
+              "城市门户"
+            ],
+            "summary": "北京站是市中心传统铁路客运门户，地铁2号线可直接服务北京站站区。",
+            "places": [
+              {
+                "name": "北京站站区",
+                "type": "铁路枢纽",
+                "description": "北京站是北京市重点站区之一，地铁站与国铁客运站共同组成中心城区铁路客运节点。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-rail"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "建国门内大街",
+                "type": "城市街区",
+                "description": "北京站向东连接建国门内大街，属于北京市官方商业街和城市道路体系中的核心片区。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-rail",
+                "publisher": "北京市交通委员会",
+                "title": "火车站周边文旅地图",
+                "url": "https://www.beijing.gov.cn/fuwu/bmfw/sy/jrts/tzxx/202504/t20250405_4056219.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "北京市商业街名录相关资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -702,7 +1813,74 @@ window.subwayDataMap = {
         "lines": [
           "2号线",
           "5号线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "多线换乘",
+              "商业街区"
+            ],
+            "summary": "崇文门站连接2号线和5号线，位于北京东南部历史城区和崇文门外商业走廊。",
+            "places": [
+              {
+                "name": "崇文门外大街",
+                "type": "商业街区",
+                "description": "崇文门外大街是北京市官方商业街资料中的城市商业走廊，向南连接磁器口。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "北京站东部站区",
+                "type": "城市交通节点",
+                "description": "崇文门向北连接北京站和建国门方向，是中心城区铁路客运与地铁网络之间的补充通道。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-rail"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "崇文门外大街商业街资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-rail",
+                "publisher": "北京市交通委员会",
+                "title": "火车站周边文旅地图",
+                "url": "https://www.beijing.gov.cn/fuwu/bmfw/sy/jrts/tzxx/202504/t20250405_4056219.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "前门",
@@ -713,7 +1891,66 @@ window.subwayDataMap = {
         "lines": [
           "2号线",
           "8号线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "城市地标",
+              "历史文化"
+            ],
+            "summary": "前门站位于北京中轴线南段，8号线与2号线服务前门大街、正阳门和天安门广场南侧片区。",
+            "places": [
+              {
+                "name": "前门大街",
+                "type": "历史商业街",
+                "description": "前门大街是北京中轴线南段的重要历史商业街，连接正阳门与珠市口方向。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-history"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "正阳门",
+                "type": "历史文化地标",
+                "description": "正阳门位于天安门广场南侧，是北京内城南门和中轴线上的重要历史建筑。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-history"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-history",
+                "publisher": "北京市人民政府",
+                "title": "北京中轴线地标资料",
+                "url": "https://english.beijing.gov.cn/specials/centralaxis/landmarksalongthecentralaxis/index.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "和平门",
@@ -734,7 +1971,74 @@ window.subwayDataMap = {
         "lines": [
           "2号线",
           "4号线大兴线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "多线换乘",
+              "历史城区"
+            ],
+            "summary": "宣武门站连接2号线和4号线大兴线，是北京西南部历史城区的多线换乘节点。",
+            "places": [
+              {
+                "name": "宣武门城市街区",
+                "type": "历史城区",
+                "description": "宣武门位于西长安街和宣武门外大街交会区域，连接西单、菜市口和长椿街方向。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-history"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "西单—宣武门商业走廊",
+                "type": "城市街区",
+                "description": "宣武门向北连接西单商业街，向南连接菜市口和骡马市大街等西城区城市商业街区。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-history",
+                "publisher": "北京市文物局",
+                "title": "北京旧城历史文化保护区资料",
+                "url": "https://wwj.beijing.gov.cn/bjww/362679/362686/622507/index.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "西城区主要商业街资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "长椿街",
@@ -789,7 +2093,72 @@ window.subwayDataMap = {
           "platform": "地下岛式与混合式站台",
           "flow": "超级核心枢纽（换乘客流常年位居线网前列）",
           "features": "本站与国铁北京北站紧密相连，是西直门枢纽中心。周边有名胜古迹北京展览馆、北京动物园、西环广场凯德MALL商圈，以及北京交通大学等高校。",
-          "history": "因车站位于北京内城九门之一的‘西直门’原址附近而得名。西直门是元代和明清时期北京城向西的重要门户，有着深厚的历史文化底蕴。"
+          "history": "因车站位于北京内城九门之一的‘西直门’原址附近而得名。西直门是元代和明清时期北京城向西的重要门户，有着深厚的历史文化底蕴。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "城市枢纽",
+              "铁路接驳"
+            ],
+            "summary": "西直门是北京西北部重要的多线换乘节点，承担地铁、城际铁路和地面公交之间的转换。",
+            "places": [
+              {
+                "name": "西直门交通枢纽",
+                "type": "综合交通枢纽",
+                "description": "西直门地区形成地铁、公交和铁路接驳体系，官方资料将其列为重要交通转换中心。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-transport"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "北京北站",
+                "type": "铁路枢纽",
+                "description": "北京北站位于西直门地区，前往车站时应根据铁路进站提示选择对应的地铁出入口和步行路径。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-rail"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-transport",
+                "publisher": "北京市交通委员会",
+                "title": "城市综合客运枢纽信息",
+                "url": "https://jtw.beijing.gov.cn/sjtl/202111/t20211118_2540162.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-rail",
+                "publisher": "北京市人民政府",
+                "title": "重点站区交通与进站提示",
+                "url": "https://www.beijing.gov.cn/fuwu/bmfw/sy/jrts/202603/t20260311_4554596.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -1067,7 +2436,72 @@ window.subwayDataMap = {
           "platform": "地下多层平行换乘站台",
           "flow": "超级核心枢纽（高铁转乘高峰流量极高）",
           "features": "与北京南站高铁到达层一体化衔接。出站即可通往陶然亭公园、洋桥商圈，周边多交通配套及快捷酒店设施。",
-          "history": "直接因对接服务于现代化特大型高铁车站——北京南站而得名。"
+          "history": "直接因对接服务于现代化特大型高铁车站——北京南站而得名。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "铁路枢纽",
+              "城市门户"
+            ],
+            "summary": "北京南站是京沪等方向铁路客运的重要门户，地铁4号线大兴线和14号线在站区接驳。",
+            "places": [
+              {
+                "name": "北京南站站区",
+                "type": "铁路枢纽",
+                "description": "北京南站是北京市重点站区和主要铁路客运站，地铁出站后可进入铁路站房办理进站。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-rail"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "北京南站综合交通接驳区",
+                "type": "交通接驳",
+                "description": "站区汇集地铁、铁路、公交、出租车等交通方式，前往车站时应以当日铁路进站指引为准。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-rail-guide"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-rail",
+                "publisher": "北京市交通委员会",
+                "title": "火车站周边文旅地图",
+                "url": "https://www.beijing.gov.cn/fuwu/bmfw/sy/jrts/tzxx/202504/t20250405_4056219.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-rail-guide",
+                "publisher": "北京市人民政府",
+                "title": "北京南站与北京西站进站提示",
+                "url": "https://www.beijing.gov.cn/fuwu/bmfw/sy/jrts/202603/t20260311_4554596.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -1094,7 +2528,72 @@ window.subwayDataMap = {
           "desc": "菜市口站是北京市地铁线网中的高介数交通节点，目前服务于轨道交通线路：4号线大兴线、7号线。",
           "platform": "地下换乘枢纽站台",
           "flow": "核心换乘枢纽（预估日均 $P \\approx 12.0\\text{ 万人次}$）",
-          "features": "作为线网中的多线换乘枢纽，换乘引导明确。出站周边辐射多处行政办事大厅、高密住宅区与综合写字楼，配有便捷的公交与非机动车接驳网。"
+          "features": "作为线网中的多线换乘枢纽，换乘引导明确。出站周边辐射多处行政办事大厅、高密住宅区与综合写字楼，配有便捷的公交与非机动车接驳网。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "多线换乘",
+              "站城融合"
+            ],
+            "summary": "菜市口站连接4号线大兴线和7号线，是北京西南部历史城区与新商业综合体之间的换乘节点。",
+            "places": [
+              {
+                "name": "中海大吉巷",
+                "type": "商业综合体",
+                "description": "北京市政府公开信息提到，中海大吉巷与菜市口站通过地下通道连接，是站城融合的代表性项目。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-station-city"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "骡马市大街—菜市口片区",
+                "type": "城市街区",
+                "description": "菜市口位于西城区南部城市商业走廊，连接骡马市大街、广安门内大街和宣武门方向。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-station-city",
+                "publisher": "北京市人民政府",
+                "title": "地铁与周边物业互联互通信息",
+                "url": "https://www.beijing.gov.cn/fuwu/bmfw/sy/jrts/202606/t20260604_4685201.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "西城区主要商业街资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -1171,7 +2670,74 @@ window.subwayDataMap = {
           "4号线大兴线",
           "9号线",
           "16号线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "文化设施",
+              "多线换乘"
+            ],
+            "summary": "国家图书馆站服务北京西北部文化教育片区，4号线大兴线、9号线和16号线在此换乘。",
+            "places": [
+              {
+                "name": "中国国家图书馆",
+                "type": "公共文化设施",
+                "description": "中国国家图书馆位于白石桥地区，是国家级公共图书馆和重要文化设施。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-library"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "紫竹院公园",
+                "type": "城市公园",
+                "description": "紫竹院公园位于国家图书馆周边的西北城区，是北京市主要公园名录中的城市公共空间。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-parks"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-library",
+                "publisher": "中国国家图书馆",
+                "title": "国家图书馆官方网站",
+                "url": "https://www.nlc.cn/",
+                "accessedAt": "2026-08-11",
+                "type": "venue"
+              },
+              {
+                "id": "bj-parks",
+                "publisher": "北京市园林绿化局",
+                "title": "关于公布北京市主要公园的公告",
+                "url": "https://yllhj.beijing.gov.cn/zwgk/gsgg/201510/t20151012_530783.shtml",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "魏公村",
@@ -1215,7 +2781,72 @@ window.subwayDataMap = {
           "platform": "地下十字岛式站台",
           "flow": "核心枢纽（早晚高峰通勤与学生客流极大）",
           "features": "出站直达新中关购物中心、领展购物广场（中关村），紧邻人大附中、中关村海淀黄庄商圈，周边高科技企业总部密集。",
-          "history": "因地处历史村落‘黄庄’而得名。明代此处曾是皇家或官员所有的庄田，称为皇庄，后谐音演变为黄庄。"
+          "history": "因地处历史村落‘黄庄’而得名。明代此处曾是皇家或官员所有的庄田，称为皇庄，后谐音演变为黄庄。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "多线换乘",
+              "科创商务"
+            ],
+            "summary": "海淀黄庄是海淀中部的多线换乘节点，4号线大兴线和10号线连接中关村及周边教育、科研和商务片区。",
+            "places": [
+              {
+                "name": "中关村大街科创片区",
+                "type": "科创商务",
+                "description": "车站位于中关村大街沿线，周边是海淀区重要的教育、科研和科技企业集聚区域。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "海淀黄庄城市公共服务片区",
+                "type": "城市街区",
+                "description": "海淀黄庄连接中关村、苏州街和人民大学方向，是海淀中部公共交通与城市生活服务节点。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-government"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "中关村大街及主要商业街资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-government",
+                "publisher": "北京市人民政府",
+                "title": "北京市轨道交通站点分级资料",
+                "url": "https://www.beijing.gov.cn/cs/gncs/zcwj/202603/P020260327590191379980.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -1226,7 +2857,74 @@ window.subwayDataMap = {
         "lat": 39.983991,
         "lines": [
           "4号线大兴线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "科创商务",
+              "高校"
+            ],
+            "summary": "中关村站位于中关村大街核心区，服务北京海淀科技创新、教育和商务活动。",
+            "places": [
+              {
+                "name": "中关村大街科创片区",
+                "type": "科创商务",
+                "description": "中关村大街是北京市官方资料列出的重要城市街道，车站位于海淀科创商务核心区域。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "中关村广场片区",
+                "type": "商业片区",
+                "description": "中关村站周边连接中关村广场及科技企业、办公和公共服务设施集中区域。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-government"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "中关村大街及主要商业街资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-government",
+                "publisher": "北京市人民政府",
+                "title": "中关村及海淀科创片区相关资料",
+                "url": "https://www.beijing.gov.cn/zhengce/zfwj/zfwj2016/szfwj/202205/W020220519628058514480.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "北京大学东门",
@@ -1236,7 +2934,66 @@ window.subwayDataMap = {
         "lat": 39.992212,
         "lines": [
           "4号线大兴线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "高校",
+              "文化教育"
+            ],
+            "summary": "北京大学东门站位于海淀北部高校与科研片区，4号线大兴线为北京大学东门及周边校园提供轨道交通服务。",
+            "places": [
+              {
+                "name": "北京大学",
+                "type": "高校",
+                "description": "车站以北京大学东门为主要城市地标，周边属于北京高校和科研机构集中区域。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-pku"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "海淀北部高校科研片区",
+                "type": "教育科研",
+                "description": "北京大学东门、中关村和圆明园一带共同构成海淀北部文化教育与科研活动密集的城市片区。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-pku"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-pku",
+                "publisher": "北京大学",
+                "title": "北京大学官方网站",
+                "url": "https://www.pku.edu.cn/",
+                "accessedAt": "2026-08-11",
+                "type": "venue"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "圆明园",
@@ -1246,7 +3003,74 @@ window.subwayDataMap = {
         "lat": 39.999662,
         "lines": [
           "4号线大兴线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "历史文化",
+              "城市公园"
+            ],
+            "summary": "圆明园站位于海淀北部历史园林片区，4号线大兴线服务圆明园遗址公园及周边高校。",
+            "places": [
+              {
+                "name": "圆明园遗址公园",
+                "type": "历史文化公园",
+                "description": "圆明园遗址公园是北京市主要公园名录中的历史文化公园，车站为前往遗址公园的轨道交通节点。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-parks"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "清华大学北部片区",
+                "type": "高校",
+                "description": "圆明园站周边与清华大学、北京大学等高校和科研片区相邻，校园访问需遵守学校当日管理要求。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-tsinghua"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-parks",
+                "publisher": "北京市园林绿化局",
+                "title": "关于公布北京市主要公园的公告",
+                "url": "https://yllhj.beijing.gov.cn/zwgk/gsgg/201510/t20151012_530783.shtml",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-tsinghua",
+                "publisher": "清华大学",
+                "title": "清华大学官方网站",
+                "url": "https://www.tsinghua.edu.cn/",
+                "accessedAt": "2026-08-11",
+                "type": "venue"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "西苑",
@@ -1273,7 +3097,66 @@ window.subwayDataMap = {
         "lat": 40.002373,
         "lines": [
           "4号线大兴线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "世界遗产",
+              "城市公园"
+            ],
+            "summary": "北宫门站位于海淀北部园林和历史文化片区，4号线大兴线服务颐和园北宫门方向。",
+            "places": [
+              {
+                "name": "颐和园",
+                "type": "历史文化公园",
+                "description": "颐和园是北京主要公园和历史文化景区，北宫门站是前往园区北部的重要公共交通节点。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-parks"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "海淀北部园林片区",
+                "type": "城市公园",
+                "description": "北宫门周边连接颐和园、圆明园等海淀北部园林和公共文化空间，游览安排应以景区当日公告为准。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-parks"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-parks",
+                "publisher": "北京市园林绿化局",
+                "title": "关于公布北京市主要公园的公告",
+                "url": "https://yllhj.beijing.gov.cn/zwgk/gsgg/201510/t20151012_530783.shtml",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "安河桥北",
@@ -1301,7 +3184,72 @@ window.subwayDataMap = {
           "platform": "地下双岛混合式换乘站台",
           "flow": "超级核心枢纽（早晚高峰日换乘客流超过 $30.0\\text{ 万人次}$）",
           "features": "周边分布有宋家庄交通枢纽、首开福茂购物中心及多处大型居住小区，是京南核心通勤中转站。",
-          "history": "以当地历史村落‘宋家庄’命名。清末民初此地为宋姓农户聚居的村落，后逐渐演变为地名。"
+          "history": "以当地历史村落‘宋家庄’命名。清末民初此地为宋姓农户聚居的村落，后逐渐演变为地名。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "多线换乘",
+              "城市南部"
+            ],
+            "summary": "宋家庄是北京南部多线换乘节点，连接5号线、10号线和亦庄线，并承担南部地区公交接驳。",
+            "places": [
+              {
+                "name": "宋家庄综合交通枢纽",
+                "type": "综合交通枢纽",
+                "description": "宋家庄是北京重点轨道交通枢纽之一，地铁线路与地面公交在南部城区形成换乘网络。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-transport"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "石榴庄路—方庄南部片区",
+                "type": "城市街区",
+                "description": "车站周边连接方庄、石榴庄等南部居住和公共服务片区，适合作为区域通勤换乘节点使用。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-transport",
+                "publisher": "北京市人民政府",
+                "title": "重点轨道交通车站与接驳信息",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "北京市商业街名录相关资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -1339,7 +3287,74 @@ window.subwayDataMap = {
         "lat": 39.882558,
         "lines": [
           "5号线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "世界遗产",
+              "城市公园"
+            ],
+            "summary": "天坛东门站位于天坛公园东侧，5号线为北京东南部前往天坛核心景区提供轨道交通接驳。",
+            "places": [
+              {
+                "name": "天坛公园",
+                "type": "历史文化公园",
+                "description": "天坛是明清时期皇家祭天和祈谷场所，位于北京中轴线南侧，是北京重要历史建筑群和城市公园。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-tiantan"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "天坛东路城市片区",
+                "type": "城市街区",
+                "description": "车站服务天坛东路及周边东城区、丰台区交界的公共交通和生活服务片区。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-parks"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-tiantan",
+                "publisher": "北京市人民政府",
+                "title": "天坛公园介绍",
+                "url": "https://english.beijing.gov.cn/beijinginfo/culture/beijingtownscape/parks/202401/t20240116_3536945.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-parks",
+                "publisher": "北京市园林绿化局",
+                "title": "关于公布北京市主要公园的公告",
+                "url": "https://yllhj.beijing.gov.cn/zwgk/gsgg/201510/t20151012_530783.shtml",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "磁器口",
@@ -1350,7 +3365,66 @@ window.subwayDataMap = {
         "lines": [
           "5号线",
           "7号线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "多线换乘",
+              "商业街区"
+            ],
+            "summary": "磁器口站连接5号线和7号线，位于崇文门外大街、珠市口东大街和东南城区生活商业片区。",
+            "places": [
+              {
+                "name": "崇文门外大街",
+                "type": "商业街区",
+                "description": "崇文门外大街连接崇文门与磁器口，是北京市官方商业街资料中的城市商业走廊。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "珠市口东大街",
+                "type": "城市街区",
+                "description": "珠市口东大街连接磁器口与珠市口，串联前门、天桥和东南城区的历史商业空间。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "崇文门外大街与珠市口东大街资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "灯市口",
@@ -1487,7 +3561,72 @@ window.subwayDataMap = {
           "desc": "立水桥站是北京市地铁线网中的高介数交通节点，目前服务于轨道交通线路：5号线、13号线。",
           "platform": "地下换乘枢纽站台",
           "flow": "核心换乘枢纽（预估日均 $P \\approx 12.0\\text{ 万人次}$）",
-          "features": "位于立水桥主干道正下方。出站口无缝接驳多条地面公交接驳站台，周边主要环绕成熟的生活居住小区、商住两用公寓以及基础社区商业网点。"
+          "features": "位于立水桥主干道正下方。出站口无缝接驳多条地面公交接驳站台，周边主要环绕成熟的生活居住小区、商住两用公寓以及基础社区商业网点。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "多线换乘",
+              "北部居住片区"
+            ],
+            "summary": "立水桥站连接5号线和13号线，是北京北部连接天通苑、望京西和中心城区的换乘节点。",
+            "places": [
+              {
+                "name": "立水桥北部居住片区",
+                "type": "城市街区",
+                "description": "立水桥是北京北部重要轨道交通节点，连接天通苑、北苑和望京西方向居住与就业片区。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-government"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "立水桥商圈",
+                "type": "商业片区",
+                "description": "车站周边形成服务北部居住片区的商业和公共服务节点，具体商户信息不纳入静态资料。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-government",
+                "publisher": "北京市人民政府",
+                "title": "重点轨道交通车站信息",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "北京市商业街名录相关资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -1727,7 +3866,64 @@ window.subwayDataMap = {
           "platform": "地下十字换乘站台",
           "flow": "核心换乘站（早高峰换乘人潮庞大，客流引导严密）",
           "features": "作为线网中的多线换乘枢纽，换乘引导明确。出站周边辐射多处行政办事大厅、高密住宅区与综合写字楼，配有便捷的公交与非机动车接驳网。",
-          "history": "得名于当地老地名‘呼家楼’。相传明清时期在此有一户呼姓富商建造的高楼，成为当时的地标，因而得名。"
+          "history": "得名于当地老地名‘呼家楼’。相传明清时期在此有一户呼姓富商建造的高楼，成为当时的地标，因而得名。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "多线换乘",
+              "商务片区"
+            ],
+            "summary": "呼家楼是朝阳区中心商务和媒体办公片区的重要换乘站，6号线与10号线在此交会。",
+            "places": [
+              {
+                "name": "朝外商务片区",
+                "type": "商务片区",
+                "description": "呼家楼位于朝阳门外和东大桥之间的商务办公走廊，周边连接朝阳区中心城区公共服务设施。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-cbd"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "北京CBD东部片区",
+                "type": "商务中心",
+                "description": "呼家楼向东连接北京CBD，适合通勤和城市商务出行；具体楼宇入口以现场指引为准。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-cbd"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-cbd",
+                "publisher": "朝阳区人民政府",
+                "title": "北京中央商务区介绍",
+                "url": "https://english.bjchy.gov.cn/central-business-district",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -1762,7 +3958,72 @@ window.subwayDataMap = {
           "platform": "地下叠落侧式站台",
           "flow": "重点文旅站点（周末及节假日人山人海，日均突破 $15.0\\text{ 万人次}$）",
           "features": "出站即达全国闻名的南锣鼓巷历史文化街区、中央戏剧学院东棉花胡同校区，周边分布着大量的胡同创意商铺、名人故居及传统小吃街。",
-          "history": "得名于北京最古老的街区之一——‘南锣鼓巷’。该巷建于元代，因其地形中间高、两端低，形如锣鼓，且在明代被称为锣锅巷，后雅化为南锣鼓巷。"
+          "history": "得名于北京最古老的街区之一——‘南锣鼓巷’。该巷建于元代，因其地形中间高、两端低，形如锣鼓，且在明代被称为锣锅巷，后雅化为南锣鼓巷。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "历史文化",
+              "特色街区"
+            ],
+            "summary": "南锣鼓巷站连接6号线和8号线，位于北京旧城胡同、什刹海和中轴线北段历史文化片区。",
+            "places": [
+              {
+                "name": "南锣鼓巷历史文化街区",
+                "type": "历史文化街区",
+                "description": "南锣鼓巷是北京旧城历史文化保护区和官方商业街资料中的特色片区，周边以胡同和传统街巷为主要空间特征。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-history"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "什刹海—地安门片区",
+                "type": "城市旅游",
+                "description": "车站向西连接什刹海、地安门和钟鼓楼方向，是北京旧城步行游览线路的重要节点。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-history",
+                "publisher": "北京市文物局",
+                "title": "北京旧城历史文化保护区资料",
+                "url": "https://wwj.beijing.gov.cn/bjww/362679/362686/622507/index.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "南锣鼓巷及特色商业街资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -2102,7 +4363,74 @@ window.subwayDataMap = {
         "lines": [
           "7号线",
           "10号线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "多线换乘",
+              "商业片区"
+            ],
+            "summary": "双井站连接7号线和10号线，是北京东部居住、商务与商业活动密集的换乘节点。",
+            "places": [
+              {
+                "name": "双井街区",
+                "type": "城市街区",
+                "description": "双井街道位于朝阳区东部，周边兼具居住、商业和办公功能，公共交通联系密集。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-government"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "广渠路—东三环商务走廊",
+                "type": "商务片区",
+                "description": "双井站连接广渠路和东三环方向，是北京CBD南侧的重要城市通勤走廊。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-cbd"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-government",
+                "publisher": "北京市人民政府",
+                "title": "双井街区与朝阳区城市片区资料",
+                "url": "https://mzj.beijing.gov.cn/art/2026/7/16/art_9984_692516.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-cbd",
+                "publisher": "朝阳区人民政府",
+                "title": "北京中央商务区介绍",
+                "url": "https://english.bjchy.gov.cn/central-business-district",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "广渠门外",
@@ -2143,7 +4471,74 @@ window.subwayDataMap = {
         "lines": [
           "7号线",
           "8号线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "多线换乘",
+              "历史文化"
+            ],
+            "summary": "珠市口站连接7号线和8号线，位于前门、天桥和大栅栏历史文化与商业街区之间。",
+            "places": [
+              {
+                "name": "前门大街—大栅栏片区",
+                "type": "历史商业街",
+                "description": "珠市口向北连接前门大街和大栅栏，属于北京中轴线南段重要历史商业空间。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-history"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "天桥艺术中心片区",
+                "type": "文化场馆",
+                "description": "珠市口向西北连接天桥文化演艺片区，前往具体场馆应以场馆官方演出和入场指引为准。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-cultural"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-history",
+                "publisher": "北京市人民政府",
+                "title": "北京中轴线地标资料",
+                "url": "https://english.beijing.gov.cn/specials/centralaxis/landmarksalongthecentralaxis/index.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-cultural",
+                "publisher": "北京市人民政府",
+                "title": "北京城市文化设施相关资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "虎坊桥",
@@ -2207,7 +4602,72 @@ window.subwayDataMap = {
           "platform": "地下同台双岛式站台",
           "flow": "超级核心枢纽（铁路集散客流极其庞大）",
           "features": "直接服务于北京西站国铁枢纽。周边有莲花池公园，站内通道无缝连接候车大厅与地下换乘中心，交通接驳极为发达。",
-          "history": "因对接服务于亚洲规模宏大的铁路客运枢纽——北京西站而命名。"
+          "history": "因对接服务于亚洲规模宏大的铁路客运枢纽——北京西站而命名。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "铁路枢纽",
+              "城市门户"
+            ],
+            "summary": "北京西站是北京西部重要铁路客运门户，地铁7号线和9号线在站区提供接驳。",
+            "places": [
+              {
+                "name": "北京西站站区",
+                "type": "铁路枢纽",
+                "description": "北京西站属于北京市重点站区，地铁车站与国铁车站共同承担大型铁路客运集散。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-rail"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "莲花池公园",
+                "type": "城市公园",
+                "description": "莲花池公园位于北京西站周边，是北京主要公园名录中的城市公共空间，可作为站区周边的休闲目的地。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-parks"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-rail",
+                "publisher": "北京市交通委员会",
+                "title": "火车站周边文旅地图",
+                "url": "https://www.beijing.gov.cn/fuwu/bmfw/sy/jrts/tzxx/202504/t20250405_4056219.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-parks",
+                "publisher": "北京市园林绿化局",
+                "title": "关于公布北京市主要公园的公告",
+                "url": "https://yllhj.beijing.gov.cn/zwgk/gsgg/201510/t20151012_530783.shtml",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -2362,7 +4822,74 @@ window.subwayDataMap = {
         "lat": 39.923705,
         "lines": [
           "8号线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "艺术文化",
+              "历史城区"
+            ],
+            "summary": "中国美术馆站位于北京东城区文化设施密集的历史城区，8号线服务中国美术馆及王府井北部片区。",
+            "places": [
+              {
+                "name": "中国美术馆",
+                "type": "艺术博物馆",
+                "description": "中国美术馆是国家级美术博物馆，车站名称直接对应场馆及其周边文化设施。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-art"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "王府井北部历史文化片区",
+                "type": "历史城区",
+                "description": "车站向南连接王府井商业街和东长安街，向北连接五四大街、地安门方向的历史城区。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-history"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-art",
+                "publisher": "中国美术馆",
+                "title": "中国美术馆官方网站",
+                "url": "https://www.namoc.org/",
+                "accessedAt": "2026-08-11",
+                "type": "venue"
+              },
+              {
+                "id": "bj-history",
+                "publisher": "北京市文物局",
+                "title": "北京旧城历史文化保护区资料",
+                "url": "https://wwj.beijing.gov.cn/bjww/362679/362686/622507/index.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "什刹海",
@@ -2372,7 +4899,74 @@ window.subwayDataMap = {
         "lat": 39.937583,
         "lines": [
           "8号线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "历史文化",
+              "城市公园"
+            ],
+            "summary": "什刹海站位于北京旧城历史文化保护区，8号线连接前海、后海和钟鼓楼方向的步行游览空间。",
+            "places": [
+              {
+                "name": "什刹海历史文化片区",
+                "type": "历史文化街区",
+                "description": "什刹海是北京旧城历史文化保护区的重要组成部分，包含前海、后海及周边胡同和公共空间。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-history"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "烟袋斜街",
+                "type": "特色街区",
+                "description": "烟袋斜街位于什刹海和地安门外大街附近，是北京官方商业街资料中的特色街区。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-history",
+                "publisher": "北京市文物局",
+                "title": "北京旧城历史文化保护区资料",
+                "url": "https://wwj.beijing.gov.cn/bjww/362679/362686/622507/index.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "什刹海及特色商业街资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "安德里北街",
@@ -2425,7 +5019,74 @@ window.subwayDataMap = {
         "lines": [
           "8号线",
           "15号线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "体育场馆",
+              "城市公园"
+            ],
+            "summary": "奥林匹克公园站连接8号线和15号线，是北京北部奥运场馆和大型公共空间的主要轨道交通节点。",
+            "places": [
+              {
+                "name": "国家体育场（鸟巢）",
+                "type": "体育场馆",
+                "description": "国家体育场位于奥林匹克公园核心区，是北京奥运遗产和大型体育文化活动场馆。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-olympic"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "国家游泳中心（水立方）",
+                "type": "体育场馆",
+                "description": "国家游泳中心位于奥林匹克公园核心区，与国家体育场共同构成北京北部代表性体育文化目的地。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-watercube"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-olympic",
+                "publisher": "国家体育场",
+                "title": "国家体育场官方网站",
+                "url": "https://www.n-s.cn/",
+                "accessedAt": "2026-08-11",
+                "type": "venue"
+              },
+              {
+                "id": "bj-watercube",
+                "publisher": "国家游泳中心",
+                "title": "国家游泳中心官方网站",
+                "url": "https://www.watercube.com/",
+                "accessedAt": "2026-08-11",
+                "type": "venue"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "森林公园南门",
@@ -2637,7 +5298,72 @@ window.subwayDataMap = {
           "desc": "六里桥站是北京市地铁线网中的高介数交通节点，目前服务于轨道交通线路：9号线、10号线。",
           "platform": "地下换乘枢纽站台",
           "flow": "核心换乘枢纽（预估日均 $P \\approx 12.0\\text{ 万人次}$）",
-          "features": "地处六里桥核心商办区域，站厅通道直通周边各大购物中心、百货商场与下沉式美食街区，是集购物、休闲、娱乐与写字楼通勤于一体的热闹节点。"
+          "features": "地处六里桥核心商办区域，站厅通道直通周边各大购物中心、百货商场与下沉式美食街区，是集购物、休闲、娱乐与写字楼通勤于一体的热闹节点。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "综合交通",
+              "城西门户"
+            ],
+            "summary": "六里桥是北京西部重要的地铁和公路客运转换节点，连接9号线、10号线并服务周边客运站区。",
+            "places": [
+              {
+                "name": "六里桥综合交通枢纽",
+                "type": "综合交通枢纽",
+                "description": "六里桥站区是北京市重点交通节点，地铁、公交和公路客运在此形成接驳。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-transport"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "莲花池公园与西站片区",
+                "type": "城市公共空间",
+                "description": "六里桥向东连接莲花池公园和北京西站片区，适合前往城西铁路与公共服务设施。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-parks"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-transport",
+                "publisher": "北京市交通委员会",
+                "title": "城市综合客运枢纽信息",
+                "url": "https://jtw.beijing.gov.cn/sjtl/202111/t20211118_2540162.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-parks",
+                "publisher": "北京市园林绿化局",
+                "title": "关于公布北京市主要公园的公告",
+                "url": "https://yllhj.beijing.gov.cn/zwgk/gsgg/201510/t20151012_530783.shtml",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -2807,7 +5533,72 @@ window.subwayDataMap = {
           "desc": "三元桥站是北京市地铁线网中的高介数交通节点，目前服务于轨道交通线路：10号线、12号线、首都机场线。",
           "platform": "地下换乘枢纽站台",
           "flow": "核心换乘枢纽（预估日均 $P \\approx 18.0\\text{ 万人次}$）",
-          "features": "位于三元桥主干道正下方。出站口无缝接驳多条地面公交接驳站台，周边主要环绕成熟的生活居住小区、商住两用公寓以及基础社区商业网点。"
+          "features": "位于三元桥主干道正下方。出站口无缝接驳多条地面公交接驳站台，周边主要环绕成熟的生活居住小区、商住两用公寓以及基础社区商业网点。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "机场接驳",
+              "多线换乘"
+            ],
+            "summary": "三元桥是东北城区连接首都机场的重要轨道交通节点，10号线、12号线和首都机场线在此换乘。",
+            "places": [
+              {
+                "name": "首都机场线接驳",
+                "type": "机场交通",
+                "description": "三元桥连接首都机场线，适合在市区与首都机场之间进行轨道交通接驳。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-airport"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "三元桥—燕莎商圈",
+                "type": "商业片区",
+                "description": "车站位于东北三环城市功能片区，周边连接燕莎、使馆区及三元桥商务办公区域。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-airport",
+                "publisher": "北京首都国际机场",
+                "title": "机场公共交通信息",
+                "url": "https://www.bcia.com.cn/",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "北京市商业街名录相关资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -2875,7 +5666,72 @@ window.subwayDataMap = {
           "desc": "十里河站是北京市地铁线网中的高介数交通节点，目前服务于轨道交通线路：10号线、14号线、17号线。",
           "platform": "地下换乘枢纽站台",
           "flow": "核心换乘枢纽（预估日均 $P \\approx 18.0\\text{ 万人次}$）",
-          "features": "地处十里河核心商办区域，站厅通道直通周边各大购物中心、百货商场与下沉式美食街区，是集购物、休闲、娱乐与写字楼通勤于一体的热闹节点。"
+          "features": "地处十里河核心商办区域，站厅通道直通周边各大购物中心、百货商场与下沉式美食街区，是集购物、休闲、娱乐与写字楼通勤于一体的热闹节点。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "三线换乘",
+              "家居商业"
+            ],
+            "summary": "十里河站是北京东南部三线换乘节点，连接10号线、14号线和17号线，周边家居商业特色明显。",
+            "places": [
+              {
+                "name": "十里河家具大道",
+                "type": "特色商业",
+                "description": "十里河家具大道是北京市官方商业街资料中的特色商业走廊，车站为该片区提供轨道交通服务。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "十里河交通节点",
+                "type": "城市交通节点",
+                "description": "三线换乘使十里河成为东南城区连接商务、家居商业和居住片区的重要公共交通节点。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-government"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "十里河家具大道及主要商业街资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-government",
+                "publisher": "北京市人民政府",
+                "title": "北京市轨道交通站点分级资料",
+                "url": "https://www.beijing.gov.cn/cs/gncs/zcwj/202603/P020260327590191379980.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -2933,7 +5789,72 @@ window.subwayDataMap = {
           "desc": "草桥站是北京市地铁线网中的高介数交通节点，目前服务于轨道交通线路：10号线、19号线、大兴机场线。",
           "platform": "地下换乘枢纽站台",
           "flow": "核心换乘枢纽（预估日均 $P \\approx 18.0\\text{ 万人次}$）",
-          "features": "位于草桥主干道正下方。出站口无缝接驳多条地面公交接驳站台，周边主要环绕成熟的生活居住小区、商住两用公寓以及基础社区商业网点。"
+          "features": "位于草桥主干道正下方。出站口无缝接驳多条地面公交接驳站台，周边主要环绕成熟的生活居住小区、商住两用公寓以及基础社区商业网点。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "机场接驳",
+              "多线换乘"
+            ],
+            "summary": "草桥是北京南部连接大兴机场方向的重要换乘节点，10号线、19号线和大兴机场线在此汇集。",
+            "places": [
+              {
+                "name": "大兴机场线接驳",
+                "type": "机场交通",
+                "description": "草桥站连接大兴机场线，是中心城区前往大兴机场的轨道交通接驳节点。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-airport-line"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "草桥站区",
+                "type": "城市交通节点",
+                "description": "草桥位于丰台南部城市片区，是轨道交通、地面公交和周边居住区之间的转换节点。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-transport"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-airport-line",
+                "publisher": "北京市人民政府",
+                "title": "重点站区交通与机场接驳信息",
+                "url": "https://jtw.beijing.gov.cn/zfzd/xxgk/ggl_2800/202201/t20220120_2596544.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-transport",
+                "publisher": "北京市人民政府",
+                "title": "重点轨道交通车站与接驳信息",
+                "url": "https://gaj.beijing.gov.cn/xxfb/jfts/202001/t20200119_1618308.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -3284,7 +6205,72 @@ window.subwayDataMap = {
           "desc": "五道口站是北京市地铁线网中的高介数交通节点，目前服务于轨道交通线路：13号线。",
           "platform": "地下岛式站台",
           "flow": "常规服务站点（预估日均 $P \\approx 1.5\\text{ 万人次}$）",
-          "features": "交通基础设施完善，配有无障碍直梯与盲道设施。出站紧邻周边生活居住区及商铺，无缝对接地面公交接驳站，为市民提供安全便捷的出行服务。"
+          "features": "交通基础设施完善，配有无障碍直梯与盲道设施。出站紧邻周边生活居住区及商铺，无缝对接地面公交接驳站，为市民提供安全便捷的出行服务。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "高校",
+              "商业街区"
+            ],
+            "summary": "五道口站位于海淀高校和科研机构密集片区，周边兼具教育、科研和商业街区属性。",
+            "places": [
+              {
+                "name": "清华大学及高校片区",
+                "type": "高校",
+                "description": "五道口是北京高校和科研机构集聚区域的重要地铁节点，前往校园应以学校当日开放和访客指引为准。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-tsinghua"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "五道口商业街区",
+                "type": "商业街区",
+                "description": "五道口属于北京官方城市商业与夜间消费资料中的特色片区，周边商业和公共交通联系密集。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-commercial"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-tsinghua",
+                "publisher": "清华大学",
+                "title": "清华大学官方网站",
+                "url": "https://www.tsinghua.edu.cn/",
+                "accessedAt": "2026-08-11",
+                "type": "venue"
+              },
+              {
+                "id": "bj-commercial",
+                "publisher": "北京市人民政府",
+                "title": "北京商业街与夜间消费片区资料",
+                "url": "https://www.beijing.gov.cn/zhengce/gfxwj/sj/202203/W020241218359139213019.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -3317,7 +6303,72 @@ window.subwayDataMap = {
           "desc": "清河站站是北京市地铁线网中的高介数交通节点，目前服务于轨道交通线路：13号线、昌平线。",
           "platform": "地下换乘枢纽站台",
           "flow": "核心换乘枢纽（预估日均 $P \\approx 12.0\\text{ 万人次}$）",
-          "features": "作为线网中的多线换乘枢纽，换乘引导明确。出站周边辐射多处行政办事大厅、高密住宅区与综合写字楼，配有便捷的公交与非机动车接驳网。"
+          "features": "作为线网中的多线换乘枢纽，换乘引导明确。出站周边辐射多处行政办事大厅、高密住宅区与综合写字楼，配有便捷的公交与非机动车接驳网。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "铁路枢纽",
+              "城际接驳"
+            ],
+            "summary": "清河站是北京北部重要铁路和轨道交通综合枢纽，地铁13号线、昌平线与国铁清河站形成接驳。",
+            "places": [
+              {
+                "name": "清河站铁路枢纽",
+                "type": "铁路枢纽",
+                "description": "清河站属于北京重点铁路站区，铁路、地铁和公交在站区内组织换乘。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-rail"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "清河站北部接驳区",
+                "type": "交通接驳",
+                "description": "站区承担北部城区与铁路客运的集散功能，进站和换乘应以车站现场导向为准。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-rail-guide"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-rail",
+                "publisher": "北京市交通委员会",
+                "title": "火车站周边文旅地图",
+                "url": "https://www.beijing.gov.cn/fuwu/bmfw/sy/jrts/tzxx/202504/t20250405_4056219.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-rail-guide",
+                "publisher": "北京市人民政府",
+                "title": "重点站区交通提示",
+                "url": "https://gaj.beijing.gov.cn/xxfb/jfts/202001/t20200119_1618308.html",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -3334,7 +6385,72 @@ window.subwayDataMap = {
           "desc": "西二旗站是北京市地铁线网中的高介数交通节点，目前服务于轨道交通线路：13号线、昌平线。",
           "platform": "地下换乘枢纽站台",
           "flow": "核心换乘枢纽（预估日均 $P \\approx 12.0\\text{ 万人次}$）",
-          "features": "作为线网中的多线换乘枢纽，换乘引导明确。出站周边辐射多处行政办事大厅、高密住宅区与综合写字楼，配有便捷的公交与非机动车接驳网。"
+          "features": "作为线网中的多线换乘枢纽，换乘引导明确。出站周边辐射多处行政办事大厅、高密住宅区与综合写字楼，配有便捷的公交与非机动车接驳网。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "科创商务",
+              "多线换乘"
+            ],
+            "summary": "西二旗站是海淀北部连接中关村软件园和昌平方向的重要轨道交通节点。",
+            "places": [
+              {
+                "name": "中关村软件园片区",
+                "type": "科创商务",
+                "description": "西二旗周边是中关村软件园等科技企业和办公空间较为集中的海淀北部科创片区。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-software"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "西二旗—上地交通走廊",
+                "type": "城市交通节点",
+                "description": "车站连接13号线与昌平线方向，承担上地、西二旗和北部居住就业片区之间的通勤换乘。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-government"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-software",
+                "publisher": "北京市人民政府",
+                "title": "中关村软件园相关资料",
+                "url": "https://www.beijing.gov.cn/zhengce/zfwj/zfwj2016/szfwj/202205/W020220519628058514480.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              },
+              {
+                "id": "bj-government",
+                "publisher": "北京市人民政府",
+                "title": "北京市轨道交通站点分级资料",
+                "url": "https://www.beijing.gov.cn/cs/gncs/zcwj/202603/P020260327590191379980.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -3446,7 +6562,64 @@ window.subwayDataMap = {
           "platform": "地下L型换乘站台",
           "flow": "核心枢纽（工作日职住通勤客流极其庞大）",
           "features": "周边分布有望京SOHO、新世界百货、凯德MALL（望京），附近是北京著名的第二 CBD 和跨国企业总部集聚区。",
-          "history": "得名于当地古老地名‘望京’。相传该地曾有一高土岗，登其上可眺望北京城（东直门城楼），故名望京。"
+          "history": "得名于当地古老地名‘望京’。相传该地曾有一高土岗，登其上可眺望北京城（东直门城楼），故名望京。",
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "多线换乘",
+              "科创商务"
+            ],
+            "summary": "望京站服务朝阳区东北部的商务、居住和科技创新片区，14号线和15号线在此换乘。",
+            "places": [
+              {
+                "name": "望京商务片区",
+                "type": "商务片区",
+                "description": "望京是北京东北部重要的科技、商务和居住混合片区，地铁站为区域通勤提供换乘服务。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-望京"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "望京SOHO片区",
+                "type": "商务综合体",
+                "description": "望京SOHO是望京区域具有代表性的办公综合体，前往具体楼宇应以园区和现场导向为准。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-望京"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-望京",
+                "publisher": "北京市人民政府",
+                "title": "望京等重点片区相关资料",
+                "url": "https://www.beijing.gov.cn/zhengce/zfwj/zfwj2016/szfwj/202205/W020220519628058514480.pdf",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
         }
       },
       {
@@ -4703,7 +7876,66 @@ window.subwayDataMap = {
         "lat": 39.994056,
         "lines": [
           "西郊线"
-        ]
+        ],
+        "wiki": {
+          "surroundings": {
+            "version": "2026-08",
+            "reviewedAt": "2026-08-11",
+            "verification": "verified",
+            "tags": [
+              "城市公园",
+              "西郊线"
+            ],
+            "summary": "香山站是西郊线西端的文旅站点，服务香山公园和北京西山园林片区。",
+            "places": [
+              {
+                "name": "香山公园",
+                "type": "城市公园",
+                "description": "香山公园是北京市主要公园名录中的西山园林景区，车站名称和线路终点均与其相邻区域对应。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-parks"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              },
+              {
+                "name": "北京西山园林片区",
+                "type": "自然景观",
+                "description": "香山周边属于北京西山园林和城市生态空间，出行时应留意景区开放、客流和天气提示。",
+                "recommendedExits": [],
+                "distanceType": "not_available",
+                "sourceIds": [
+                  "bjsubway",
+                  "bj-parks"
+                ],
+                "reviewedAt": "2026-08-11",
+                "verification": "verified"
+              }
+            ],
+            "connections": [],
+            "sources": [
+              {
+                "id": "bjsubway",
+                "publisher": "北京地铁官方网站",
+                "title": "站点及周边信息",
+                "url": "https://www.bjsubway.com/station/xltcx/?id=1",
+                "accessedAt": "2026-08-11",
+                "type": "official"
+              },
+              {
+                "id": "bj-parks",
+                "publisher": "北京市园林绿化局",
+                "title": "关于公布北京市主要公园的公告",
+                "url": "https://yllhj.beijing.gov.cn/zwgk/gsgg/201510/t20151012_530783.shtml",
+                "accessedAt": "2026-08-11",
+                "type": "government"
+              }
+            ]
+          }
+        }
       },
       {
         "name": "紫草坞",
