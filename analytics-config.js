@@ -1,5 +1,5 @@
-// Pages hosts the dashboard and the collector under one origin. Keeping this
-// relative avoids exposing a provider-specific Worker URL in the public app.
+// The public dashboard is hosted on GitHub Pages, while the protected data
+// service runs on Cloudflare Workers.
 window.SUBWAY_ANALYTICS_CONFIG = window.SUBWAY_ANALYTICS_CONFIG || {
-    endpoint: "/analytics-api"
+    endpoint: "https://subway-longest-loop.290573525.workers.dev"
 };
