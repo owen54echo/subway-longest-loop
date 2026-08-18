@@ -83,6 +83,9 @@ const worker = createWorker({
 
 const accepted = await worker.fetch(request({ body: { event_type: "route_generated", tab_id: null } }), env);
 assert.equal(accepted.status, 204);
+const preflight = await worker.fetch(request({ method: "OPTIONS" }), env);
+assert.equal(preflight.status, 204);
+assert.equal(preflight.headers["access-control-allow-headers"], "content-type, x-subway-visitor");
 assert.equal((await worker.fetch(request({ body: { event_type: "page_view", tab_id: null } }), env)).status, 204);
 assert.ok(db.writes.some(write => write.args.includes("route_generated")));
 assert.ok(!db.writes.some(write => write.args.includes("browser-id")));
@@ -97,46 +100,12 @@ assert.equal((await worker.fetch(request({ body: { event_type: "tab_open", tab_i
 await worker.scheduled({}, env);
 assert.ok(db.writes.some(write => write.sql.includes("-90 days")));
 
-async function login(password) {
-    return worker.fetch(request({ path: "/admin/login", body: { password } }), env);
-}
-
-const loginResponse = await login("test-password");
-assert.equal(loginResponse.status, 200);
-const { token } = await loginResponse.json();
-assert.ok(token);
-
-const stats = await worker.fetch({
-    ...request({ method: "GET", path: "/admin/stats?from=2026-08-01&to=2026-08-11" }),
-    headers: {
-        get(key) {
-            if (key.toLowerCase() === "authorization") return `Bearer ${token}`;
-            if (key.toLowerCase() === "origin") return "https://public.example";
-            return null;
-        }
-    }
-}, env);
+const stats = await worker.fetch(request({ method: "GET", path: "/stats?from=2026-08-01&to=2026-08-11" }), env);
 assert.equal(stats.status, 200);
 assert.deepEqual(Object.keys(await stats.json()).sort(), ["countries", "daily", "devices", "hours", "tabs", "totals"]);
-assert.equal((await worker.fetch(request({ method: "GET", path: "/admin/stats?from=2026-08-01&to=2026-08-11" }), env)).status, 401);
-assert.equal((await worker.fetch({
-    ...request({ method: "GET", path: "/admin/stats?from=bad&to=2026-08-11" }),
-    headers: { get: key => key.toLowerCase() === "authorization" ? `Bearer ${token}` : key.toLowerCase() === "origin" ? "https://public.example" : null }
-}, env)).status, 400);
+assert.equal((await worker.fetch(request({ method: "GET", path: "/stats?from=bad&to=2026-08-11" }), env)).status, 400);
+assert.equal((await worker.fetch(request({ method: "GET", path: "/stats?from=2026-08-01&to=2026-08-11", origin: "https://attacker.example" }), env)).status, 403);
+assert.equal((await worker.fetch(request({ method: "GET", path: "/stats?from=2026-08-01&to=2026-08-11" }), { ...env, DB: undefined })).status, 503);
 assert.ok(!db.writes.some(write => /^SELECT[\s\S]*FROM events/i.test(write.sql)));
-
-const expiredWorker = createWorker({
-    now: () => new Date("2026-08-11T16:31:00.000Z"),
-    crypto: webcrypto,
-    Response: TestResponse,
-    randomUUID: () => "event-2"
-});
-assert.equal((await expiredWorker.fetch({
-    ...request({ method: "GET", path: "/admin/stats?from=2026-08-01&to=2026-08-11" }),
-    headers: { get: key => key.toLowerCase() === "authorization" ? `Bearer ${token}` : key.toLowerCase() === "origin" ? "https://public.example" : null }
-}, env)).status, 401);
-
-for (let attempt = 0; attempt < 5; attempt++) assert.equal((await login("wrong-password")).status, 401);
-assert.equal((await login("test-password")).status, 429);
 
 console.log("analytics worker collector tests passed");
