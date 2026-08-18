@@ -9,27 +9,14 @@
 </head>
 <body>
     <main class="analytics-shell">
-        <section class="analytics-login" id="analytics-login" aria-labelledby="analytics-login-title">
-            <p class="analytics-kicker">SUBWAY NETWORK / PRIVATE</p>
-            <h1 id="analytics-login-title">访问统计</h1>
-            <p class="analytics-login-copy">输入管理密码后查看运行概览。</p>
-            <form id="analytics-login-form" class="analytics-login-form">
-                <label for="analytics-password">管理密码</label>
-                <input id="analytics-password" type="password" autocomplete="current-password" required>
-                <p class="analytics-form-error" id="analytics-login-error" role="alert" hidden></p>
-                <button type="submit">进入统计</button>
-            </form>
-        </section>
-
-        <section id="analytics-app" class="analytics-app" hidden aria-live="polite">
+        <section id="analytics-app" class="analytics-app" aria-live="polite">
             <header class="analytics-header">
                 <div>
-                    <p class="analytics-kicker">SUBWAY NETWORK / PRIVATE</p>
+                    <p class="analytics-kicker">SUBWAY NETWORK / AGGREGATE METRICS</p>
                     <h1>访问统计</h1>
                 </div>
                 <div class="analytics-header-actions">
                     <span class="analytics-timezone">Asia/Shanghai</span>
-                    <button class="analytics-text-button" type="button" id="analytics-sign-out">退出</button>
                 </div>
             </header>
 
