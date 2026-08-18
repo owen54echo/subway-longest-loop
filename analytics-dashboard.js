@@ -1,15 +1,8 @@
 (function initAnalyticsDashboard(window, document) {
     "use strict";
 
-    const tokenStorageKey = "subway_analytics_admin_token";
-    const adminModeStorageKey = "subway_analytics_admin_mode";
     const tabNames = { rules: "规划", constraints: "约束", roadbook: "路书", analysis: "分析", "custom-route": "自定义" };
     const countryNames = { CN: "中国", HK: "中国香港", MO: "中国澳门", TW: "中国台湾", US: "美国", JP: "日本", SG: "新加坡", GB: "英国", ZZ: "未知地区", "未知地区": "未知地区" };
-    const loginView = document.getElementById("analytics-login");
-    const appView = document.getElementById("analytics-app");
-    const loginForm = document.getElementById("analytics-login-form");
-    const passwordInput = document.getElementById("analytics-password");
-    const loginError = document.getElementById("analytics-login-error");
     const status = document.getElementById("analytics-status");
     const customRange = document.getElementById("custom-range");
     const fromInput = document.getElementById("analytics-range-from");
@@ -145,57 +138,16 @@
         return activeRange === "custom" ? { from: fromInput.value, to: toInput.value } : defaultRange(Number(activeRange));
     }
 
-    function signOut() {
-        window.sessionStorage.removeItem("subway_analytics_admin_token");
-        window.sessionStorage.removeItem(adminModeStorageKey);
-        appView.hidden = true;
-        loginView.hidden = false;
-        passwordInput.value = "";
-    }
-
     async function loadStats() {
-        const token = window.sessionStorage.getItem(tokenStorageKey);
         const range = selectedRange();
-        if (!token || !range.from || !range.to) return;
+        if (!range.from || !range.to) return;
         if (!endpoint()) return setStatus("数据服务尚未配置", "error");
         setStatus("正在读取统计…");
-        const response = await window.fetch(`${endpoint()}/admin/stats?from=${encodeURIComponent(range.from)}&to=${encodeURIComponent(range.to)}`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => null);
-        if (response?.status === 401) {
-            signOut();
-            loginError.textContent = "会话已过期，请重新输入密码。";
-            loginError.hidden = false;
-            return;
-        }
+        const response = await window.fetch(`${endpoint()}/stats?from=${encodeURIComponent(range.from)}&to=${encodeURIComponent(range.to)}`).catch(() => null);
         if (!response?.ok) return setStatus("暂时无法读取统计，请稍后重试", "error");
         renderStats(await response.json());
         setStatus(`${range.from} 至 ${range.to}`);
     }
-
-    function showApp() {
-        loginView.hidden = true;
-        appView.hidden = false;
-        window.sessionStorage.setItem(adminModeStorageKey, "1");
-        loadStats();
-    }
-
-    loginForm.addEventListener("submit", async event => {
-        event.preventDefault();
-        loginError.hidden = true;
-        if (!endpoint()) {
-            loginError.textContent = "数据服务尚未配置。";
-            loginError.hidden = false;
-            return;
-        }
-        const response = await window.fetch(`${endpoint()}/admin/login`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ password: passwordInput.value }) }).catch(() => null);
-        if (!response?.ok) {
-            loginError.textContent = response?.status === 429 ? "尝试次数过多，请 15 分钟后再试。" : "密码错误或服务暂不可用。";
-            loginError.hidden = false;
-            return;
-        }
-        const data = await response.json();
-        window.sessionStorage.setItem("subway_analytics_admin_token", data.token);
-        showApp();
-    });
 
     document.querySelectorAll("[data-range]").forEach(button => button.addEventListener("click", () => {
         activeRange = button.dataset.range;
@@ -204,10 +156,8 @@
         if (activeRange !== "custom") loadStats();
     }));
     customRange.addEventListener("submit", event => { event.preventDefault(); loadStats(); });
-    document.getElementById("analytics-sign-out").addEventListener("click", signOut);
-
     const initialRange = defaultRange(7);
     fromInput.value = initialRange.from;
     toInput.value = initialRange.to;
-    if (window.sessionStorage.getItem(tokenStorageKey)) showApp();
+    loadStats();
 })(window, document);
