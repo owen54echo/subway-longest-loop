@@ -4,7 +4,6 @@
     const eventTypes = new Set(["page_view", "route_generated", "tab_open"]);
     const tabIds = new Set(["rules", "constraints", "roadbook", "analysis", "custom-route"]);
     const visitorStorageKey = "subway_analytics_visitor_id";
-    const adminModeStorageKey = "subway_analytics_admin_mode";
     const privateEntryClicks = [];
     let visitorId = null;
 
@@ -29,17 +28,9 @@
         return visitorId;
     }
 
-    function isAdminMode() {
-        try {
-            return window.sessionStorage.getItem(adminModeStorageKey) === "1";
-        } catch (_) {
-            return false;
-        }
-    }
-
     function sendEvent(eventType, tabId = null) {
         const endpoint = getEndpoint();
-        if (!endpoint || isAdminMode() || !eventTypes.has(eventType)) return;
+        if (!endpoint || !eventTypes.has(eventType)) return;
         if (eventType === "tab_open" && !tabIds.has(tabId)) return;
         if (eventType !== "tab_open") tabId = null;
         if (typeof window.fetch !== "function") return;
@@ -73,12 +64,6 @@
         trackPageView() { sendEvent("page_view"); },
         trackRouteGenerated() { sendEvent("route_generated"); },
         trackTabOpen(tabId) { sendEvent("tab_open", tabId); },
-        bindPrivateEntry,
-        setAdminMode(enabled) {
-            try {
-                if (enabled) window.sessionStorage.setItem(adminModeStorageKey, "1");
-                else window.sessionStorage.removeItem(adminModeStorageKey);
-            } catch (_) {}
-        }
+        bindPrivateEntry
     };
 })(window);
