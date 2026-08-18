@@ -2,6 +2,10 @@ const assert = require("assert");
 const fs = require("fs");
 const vm = require("vm");
 const indexHtml = fs.readFileSync("index.html", "utf8");
+const clientSource = fs.readFileSync("analytics-client.js", "utf8");
+
+assert.doesNotMatch(clientSource, /adminModeStorageKey|setAdminMode|isAdminMode/);
+assert.match(clientSource, /bindPrivateEntry/);
 
 function createStorage() {
     const store = new Map();
@@ -39,7 +43,7 @@ function loadClient({ endpoint = "https://analytics.example.test", now = () => 1
         SUBWAY_ANALYTICS_CONFIG: { endpoint }
     };
     context.window = context;
-    vm.runInNewContext(fs.readFileSync("analytics-client.js", "utf8"), context);
+    vm.runInNewContext(clientSource, context);
     return { context, sent, location };
 }
 
