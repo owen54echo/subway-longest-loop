@@ -16,7 +16,7 @@ function corsHeaders(origin) {
     return origin ? {
         "access-control-allow-origin": origin,
         "access-control-allow-methods": "POST, GET, OPTIONS",
-        "access-control-allow-headers": "content-type, authorization, x-subway-visitor",
+        "access-control-allow-headers": "content-type, x-subway-visitor",
         "vary": "Origin"
     } : {};
 }
@@ -86,75 +86,8 @@ async function parseEvent(request) {
     return body.tab_id === null ? body : null;
 }
 
-async function parseJsonBody(request) {
-    const contentLength = Number(request.headers.get("content-length") || 0);
-    if (contentLength > 1024) return null;
-    const raw = await request.text();
-    if (!raw || raw.length > 1024) return null;
-    try {
-        const body = JSON.parse(raw);
-        return body && typeof body === "object" && !Array.isArray(body) ? body : null;
-    } catch (_) {
-        return null;
-    }
-}
-
-function timingSafeEqual(left, right) {
-    const leftValue = String(left || "");
-    const rightValue = String(right || "");
-    let difference = leftValue.length ^ rightValue.length;
-    const length = Math.max(leftValue.length, rightValue.length);
-    for (let index = 0; index < length; index++) {
-        difference |= (leftValue.charCodeAt(index) || 0) ^ (rightValue.charCodeAt(index) || 0);
-    }
-    return difference === 0;
-}
-
-function base64UrlEncode(value) {
-    const bytes = encoder.encode(value);
-    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-    let output = "";
-    for (let index = 0; index < bytes.length; index += 3) {
-        const first = bytes[index];
-        const second = bytes[index + 1];
-        const third = bytes[index + 2];
-        output += alphabet[first >> 2];
-        output += alphabet[((first & 3) << 4) | ((second || 0) >> 4)];
-        if (index + 1 < bytes.length) output += alphabet[((second & 15) << 2) | ((third || 0) >> 6)];
-        if (index + 2 < bytes.length) output += alphabet[third & 63];
-    }
-    return output;
-}
-
-function base64UrlDecode(value) {
-    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-    const bytes = [];
-    for (let index = 0; index < value.length; index += 4) {
-        const first = alphabet.indexOf(value[index]);
-        const second = alphabet.indexOf(value[index + 1]);
-        const third = index + 2 < value.length ? alphabet.indexOf(value[index + 2]) : 0;
-        const fourth = index + 3 < value.length ? alphabet.indexOf(value[index + 3]) : 0;
-        if (first < 0 || second < 0 || third < 0 || fourth < 0) throw new Error("invalid token encoding");
-        bytes.push((first << 2) | (second >> 4));
-        if (index + 2 < value.length) bytes.push(((second & 15) << 4) | (third >> 2));
-        if (index + 3 < value.length) bytes.push(((third & 3) << 6) | fourth);
-    }
-    return new TextDecoder().decode(new Uint8Array(bytes));
-}
-
-async function signDashboardToken(cryptoImpl, secret, expiresAt) {
-    const payload = base64UrlEncode(JSON.stringify({ exp: expiresAt.getTime() }));
-    return `${payload}.${await hmacHex(cryptoImpl, secret, payload)}`;
-}
-
-async function verifyDashboardToken(cryptoImpl, secret, token, now) {
-    const [payload, signature, ...extra] = String(token || "").split(".");
-    if (!payload || !signature || extra.length || !timingSafeEqual(signature, await hmacHex(cryptoImpl, secret, payload))) return false;
-    try {
-        return Number(JSON.parse(base64UrlDecode(payload)).exp) > now.getTime();
-    } catch (_) {
-        return false;
-    }
+function databaseFor(env) {
+    return env.DB && typeof env.DB.prepare === "function" ? env.DB : null;
 }
 
 function parseDateRange(url) {
@@ -258,40 +191,12 @@ export function createWorker(dependencies = {}) {
             const url = new URL(request.url);
             if (!isAllowedOrigin(request, env)) return responseJson(ResponseImpl, { error: "forbidden" }, 403, null);
 
-            if (url.pathname === "/admin/login" && request.method === "POST") {
-                const body = await parseJsonBody(request);
-                if (!body || Object.keys(body).length !== 1 || typeof body.password !== "string" || body.password.length > 256) {
-                    return responseJson(ResponseImpl, { error: "invalid_login" }, 400, origin);
-                }
-                const requestKeySource = request.headers.get("cf-connecting-ip") || request.headers.get("x-subway-visitor") || "anonymous";
-                const rateKey = await hmacHex(cryptoImpl, env.ANALYTICS_TOKEN_SECRET, `login:${requestKeySource}`);
-                const currentAttempt = await env.DB.prepare("SELECT failure_count, locked_until FROM login_attempts WHERE rate_key = ?").bind(rateKey).first();
-                const currentTime = now();
-                if (currentAttempt?.locked_until && Date.parse(currentAttempt.locked_until) > currentTime.getTime()) {
-                    return responseJson(ResponseImpl, { error: "locked" }, 429, origin);
-                }
-                if (!timingSafeEqual(body.password, env.ANALYTICS_ADMIN_PASSWORD)) {
-                    const failureCount = Number(currentAttempt?.failure_count || 0) + 1;
-                    const lockedUntil = failureCount >= 5 ? new Date(currentTime.getTime() + 15 * 60 * 1000).toISOString() : null;
-                    const expiresAt = new Date(currentTime.getTime() + 15 * 60 * 1000).toISOString();
-                    await env.DB.prepare(
-                        "INSERT INTO login_attempts (rate_key, failure_count, locked_until, expires_at) VALUES (?, ?, ?, ?) ON CONFLICT(rate_key) DO UPDATE SET failure_count = excluded.failure_count, locked_until = excluded.locked_until, expires_at = excluded.expires_at"
-                    ).bind(rateKey, failureCount, lockedUntil, expiresAt).run();
-                    return responseJson(ResponseImpl, { error: "invalid_login" }, 401, origin);
-                }
-                await env.DB.prepare("DELETE FROM login_attempts WHERE rate_key = ?").bind(rateKey).run();
-                const expiresAt = new Date(currentTime.getTime() + 30 * 60 * 1000);
-                return responseJson(ResponseImpl, { token: await signDashboardToken(cryptoImpl, env.ANALYTICS_TOKEN_SECRET, expiresAt), expires_at: expiresAt.toISOString() }, 200, origin);
-            }
-
-            if (url.pathname === "/admin/stats" && request.method === "GET") {
-                const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") || "";
-                if (!await verifyDashboardToken(cryptoImpl, env.ANALYTICS_TOKEN_SECRET, token, now())) {
-                    return responseJson(ResponseImpl, { error: "unauthorized" }, 401, origin);
-                }
+            if (url.pathname === "/stats" && request.method === "GET") {
                 const range = parseDateRange(url);
                 if (!range) return responseJson(ResponseImpl, { error: "invalid_range" }, 400, origin);
-                return responseJson(ResponseImpl, await readStats(env.DB, range), 200, origin);
+                const db = databaseFor(env);
+                if (!db) return responseJson(ResponseImpl, { error: "service_unavailable" }, 503, origin);
+                return responseJson(ResponseImpl, await readStats(db, range), 200, origin);
             }
 
             if (url.pathname !== "/events" || request.method !== "POST") {
@@ -304,8 +209,11 @@ export function createWorker(dependencies = {}) {
                 return responseJson(ResponseImpl, { error: "invalid_event" }, 400, origin);
             }
 
+            const db = databaseFor(env);
+            if (!db) return responseJson(ResponseImpl, { error: "service_unavailable" }, 503, origin);
+
             const receivedAt = now();
-            await recordEvent(env.DB, {
+            await recordEvent(db, {
                 id: randomUUID(),
                 receivedAt: receivedAt.toISOString(),
                 reportDate: shanghaiDate(receivedAt),
@@ -320,8 +228,9 @@ export function createWorker(dependencies = {}) {
         },
 
         async scheduled(_event, env) {
-            await env.DB.prepare("DELETE FROM events WHERE received_at < datetime('now', '-90 days')").run();
-            await env.DB.prepare("DELETE FROM login_attempts WHERE expires_at < datetime('now')").run();
+            const db = databaseFor(env);
+            if (!db) return;
+            await db.prepare("DELETE FROM events WHERE received_at < datetime('now', '-90 days')").run();
         }
     };
 }
