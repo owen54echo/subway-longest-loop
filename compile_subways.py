@@ -24,7 +24,35 @@ CITIES = [
     {"key": "xian", "name": "西安市", "adcode": "6101", "pinyin": "xian"},
     {"key": "zhengzhou", "name": "郑州市", "adcode": "4101", "pinyin": "zhengzhou"},
     {"key": "tianjin", "name": "天津市", "adcode": "1200", "pinyin": "tianjin"},
-    {"key": "suzhou", "name": "苏州市", "adcode": "3205", "pinyin": "suzhou"}
+    {"key": "suzhou", "name": "苏州市", "adcode": "3205", "pinyin": "suzhou"},
+    {
+        "key": "xiamen",
+        "name": "厦门市",
+        "adcode": "3502",
+        "pinyin": "xiamen",
+        "operational_lines": ["1号线", "2号线", "3号线", "4号线", "6号线"],
+    },
+    {
+        "key": "qingdao",
+        "name": "青岛市",
+        "adcode": "3702",
+        "pinyin": "qingdao",
+        "operational_lines": ["1号线", "2号线", "3号线", "4号线", "6号线", "8号线", "蓝谷快线", "西海岸快线"],
+    },
+    {
+        "key": "ningbo",
+        "name": "宁波市",
+        "adcode": "3302",
+        "pinyin": "ningbo",
+        "operational_lines": ["1号线", "2号线", "3号线", "4号线", "5号线", "6号线", "7号线", "8号线", "12号线"],
+    },
+    {
+        "key": "changsha",
+        "name": "长沙市",
+        "adcode": "4301",
+        "pinyin": "changsha",
+        "operational_lines": ["1号线", "2号线", "3号线", "4号线", "5号线", "6号线", "S2线"],
+    },
 ]
 
 NANJING_LINE_6_COLOR = "#00AD8E"
@@ -155,12 +183,22 @@ def load_existing_compiled_data(output_js):
     except (OSError, ValueError, json.JSONDecodeError):
         return None
 
+def normalize_integral_numbers(value):
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    if isinstance(value, list):
+        return [normalize_integral_numbers(item) for item in value]
+    if isinstance(value, dict):
+        return {key: normalize_integral_numbers(item) for key, item in value.items()}
+    return value
+
 def write_compiled_data(compiled_data, output_js):
+    serialized_data = normalize_integral_numbers(compiled_data)
     js_content = [
         "// Consolidated subway data for multiple cities.",
         f"// Generated automatically by compile_subways.py on {time.strftime('%Y-%m-%d %H:%M:%S')}.",
         "",
-        "window.subwayDataMap = " + json.dumps(compiled_data, ensure_ascii=False, indent=2) + ";",
+        "window.subwayDataMap = " + json.dumps(serialized_data, ensure_ascii=False, indent=2) + ";",
         "",
         "// Keep window.subwayData for backward compatibility (Guangzhou)",
         "window.subwayData = window.subwayDataMap[\"guangzhou\"];"
@@ -220,7 +258,7 @@ def fetch_subway_raw(adcode, pinyin):
                 time.sleep(1.0)
     return None
 
-def parse_city_raw(raw_data, line_rename_fn=None, station_rename_fn=None):
+def parse_city_raw(raw_data, line_rename_fn=None, station_rename_fn=None, allowed_lines=None):
     nodes = {}
     edges = []
     
@@ -228,6 +266,8 @@ def parse_city_raw(raw_data, line_rename_fn=None, station_rename_fn=None):
         ln = line.get("ln")
         if line_rename_fn:
             ln = line_rename_fn(ln)
+        if allowed_lines is not None and ln not in allowed_lines:
+            continue
             
         color = line.get("cl")
         if not color.startswith("#"):
@@ -246,6 +286,10 @@ def parse_city_raw(raw_data, line_rename_fn=None, station_rename_fn=None):
                 x, y = map(float, p_str.split())
             except ValueError:
                 x, y = 0.0, 0.0
+            if x.is_integer():
+                x = int(x)
+            if y.is_integer():
+                y = int(y)
 
             lng, lat = parse_station_lng_lat(st)
                 
@@ -349,14 +393,19 @@ def main():
                 if name == "奥体中心" and ("绍兴" in line_name or line_name in ["1号线", "1号线支线", "2号线", "绍兴1号线", "绍兴1号线支线", "绍兴2号线"]):
                     return "绍兴奥体中心"
                 return name
-            nodes, edges = parse_city_raw(raw_subways[key], station_rename_fn=station_rename_hangzhou)
+            nodes, edges = parse_city_raw(
+                raw_subways[key],
+                station_rename_fn=station_rename_hangzhou,
+                allowed_lines=c.get("operational_lines"),
+            )
         elif key == "nanjing":
             nodes, edges = parse_city_raw(
                 raw_subways[key],
-                station_rename_fn=normalize_nanjing_station_name
+                station_rename_fn=normalize_nanjing_station_name,
+                allowed_lines=c.get("operational_lines"),
             )
         else:
-            nodes, edges = parse_city_raw(raw_subways[key])
+            nodes, edges = parse_city_raw(raw_subways[key], allowed_lines=c.get("operational_lines"))
         
         # Merge if necessary
         if key == "guangzhou" and foshan_raw:
