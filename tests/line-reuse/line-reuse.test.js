@@ -31,6 +31,8 @@ expectLogicalLine("chongqing", "轨道交通国博线", "6号线");
 expectLogicalLine("chongqing", "6号线东站段", "6号线");
 expectLogicalLine("hangzhou", "绍兴1号线", "绍兴1号线");
 expectLogicalLine("hangzhou", "绍兴1号线支线", "绍兴1号线");
+expectLogicalLine("nanjing", "6号线", "6号线/S1号线");
+expectLogicalLine("nanjing", "S1号线(机场线)", "6号线/S1号线");
 
 function runWorker(allowLineReuse) {
     const workerCode = fs.readFileSync("solver-worker.js", "utf8");

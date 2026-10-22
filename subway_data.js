@@ -1,5 +1,5 @@
 // Consolidated subway data for multiple cities.
-// Generated automatically by compile_subways.py on 2026-07-15 11:13:41.
+// Generated automatically by compile_subways.py on 2026-10-22 15:25:13.
 
 window.subwayDataMap = {
   "beijing": {
@@ -59213,13 +59213,14 @@ window.subwayDataMap = {
         "name": "南京南站",
         "x": 681,
         "y": 1051,
-        "lng": 118.796786,
-        "lat": 31.970968,
+        "lng": 118.791602,
+        "lat": 31.973016,
         "lines": [
           "S1号线(机场线)",
           "1号线",
           "S3号线(宁和线)",
-          "3号线"
+          "3号线",
+          "6号线"
         ],
         "wiki": {
           "desc": "南京南站站是南京市地铁线网的重要站点，目前服务于轨道交通：S1号线(机场线)、1号线、S3号线(宁和线)、3号线。",
@@ -59951,10 +59952,11 @@ window.subwayDataMap = {
         "name": "明故宫",
         "x": 786,
         "y": 631,
-        "lng": 118.819746,
-        "lat": 32.039218,
+        "lng": 118.813465,
+        "lat": 32.04046,
         "lines": [
-          "2号线"
+          "2号线",
+          "6号线"
         ]
       },
       {
@@ -60614,10 +60616,11 @@ window.subwayDataMap = {
         "name": "岗子村",
         "x": 776,
         "y": 544,
-        "lng": 118.81602,
-        "lat": 32.065352,
+        "lng": 118.81102,
+        "lat": 32.067011,
         "lines": [
-          "4号线"
+          "4号线",
+          "6号线"
         ]
       },
       {
@@ -60835,10 +60838,11 @@ window.subwayDataMap = {
         "name": "光华门",
         "x": 778,
         "y": 809,
-        "lng": 118.814737,
-        "lat": 32.02349,
+        "lng": 118.80958,
+        "lat": 32.025579,
         "lines": [
-          "5号线"
+          "5号线",
+          "6号线"
         ]
       },
       {
@@ -61206,10 +61210,11 @@ window.subwayDataMap = {
         "name": "万寿",
         "x": 875,
         "y": 280,
-        "lng": 118.834652,
-        "lat": 32.119539,
+        "lng": 118.828693,
+        "lat": 32.121579,
         "lines": [
-          "7号线"
+          "7号线",
+          "6号线"
         ]
       },
       {
@@ -61627,10 +61632,11 @@ window.subwayDataMap = {
         "name": "机场跑道旧址",
         "x": 762,
         "y": 967,
-        "lng": 118.813656,
-        "lat": 31.992166,
+        "lng": 118.8085,
+        "lat": 31.994246,
         "lines": [
-          "10号线"
+          "10号线",
+          "6号线"
         ]
       },
       {
@@ -61762,6 +61768,146 @@ window.subwayDataMap = {
         "lines": [
           "10号线"
         ]
+      },
+      {
+        "name": "夹岗",
+        "x": 730,
+        "y": 1012,
+        "lng": 118.810434,
+        "lat": 31.988275,
+        "lines": [
+          "6号线"
+        ]
+      },
+      {
+        "name": "市中医院",
+        "x": 748,
+        "y": 928,
+        "lng": 118.803522,
+        "lat": 32.000308,
+        "lines": [
+          "6号线"
+        ]
+      },
+      {
+        "name": "应天东街",
+        "x": 754,
+        "y": 885,
+        "lng": 118.806444,
+        "lat": 32.009694,
+        "lines": [
+          "6号线"
+        ]
+      },
+      {
+        "name": "中和桥",
+        "x": 768,
+        "y": 842,
+        "lng": 118.810278,
+        "lat": 32.020394,
+        "lines": [
+          "6号线"
+        ]
+      },
+      {
+        "name": "富贵山",
+        "x": 782,
+        "y": 585,
+        "lng": 118.813787,
+        "lat": 32.050257,
+        "lines": [
+          "6号线"
+        ]
+      },
+      {
+        "name": "花园路",
+        "x": 782,
+        "y": 487,
+        "lng": 118.816775,
+        "lat": 32.085081,
+        "lines": [
+          "6号线"
+        ]
+      },
+      {
+        "name": "红山新城",
+        "x": 792,
+        "y": 430,
+        "lng": 118.812448,
+        "lat": 32.094517,
+        "lines": [
+          "6号线"
+        ]
+      },
+      {
+        "name": "营苑南路",
+        "x": 823,
+        "y": 362,
+        "lng": 118.822632,
+        "lat": 32.103713,
+        "lines": [
+          "6号线"
+        ]
+      },
+      {
+        "name": "燕江新城",
+        "x": 920,
+        "y": 238,
+        "lng": 118.841506,
+        "lat": 32.135805,
+        "lines": [
+          "6号线"
+        ]
+      },
+      {
+        "name": "兴学路",
+        "x": 1000,
+        "y": 218,
+        "lng": 118.856629,
+        "lat": 32.139663,
+        "lines": [
+          "6号线"
+        ]
+      },
+      {
+        "name": "兴智街",
+        "x": 1080,
+        "y": 212,
+        "lng": 118.871992,
+        "lat": 32.140651,
+        "lines": [
+          "6号线"
+        ]
+      },
+      {
+        "name": "十月广场",
+        "x": 1160,
+        "y": 210,
+        "lng": 118.887029,
+        "lat": 32.140845,
+        "lines": [
+          "6号线"
+        ]
+      },
+      {
+        "name": "金陵石化",
+        "x": 1350,
+        "y": 173,
+        "lng": 118.923308,
+        "lat": 32.151805,
+        "lines": [
+          "6号线"
+        ]
+      },
+      {
+        "name": "栖霞山",
+        "x": 1470,
+        "y": 182,
+        "lng": 118.94523,
+        "lat": 32.148904,
+        "lines": [
+          "6号线"
+        ]
       }
     ],
     "edges": [
@@ -61819,7 +61965,7 @@ window.subwayDataMap = {
         "v": "南京南站",
         "line": "S1号线(机场线)",
         "color": "#00AD8E",
-        "straightLengthKm": 3.367
+        "straightLengthKm": 3.455
       },
       {
         "u": "中国药科大学",
@@ -61896,14 +62042,14 @@ window.subwayDataMap = {
         "v": "南京南站",
         "line": "1号线",
         "color": "#01A2E2",
-        "straightLengthKm": 2.082
+        "straightLengthKm": 2.621
       },
       {
         "u": "南京南站",
         "v": "花神庙",
         "line": "1号线",
         "color": "#01A2E2",
-        "straightLengthKm": 1.296
+        "straightLengthKm": 0.773
       },
       {
         "u": "花神庙",
@@ -62246,7 +62392,7 @@ window.subwayDataMap = {
         "v": "大行宫",
         "line": "2号线",
         "color": "#C5003E",
-        "straightLengthKm": 1
+        "straightLengthKm": 1.0
       },
       {
         "u": "大行宫",
@@ -62260,14 +62406,14 @@ window.subwayDataMap = {
         "v": "明故宫",
         "line": "2号线",
         "color": "#C5003E",
-        "straightLengthKm": 1.322
+        "straightLengthKm": 0.727
       },
       {
         "u": "明故宫",
         "v": "苜蓿园",
         "line": "2号线",
         "color": "#C5003E",
-        "straightLengthKm": 1.471
+        "straightLengthKm": 2.059
       },
       {
         "u": "苜蓿园",
@@ -62470,7 +62616,7 @@ window.subwayDataMap = {
         "v": "南京南站",
         "line": "S3号线(宁和线)",
         "color": "#B97CAF",
-        "straightLengthKm": 1.96
+        "straightLengthKm": 1.704
       },
       {
         "u": "秣陵",
@@ -62533,14 +62679,14 @@ window.subwayDataMap = {
         "v": "南京南站",
         "line": "3号线",
         "color": "#018237",
-        "straightLengthKm": 1.428
+        "straightLengthKm": 1.884
       },
       {
         "u": "南京南站",
         "v": "明发广场",
         "line": "3号线",
         "color": "#018237",
-        "straightLengthKm": 0.762
+        "straightLengthKm": 0.953
       },
       {
         "u": "明发广场",
@@ -62722,14 +62868,14 @@ window.subwayDataMap = {
         "v": "岗子村",
         "line": "4号线",
         "color": "#786DAF",
-        "straightLengthKm": 1.3
+        "straightLengthKm": 1.177
       },
       {
         "u": "岗子村",
         "v": "蒋王庙",
         "line": "4号线",
         "color": "#786DAF",
-        "straightLengthKm": 1.967
+        "straightLengthKm": 2.229
       },
       {
         "u": "蒋王庙",
@@ -62897,14 +63043,14 @@ window.subwayDataMap = {
         "v": "光华门",
         "line": "5号线",
         "color": "#FCD600",
-        "straightLengthKm": 1.179
+        "straightLengthKm": 1.711
       },
       {
         "u": "光华门",
         "v": "通济门",
         "line": "5号线",
         "color": "#FCD600",
-        "straightLengthKm": 0.881
+        "straightLengthKm": 0.369
       },
       {
         "u": "通济门",
@@ -63177,14 +63323,14 @@ window.subwayDataMap = {
         "v": "万寿",
         "line": "7号线",
         "color": "#818530",
-        "straightLengthKm": 1.633
+        "straightLengthKm": 2.232
       },
       {
         "u": "万寿",
         "v": "晓庄",
         "line": "7号线",
         "color": "#818530",
-        "straightLengthKm": 1.541
+        "straightLengthKm": 1.073
       },
       {
         "u": "晓庄",
@@ -63527,14 +63673,14 @@ window.subwayDataMap = {
         "v": "机场跑道旧址",
         "line": "10号线",
         "color": "#DAC17D",
-        "straightLengthKm": 1.058
+        "straightLengthKm": 1.388
       },
       {
         "u": "机场跑道旧址",
         "v": "卡子门",
         "line": "10号线",
         "color": "#DAC17D",
-        "straightLengthKm": 1.609
+        "straightLengthKm": 1.098
       },
       {
         "u": "卡子门",
@@ -63647,6 +63793,139 @@ window.subwayDataMap = {
         "line": "10号线",
         "color": "#DAC17D",
         "straightLengthKm": 1.799
+      },
+      {
+        "u": "南京南站",
+        "v": "夹岗",
+        "line": "6号线",
+        "color": "#00AD8E",
+        "straightLengthKm": 2.456
+      },
+      {
+        "u": "夹岗",
+        "v": "机场跑道旧址",
+        "line": "6号线",
+        "color": "#00AD8E",
+        "straightLengthKm": 0.689
+      },
+      {
+        "u": "机场跑道旧址",
+        "v": "市中医院",
+        "line": "6号线",
+        "color": "#00AD8E",
+        "straightLengthKm": 0.821
+      },
+      {
+        "u": "市中医院",
+        "v": "应天东街",
+        "line": "6号线",
+        "color": "#00AD8E",
+        "straightLengthKm": 1.079
+      },
+      {
+        "u": "应天东街",
+        "v": "中和桥",
+        "line": "6号线",
+        "color": "#00AD8E",
+        "straightLengthKm": 1.243
+      },
+      {
+        "u": "中和桥",
+        "v": "光华门",
+        "line": "6号线",
+        "color": "#00AD8E",
+        "straightLengthKm": 0.58
+      },
+      {
+        "u": "光华门",
+        "v": "明故宫",
+        "line": "6号线",
+        "color": "#00AD8E",
+        "straightLengthKm": 1.695
+      },
+      {
+        "u": "明故宫",
+        "v": "富贵山",
+        "line": "6号线",
+        "color": "#00AD8E",
+        "straightLengthKm": 1.09
+      },
+      {
+        "u": "富贵山",
+        "v": "岗子村",
+        "line": "6号线",
+        "color": "#00AD8E",
+        "straightLengthKm": 1.881
+      },
+      {
+        "u": "岗子村",
+        "v": "花园路",
+        "line": "6号线",
+        "color": "#00AD8E",
+        "straightLengthKm": 2.081
+      },
+      {
+        "u": "花园路",
+        "v": "红山新城",
+        "line": "6号线",
+        "color": "#00AD8E",
+        "straightLengthKm": 1.126
+      },
+      {
+        "u": "红山新城",
+        "v": "营苑南路",
+        "line": "6号线",
+        "color": "#00AD8E",
+        "straightLengthKm": 1.402
+      },
+      {
+        "u": "营苑南路",
+        "v": "万寿",
+        "line": "6号线",
+        "color": "#00AD8E",
+        "straightLengthKm": 2.067
+      },
+      {
+        "u": "万寿",
+        "v": "燕江新城",
+        "line": "6号线",
+        "color": "#00AD8E",
+        "straightLengthKm": 1.989
+      },
+      {
+        "u": "燕江新城",
+        "v": "兴学路",
+        "line": "6号线",
+        "color": "#00AD8E",
+        "straightLengthKm": 1.487
+      },
+      {
+        "u": "兴学路",
+        "v": "兴智街",
+        "line": "6号线",
+        "color": "#00AD8E",
+        "straightLengthKm": 1.451
+      },
+      {
+        "u": "兴智街",
+        "v": "十月广场",
+        "line": "6号线",
+        "color": "#00AD8E",
+        "straightLengthKm": 1.416
+      },
+      {
+        "u": "十月广场",
+        "v": "金陵石化",
+        "line": "6号线",
+        "color": "#00AD8E",
+        "straightLengthKm": 3.627
+      },
+      {
+        "u": "金陵石化",
+        "v": "栖霞山",
+        "line": "6号线",
+        "color": "#00AD8E",
+        "straightLengthKm": 2.089
       }
     ]
   },

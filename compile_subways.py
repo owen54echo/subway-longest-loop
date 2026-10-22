@@ -5,6 +5,7 @@ import ssl
 import time
 import math
 import os
+import sys
 
 from sync_station_surroundings import merge_station_status, merge_surroundings
 
@@ -25,6 +26,35 @@ CITIES = [
     {"key": "tianjin", "name": "天津市", "adcode": "1200", "pinyin": "tianjin"},
     {"key": "suzhou", "name": "苏州市", "adcode": "3205", "pinyin": "suzhou"}
 ]
+
+NANJING_LINE_6_COLOR = "#00AD8E"
+NANJING_LINE_6_STATIONS = [
+    {"name": "南京南站", "lng": 118.791602, "lat": 31.973016, "x": 681, "y": 1051},
+    {"name": "夹岗", "lng": 118.810434, "lat": 31.988275, "x": 730, "y": 1012},
+    {"name": "机场跑道旧址", "lng": 118.808500, "lat": 31.994246, "x": 762, "y": 967},
+    {"name": "市中医院", "lng": 118.803522, "lat": 32.000308, "x": 748, "y": 928},
+    {"name": "应天东街", "lng": 118.806444, "lat": 32.009694, "x": 754, "y": 885},
+    {"name": "中和桥", "lng": 118.810278, "lat": 32.020394, "x": 768, "y": 842},
+    {"name": "光华门", "lng": 118.809580, "lat": 32.025579, "x": 778, "y": 809},
+    {"name": "明故宫", "lng": 118.813465, "lat": 32.040460, "x": 786, "y": 631},
+    {"name": "富贵山", "lng": 118.813787, "lat": 32.050257, "x": 782, "y": 585},
+    {"name": "岗子村", "lng": 118.811020, "lat": 32.067011, "x": 776, "y": 544},
+    {"name": "花园路", "lng": 118.816775, "lat": 32.085081, "x": 782, "y": 487},
+    {"name": "红山新城", "lng": 118.812448, "lat": 32.094517, "x": 792, "y": 430},
+    {"name": "营苑南路", "lng": 118.822632, "lat": 32.103713, "x": 823, "y": 362},
+    {"name": "万寿", "lng": 118.828693, "lat": 32.121579, "x": 875, "y": 280},
+    {"name": "燕江新城", "lng": 118.841506, "lat": 32.135805, "x": 920, "y": 238},
+    {"name": "兴学路", "lng": 118.856629, "lat": 32.139663, "x": 1000, "y": 218},
+    {"name": "兴智街", "lng": 118.871992, "lat": 32.140651, "x": 1080, "y": 212},
+    {"name": "十月广场", "lng": 118.887029, "lat": 32.140845, "x": 1160, "y": 210},
+    {"name": "金陵石化", "lng": 118.923308, "lat": 32.151805, "x": 1350, "y": 173},
+    {"name": "栖霞山", "lng": 118.945230, "lat": 32.148904, "x": 1470, "y": 182},
+]
+
+def normalize_nanjing_station_name(name, _line_name=None):
+    if name == "红山新城·玄武花园城":
+        return "红山新城"
+    return name
 
 def parse_station_lng_lat(station):
     sl = station.get("sl")
@@ -70,19 +100,88 @@ def add_edge_distance(edge, nodes):
         edge["straightLengthKm"] = round(distance, 3)
     return edge
 
-def load_existing_wiki_by_city(output_js):
-    if not os.path.exists(output_js):
-        return {}
+def is_finite_number(value):
+    return isinstance(value, (int, float)) and math.isfinite(value)
 
+def apply_nanjing_line6(nodes, edges):
+    """Add the verified Line 6 contract without rebuilding unrelated cities."""
+    for station in NANJING_LINE_6_STATIONS:
+        name = station["name"]
+        node = nodes.get(name)
+        if node is None:
+            node = {
+                "name": name,
+                "x": station["x"],
+                "y": station["y"],
+                "lng": station["lng"],
+                "lat": station["lat"],
+                "lines": ["6号线"],
+            }
+            nodes[name] = node
+        else:
+            if "6号线" not in node["lines"]:
+                node["lines"].append("6号线")
+            node["lng"] = station["lng"]
+            node["lat"] = station["lat"]
+            if not is_finite_number(node.get("x")) or not is_finite_number(node.get("y")):
+                node["x"] = station["x"]
+                node["y"] = station["y"]
+
+    edges[:] = [edge for edge in edges if edge.get("line") != "6号线"]
+    for left, right in zip(NANJING_LINE_6_STATIONS, NANJING_LINE_6_STATIONS[1:]):
+        edges.append(add_edge_distance({
+            "u": left["name"],
+            "v": right["name"],
+            "line": "6号线",
+            "color": NANJING_LINE_6_COLOR,
+        }, nodes))
+
+    # Shared-station coordinates are refreshed above, so keep adjacent legacy
+    # line distances consistent with the same node coordinates.
+    for edge in edges:
+        add_edge_distance(edge, nodes)
+
+def load_existing_compiled_data(output_js):
+    if not os.path.exists(output_js):
+        return None
     try:
-        with open(output_js, "r", encoding="utf-8") as f:
-            content = f.read()
+        with open(output_js, "r", encoding="utf-8") as file:
+            content = file.read()
         start_marker = "window.subwayDataMap = "
         end_marker = ";\n\n// Keep window.subwayData"
         start = content.index(start_marker) + len(start_marker)
         end = content.index(end_marker, start)
-        existing_data = json.loads(content[start:end])
+        return json.loads(content[start:end])
     except (OSError, ValueError, json.JSONDecodeError):
+        return None
+
+def write_compiled_data(compiled_data, output_js):
+    js_content = [
+        "// Consolidated subway data for multiple cities.",
+        f"// Generated automatically by compile_subways.py on {time.strftime('%Y-%m-%d %H:%M:%S')}.",
+        "",
+        "window.subwayDataMap = " + json.dumps(compiled_data, ensure_ascii=False, indent=2) + ";",
+        "",
+        "// Keep window.subwayData for backward compatibility (Guangzhou)",
+        "window.subwayData = window.subwayDataMap[\"guangzhou\"];"
+    ]
+    with open(output_js, "w", encoding="utf-8") as file:
+        file.write("\n".join(js_content))
+
+def patch_existing_nanjing_line6(output_js):
+    compiled_data = load_existing_compiled_data(output_js)
+    if not compiled_data or "nanjing" not in compiled_data:
+        raise RuntimeError("Existing subway_data.js does not contain Nanjing data")
+
+    nanjing = compiled_data["nanjing"]
+    nodes = {node["name"]: node for node in nanjing["nodes"]}
+    apply_nanjing_line6(nodes, nanjing["edges"])
+    nanjing["nodes"] = list(nodes.values())
+    write_compiled_data(compiled_data, output_js)
+
+def load_existing_wiki_by_city(output_js):
+    existing_data = load_existing_compiled_data(output_js)
+    if not existing_data:
         return {}
 
     wiki_by_city = {}
@@ -251,6 +350,11 @@ def main():
                     return "绍兴奥体中心"
                 return name
             nodes, edges = parse_city_raw(raw_subways[key], station_rename_fn=station_rename_hangzhou)
+        elif key == "nanjing":
+            nodes, edges = parse_city_raw(
+                raw_subways[key],
+                station_rename_fn=normalize_nanjing_station_name
+            )
         else:
             nodes, edges = parse_city_raw(raw_subways[key])
         
@@ -288,6 +392,9 @@ def main():
 
             merge_cities(nodes, edges, shaoxing_raw, affine_hz_sx, line_rename_shaoxing, station_rename_hangzhou)
             
+        if key == "nanjing":
+            apply_nanjing_line6(nodes, edges)
+
         compiled_data[key] = {
             "city": c["name"],
             "nodes": list(nodes.values()),
@@ -312,19 +419,13 @@ def main():
         status_count = merge_station_status(compiled_data, status_data)
         print(f"Merged operational status for {status_count} stations.")
     
-    js_content = [
-        "// Consolidated subway data for multiple cities.",
-        f"// Generated automatically by compile_subways.py on {time.strftime('%Y-%m-%d %H:%M:%S')}.",
-        "",
-        "window.subwayDataMap = " + json.dumps(compiled_data, ensure_ascii=False, indent=2) + ";",
-        "",
-        "// Keep window.subwayData for backward compatibility (Guangzhou)",
-        "window.subwayData = window.subwayDataMap[\"guangzhou\"];"
-    ]
-    
-    with open(output_js, "w", encoding="utf-8") as f:
-        f.write("\n".join(js_content))
+    write_compiled_data(compiled_data, output_js)
     print(f"Successfully compiled all cities and saved to {output_js}!")
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) > 1 and sys.argv[1] == "--patch-nanjing-line6":
+        target = os.path.join(os.path.dirname(os.path.abspath(__file__)), "subway_data.js")
+        patch_existing_nanjing_line6(target)
+        print(f"Patched Nanjing Line 6 data in {target}")
+    else:
+        main()
