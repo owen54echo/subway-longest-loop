@@ -1,7 +1,6 @@
 # compile_subways.py
 import urllib.request
 import json
-import ssl
 import time
 import math
 import os
@@ -9,51 +8,20 @@ import sys
 
 from sync_station_surroundings import merge_station_status, merge_surroundings
 
-ssl._create_default_https_context = ssl._create_unverified_context
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+CITY_CATALOG_PATH = os.path.join(PROJECT_DIR, "data", "cities.json")
 
-CITIES = [
-    {"key": "beijing", "name": "北京市", "adcode": "1100", "pinyin": "beijing"},
-    {"key": "shanghai", "name": "上海市", "adcode": "3100", "pinyin": "shanghai"},
-    {"key": "guangzhou", "name": "广佛（广州+佛山）", "adcode": "4401", "pinyin": "guangzhou"},
-    {"key": "shenzhen", "name": "深圳市", "adcode": "4403", "pinyin": "shenzhen"},
-    {"key": "wuhan", "name": "武汉市", "adcode": "4201", "pinyin": "wuhan"},
-    {"key": "chengdu", "name": "成都市", "adcode": "5101", "pinyin": "chengdu"},
-    {"key": "chongqing", "name": "重庆市", "adcode": "5000", "pinyin": "chongqing"},
-    {"key": "hangzhou", "name": "杭州市（含绍兴、海宁）", "adcode": "3301", "pinyin": "hangzhou"},
-    {"key": "nanjing", "name": "南京市", "adcode": "3201", "pinyin": "nanjing"},
-    {"key": "xian", "name": "西安市", "adcode": "6101", "pinyin": "xian"},
-    {"key": "zhengzhou", "name": "郑州市", "adcode": "4101", "pinyin": "zhengzhou"},
-    {"key": "tianjin", "name": "天津市", "adcode": "1200", "pinyin": "tianjin"},
-    {"key": "suzhou", "name": "苏州市", "adcode": "3205", "pinyin": "suzhou"},
-    {
-        "key": "xiamen",
-        "name": "厦门市",
-        "adcode": "3502",
-        "pinyin": "xiamen",
-        "operational_lines": ["1号线", "2号线", "3号线", "4号线", "6号线"],
-    },
-    {
-        "key": "qingdao",
-        "name": "青岛市",
-        "adcode": "3702",
-        "pinyin": "qingdao",
-        "operational_lines": ["1号线", "2号线", "3号线", "4号线", "6号线", "8号线", "蓝谷快线", "西海岸快线"],
-    },
-    {
-        "key": "ningbo",
-        "name": "宁波市",
-        "adcode": "3302",
-        "pinyin": "ningbo",
-        "operational_lines": ["1号线", "2号线", "3号线", "4号线", "5号线", "6号线", "7号线", "8号线", "12号线"],
-    },
-    {
-        "key": "changsha",
-        "name": "长沙市",
-        "adcode": "4301",
-        "pinyin": "changsha",
-        "operational_lines": ["1号线", "2号线", "3号线", "4号线", "5号线", "6号线", "S2线"],
-    },
-]
+
+def load_city_catalog(path=CITY_CATALOG_PATH):
+    with open(path, encoding="utf-8") as file:
+        catalog = json.load(file)
+    keys = [city.get("key") for city in catalog]
+    if not catalog or any(not city.get("key") for city in catalog) or len(keys) != len(set(keys)):
+        raise ValueError("City catalog must contain unique non-empty keys")
+    return catalog
+
+
+CITIES = load_city_catalog()
 
 NANJING_LINE_6_COLOR = "#00AD8E"
 NANJING_LINE_6_STATIONS = [
@@ -131,6 +99,24 @@ def add_edge_distance(edge, nodes):
 def is_finite_number(value):
     return isinstance(value, (int, float)) and math.isfinite(value)
 
+
+def build_station_id(city_key, node):
+    """Prefer coordinate identity so a source-name correction does not orphan metadata."""
+    if is_finite_number(node.get("lng")) and is_finite_number(node.get("lat")):
+        return f"{city_key}:geo:{node['lng']:.6f}:{node['lat']:.6f}"
+    return f"{city_key}:name:{node.get('name', '')}"
+
+
+def attach_station_ids(city_key, nodes):
+    station_ids = set()
+    for node in nodes.values():
+        station_id = build_station_id(city_key, node)
+        if station_id in station_ids:
+            raise ValueError(f"Duplicate station identity in {city_key}: {station_id}")
+        station_ids.add(station_id)
+        node["stationId"] = station_id
+
+
 def apply_nanjing_line6(nodes, edges):
     """Add the verified Line 6 contract without rebuilding unrelated cities."""
     for station in NANJING_LINE_6_STATIONS:
@@ -196,15 +182,38 @@ def write_compiled_data(compiled_data, output_js):
     serialized_data = normalize_integral_numbers(compiled_data)
     js_content = [
         "// Consolidated subway data for multiple cities.",
-        f"// Generated automatically by compile_subways.py on {time.strftime('%Y-%m-%d %H:%M:%S')}.",
+        "// Generated automatically by compile_subways.py.",
         "",
         "window.subwayDataMap = " + json.dumps(serialized_data, ensure_ascii=False, indent=2) + ";",
         "",
         "// Keep window.subwayData for backward compatibility (Guangzhou)",
         "window.subwayData = window.subwayDataMap[\"guangzhou\"];"
     ]
-    with open(output_js, "w", encoding="utf-8") as file:
+    temporary_path = output_js + ".tmp"
+    with open(temporary_path, "w", encoding="utf-8") as file:
         file.write("\n".join(js_content))
+    os.replace(temporary_path, output_js)
+
+
+def validate_compiled_data(compiled_data, expected_city_keys):
+    """Reject incomplete or dangling output before replacing the public data file."""
+    if set(compiled_data) != set(expected_city_keys):
+        missing = sorted(set(expected_city_keys) - set(compiled_data))
+        extra = sorted(set(compiled_data) - set(expected_city_keys))
+        raise ValueError(f"Compiled city set mismatch; missing={missing}, extra={extra}")
+
+    for city_key, city_data in compiled_data.items():
+        nodes = city_data.get("nodes", [])
+        edges = city_data.get("edges", [])
+        node_names = {node.get("name") for node in nodes}
+        station_ids = [node.get("stationId") for node in nodes]
+        if not nodes or not edges:
+            raise ValueError(f"Compiled city {city_key} is empty")
+        if any(not station_id for station_id in station_ids) or len(set(station_ids)) != len(station_ids):
+            raise ValueError(f"Compiled city {city_key} contains invalid station identities")
+        dangling = [edge for edge in edges if edge.get("u") not in node_names or edge.get("v") not in node_names]
+        if dangling:
+            raise ValueError(f"Compiled city {city_key} contains {len(dangling)} dangling edges")
 
 def patch_existing_nanjing_line6(output_js):
     compiled_data = load_existing_compiled_data(output_js)
@@ -373,20 +382,24 @@ def main():
         if raw:
             raw_subways[c["key"]] = raw
         time.sleep(0.2)
+
+    missing_city_data = [city["key"] for city in CITIES if city["key"] not in raw_subways]
+    if missing_city_data:
+        raise RuntimeError(f"Aborting compile; raw data missing for cities: {missing_city_data}")
         
     # Fetch secondary cities raw data for merging
     print("Fetching raw data for Foshan...")
     foshan_raw = fetch_subway_raw("4406", "foshan")
+    if not foshan_raw:
+        raise RuntimeError("Aborting compile; Foshan data is required for the Guangzhou network")
     print("Fetching raw data for Shaoxing...")
     shaoxing_raw = fetch_subway_raw("3306", "shaoxing")
+    if not shaoxing_raw:
+        raise RuntimeError("Aborting compile; Shaoxing data is required for the Hangzhou network")
     
     # Process each city
     for c in CITIES:
         key = c["key"]
-        if key not in raw_subways:
-            print(f"Skipping {key} due to fetch failure.")
-            continue
-            
         # Rename function for Hangzhou station collisions
         if key == "hangzhou":
             def station_rename_hangzhou(name, line_name):
@@ -444,6 +457,7 @@ def main():
         if key == "nanjing":
             apply_nanjing_line6(nodes, edges)
 
+        attach_station_ids(key, nodes)
         compiled_data[key] = {
             "city": c["name"],
             "nodes": list(nodes.values()),
@@ -467,7 +481,8 @@ def main():
             status_data = json.load(status_file)
         status_count = merge_station_status(compiled_data, status_data)
         print(f"Merged operational status for {status_count} stations.")
-    
+
+    validate_compiled_data(compiled_data, [city["key"] for city in CITIES])
     write_compiled_data(compiled_data, output_js)
     print(f"Successfully compiled all cities and saved to {output_js}!")
 

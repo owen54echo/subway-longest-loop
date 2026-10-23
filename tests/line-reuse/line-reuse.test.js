@@ -2,6 +2,8 @@ const assert = require("assert");
 const fs = require("fs");
 
 const topologyWindow = {};
+new Function("window", fs.readFileSync("topology-rules.js", "utf8"))(topologyWindow);
+new Function("window", fs.readFileSync("route-rules.js", "utf8"))(topologyWindow);
 new Function("window", fs.readFileSync("calculation-topology.js", "utf8"))(topologyWindow);
 const dataWindow = {};
 new Function("window", fs.readFileSync("subway_data.js", "utf8"))(dataWindow);

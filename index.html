@@ -46,23 +46,6 @@
         
         <!-- Floating city selector tabs -->
         <div class="city-tab-container" id="city-tab-container" role="tablist" aria-label="选择城市地铁网络">
-            <button type="button" class="city-tab active" data-value="guangzhou" role="tab" aria-selected="true">广佛</button>
-            <button type="button" class="city-tab" data-value="beijing" role="tab" aria-selected="false">北京</button>
-            <button type="button" class="city-tab" data-value="shanghai" role="tab" aria-selected="false">上海</button>
-            <button type="button" class="city-tab" data-value="shenzhen" role="tab" aria-selected="false">深圳</button>
-            <button type="button" class="city-tab" data-value="wuhan" role="tab" aria-selected="false">武汉</button>
-            <button type="button" class="city-tab" data-value="chengdu" role="tab" aria-selected="false">成都</button>
-            <button type="button" class="city-tab" data-value="chongqing" role="tab" aria-selected="false">重庆</button>
-            <button type="button" class="city-tab" data-value="hangzhou" role="tab" aria-selected="false">杭州</button>
-            <button type="button" class="city-tab" data-value="nanjing" role="tab" aria-selected="false">南京</button>
-            <button type="button" class="city-tab" data-value="xian" role="tab" aria-selected="false">西安</button>
-            <button type="button" class="city-tab" data-value="zhengzhou" role="tab" aria-selected="false">郑州</button>
-            <button type="button" class="city-tab" data-value="tianjin" role="tab" aria-selected="false">天津</button>
-            <button type="button" class="city-tab" data-value="suzhou" role="tab" aria-selected="false">苏州</button>
-            <button type="button" class="city-tab" data-value="xiamen" role="tab" aria-selected="false">厦门</button>
-            <button type="button" class="city-tab" data-value="qingdao" role="tab" aria-selected="false">青岛</button>
-            <button type="button" class="city-tab" data-value="ningbo" role="tab" aria-selected="false">宁波</button>
-            <button type="button" class="city-tab" data-value="changsha" role="tab" aria-selected="false">长沙</button>
         </div>
         
         <!-- Bottom Right floating vertical zoom pill (ref app share/focus panel) -->
@@ -649,6 +632,10 @@
     <script src="subway_data.js"></script>
     <script src="city_extremes_results.js"></script>
     <script src="mobile-map-interaction.js"></script>
+    <script src="topology-rules.js"></script>
+    <script src="route-rules.js"></script>
+    <script src="solver-contract.js"></script>
+    <script src="city-registry.js"></script>
     <script src="calculation-topology.js"></script>
     <script src="custom-route.js"></script>
     <script src="station-label-layout.js"></script>
@@ -666,6 +653,11 @@
                 alert("未能加载地铁数据，请检查 subway_data.js！");
                 return;
             }
+            window.CityRegistry.renderTabs(
+                document.getElementById("city-tab-container"),
+                window.subwayDataMap,
+                selectedCity
+            );
             document.title = "地铁路网线路研究";
             let calculationTopology = getCalculationCityData(selectedCity).topology;
 
@@ -795,7 +787,9 @@
                         line.setAttribute("x2", vNode.x);
                         line.setAttribute("y2", vNode.y);
                         line.setAttribute("class", "metro-line");
-                        line.setAttribute("stroke", showOfficialLineColors ? (edge.color || "var(--base-line-color)") : "var(--base-line-color)");
+                        line.setAttribute("stroke", showOfficialLineColors
+                            ? safeLineColor(edge.color, "var(--base-line-color)")
+                            : "var(--base-line-color)");
                         line.setAttribute("stroke-width", "4.5");
                         line.setAttribute("stroke-linecap", "round");
                         line.setAttribute("stroke-linejoin", "round");
@@ -1665,6 +1659,10 @@
                     .replace(/'/g, '&#39;');
             }
 
+            function safeLineColor(value, fallback = 'var(--border-color)') {
+                return /^#[0-9a-f]{3,8}$/i.test(String(value || '')) ? value : fallback;
+            }
+
             function renderSourceMeta(source, reviewedAt) {
                 if (!source) return '';
                 const url = typeof source.url === 'string' && /^https?:\/\//i.test(source.url)
@@ -1748,15 +1746,15 @@
                 const operationalStatusHtml = operationalStatus
                     ? `<div class="stat-box station-operational-status" style="flex-direction:column; align-items:flex-start; text-align:left; padding:12px; gap:4px; border-color:var(--station-disabled);">
                         <span class="stat-label">运营状态</span>
-                        <span class="stat-value" style="font-size:13px; color:var(--station-disabled);">${operationalStatus.label || "暂停服务"}</span>
-                        <span style="font-size:12px; color:var(--text-secondary); line-height:1.6;">${operationalStatus.reason || "当前不参与路线计算。"}</span>
+                        <span class="stat-value" style="font-size:13px; color:var(--station-disabled);">${escapeHtml(operationalStatus.label || "暂停服务")}</span>
+                        <span style="font-size:12px; color:var(--text-secondary); line-height:1.6;">${escapeHtml(operationalStatus.reason || "当前不参与路线计算。")}</span>
                     </div>`
                     : "";
                 
                 // Helper to retrieve official color of a line
                 const getLineColor = (lineName) => {
                     const edge = currentData.edges.find(e => e.line === lineName);
-                    return edge ? edge.color : 'var(--neon-blue)';
+                    return safeLineColor(edge?.color, 'var(--neon-blue)');
                 };
                 
                 // 1. Description fallback
@@ -1784,7 +1782,7 @@
                     ? renderSurroundings(wiki.surroundings)
                     : `<div class="stat-box" style="flex-direction:column; align-items:flex-start; text-align:left; padding:12px; gap:4px;">
                         <span class="stat-label">设施与周边</span>
-                        <span style="font-size:12px; color:var(--text-secondary); line-height:1.5; margin-top:4px;">${cleanLatexForWeb(features)}</span>
+                        <span style="font-size:12px; color:var(--text-secondary); line-height:1.5; margin-top:4px;">${escapeHtml(cleanLatexForWeb(features))}</span>
                     </div>`;
                 
                 // 5. Naming history - DO NOT FABRICATE (only show if explicitly provided)
@@ -1793,7 +1791,7 @@
                     namingHtml = `
                         <div class="stat-box" style="flex-direction:column; align-items:flex-start; text-align:left; padding:12px; gap:4px; border:1px solid rgba(255, 105, 180, 0.2); background:rgba(255, 105, 180, 0.02);">
                             <span class="stat-label" style="font-weight:bold; color:var(--neon-pink);">命名历史渊源</span>
-                            <span style="font-size:12px; color:var(--text-secondary); line-height:1.6; margin-top:4px;">${cleanLatexForWeb(wiki.history)}</span>
+                            <span style="font-size:12px; color:var(--text-secondary); line-height:1.6; margin-top:4px;">${escapeHtml(cleanLatexForWeb(wiki.history))}</span>
                         </div>
                     `;
                 }
@@ -1802,23 +1800,23 @@
                     ${operationalStatusHtml}
                     <div class="stat-box" style="flex-direction:column; align-items:flex-start; text-align:left; padding:12px; gap:4px;">
                         <span class="stat-label" style="font-weight:bold; color:var(--neon-blue);">车站概述</span>
-                        <span style="font-size:12px; color:var(--text-primary); line-height:1.6; margin-top:4px;">${cleanLatexForWeb(desc)}</span>
+                        <span style="font-size:12px; color:var(--text-primary); line-height:1.6; margin-top:4px;">${escapeHtml(cleanLatexForWeb(desc))}</span>
                     </div>
                     
                     <div class="stat-box" style="flex-direction:column; align-items:flex-start; text-align:left; padding:12px; gap:4px;">
                         <span class="stat-label">站台形式</span>
-                        <span class="stat-value" style="font-size:13px; color:var(--neon-pink);">${cleanLatexForWeb(platformStr)}</span>
+                        <span class="stat-value" style="font-size:13px; color:var(--neon-pink);">${escapeHtml(cleanLatexForWeb(platformStr))}</span>
                     </div>
                     
                     <div class="stat-box" style="flex-direction:column; align-items:flex-start; text-align:left; padding:12px; gap:4px;">
                         <span class="stat-label">客流量级</span>
-                        <span class="stat-value" style="font-size:13px; color:var(--text-primary);">${cleanLatexForWeb(flowStr)}</span>
+                        <span class="stat-value" style="font-size:13px; color:var(--text-primary);">${escapeHtml(cleanLatexForWeb(flowStr))}</span>
                     </div>
                     
                     <div class="stat-box" style="flex-direction:column; align-items:flex-start; text-align:left; padding:12px; gap:4px;">
                         <span class="stat-label">途经线路</span>
                         <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
-                            ${node.lines.map(line => `<span class="line-badge" style="background-color:${getLineColor(line)};">${line}</span>`).join("")}
+                            ${node.lines.map(line => `<span class="line-badge" style="background-color:${getLineColor(line)};">${escapeHtml(line)}</span>`).join("")}
                         </div>
                     </div>
                     
@@ -2190,11 +2188,21 @@
                     max_transfers: limitTransfers ? parseInt(document.getElementById("max-transfers").value) : null,
                     max_lines: limitLines ? parseInt(document.getElementById("max-lines").value) : null,
                     waypoints: [...new Set(Array.from(selectedWaypoints, station => calculationTopology.normalizeStation(station)))],
+                    avoided_stations: [...calculationAvoids],
+                    avoided_lines: [...selectedAvoids].filter(item => lineNames.includes(item)),
                     optimize_metric: optimizeMetric,
                     nodes: calculationTopology.nodes,
                     edges: calculationEdges,
                     timeout: null
                 };
+
+                const requestValidation = window.SolverContract?.validateRequest(solverConfig);
+                if (requestValidation && !requestValidation.ok) {
+                    loadingOverlay.style.display = "none";
+                    const firstError = requestValidation.errors[0];
+                    alert(firstError?.message || "路线条件无效，请检查起终点和约束设置。");
+                    return;
+                }
 
                 console.log("%c🚀 [Solver] Starting path planning with config:", "color: #00f0ff; font-weight: bold;", solverConfig);
                 const startTime = Date.now();
@@ -2253,7 +2261,7 @@
                 }
 
                 function acceptIncumbent(candidate) {
-                    if (candidate.weight > (bestCandidateResult?.weight ?? -1)) {
+                    if (!bestCandidateResult || window.SolverContract.compareResults(candidate, bestCandidateResult) > 0) {
                         bestCandidateResult = candidate;
                     }
                 }
@@ -2272,6 +2280,12 @@
 
                 function finishCurrentBestSearch() {
                     if (!bestCandidateResult || !cleanupSolverSession()) return;
+                    const resultValidation = window.SolverContract.verifyResult(solverConfig, bestCandidateResult);
+                    if (!resultValidation.ok) {
+                        loadingOverlay.style.display = "none";
+                        alert("当前最佳路线校验失败，未能打开路书。");
+                        return;
+                    }
                     loadingOverlay.style.display = "none";
                     displayResults({ ...bestCandidateResult, isApproximate: true }, solverConfig.edges, { trackGeneration: true });
                     openDrawer("drawer-roadbook", "路书");
@@ -2321,6 +2335,11 @@
                     loadingOverlay.style.display = "none";
                     const duration = Date.now() - startTime;
                     if (bestResult && bestResult.weight > -1) {
+                        const resultValidation = window.SolverContract.verifyResult(solverConfig, bestResult);
+                        if (!resultValidation.ok) {
+                            alert("精确路线校验失败，未能打开路书。");
+                            return;
+                        }
                         console.log(`%c✅ [Solver] Completed in ${duration}ms! Path weight: ${bestResult.weight}, Stations: ${bestResult.path_stations.length}`, "color: #39ff14; font-weight: bold;");
                         console.log("%c🔗 Traversed Route:", "color: #fff30a;", bestResult.path_stations.join(" -> "));
                         openDrawer("drawer-roadbook", "路书");
@@ -2356,6 +2375,14 @@
                             acceptIncumbent(msg);
                             return;
                         }
+                        if (msg.type === "error") {
+                            hasWorkerError = true;
+                            cleanupSolverSession();
+                            loadingOverlay.style.display = "none";
+                            const firstError = msg.errors?.[0];
+                            alert(firstError?.message || "算法输入或输出校验失败，请调整条件后重试。");
+                            return;
+                        }
                         if (msg.type !== "result" || hasWorkerError) return;
                         if (msg.timeout_reached) {
                             hasWorkerError = true;
@@ -2364,7 +2391,7 @@
                             alert("精确搜索尚未完成，未输出临时路线。请继续等待或取消后调整规则。");
                             return;
                         }
-                        if (msg.weight > (bestResult?.weight ?? -1)) bestResult = msg;
+                        if (!bestResult || window.SolverContract.compareResults(msg, bestResult) > 0) bestResult = msg;
                         completedWorkers++;
                         activeWorkers.delete(worker);
                         worker.terminate();
@@ -2392,8 +2419,7 @@
 
             // Results are translated once into route segments, then reused by the roadbook, SVG highlight and cruise mode.
             function getEdgeDistanceKm(edge) {
-                const distance = edge?.actualLengthKm ?? edge?.straightLengthKm;
-                return Number.isFinite(distance) && distance > 0 ? distance : 0;
+                return window.SubwayRouteRules.edgeDistance(edge);
             }
 
             function calculateRouteDistanceKm(pathEdges, edges) {
@@ -2412,14 +2438,7 @@
             }
 
             function countPathTransfers(pathEdges, edges) {
-                return pathEdges.reduce((count, edgeIndex, index) => {
-                    if (index === 0) return count;
-                    const previousEdge = edges[pathEdges[index - 1]];
-                    const edge = edges[edgeIndex];
-                    const previousLine = previousEdge?.logicalLine || calculationTopology.normalizeLine(previousEdge?.line);
-                    const line = edge?.logicalLine || calculationTopology.normalizeLine(edge?.line);
-                    return count + (line !== previousLine && !calculationTopology.isThroughServiceTransition(previousEdge, edge) ? 1 : 0);
-                }, 0);
+                return window.SubwayRouteRules.countTransfers(pathEdges.map(edgeIndex => edges[edgeIndex]));
             }
 
             function escapeShareXml(value) {
@@ -2803,7 +2822,7 @@
                                             <div class="point-marker small"></div>
                                             <div class="point-info">
                                                 ${renderSectionDistance(filteredEdges[seg.edgeIds[stIdx]])}
-                                                <span class="station-name-sub">${stName}</span>
+                                                <span class="station-name-sub">${escapeHtml(stName)}</span>
                                             </div>
                                         </div>
                                     `).join('')}
@@ -2813,18 +2832,18 @@
                     }
 
                     roadbookHtml += `
-                        <div class="roadbook-segment" style="--segment-color: ${seg.color};">
+                        <div class="roadbook-segment" style="--segment-color: ${safeLineColor(seg.color, "var(--accent-color)")};">
                             <!-- Start Station of Segment -->
                             <div class="segment-point start-point">
                                 <div class="point-marker"></div>
                                 <div class="point-info">
                                     <div class="station-name-row">
-                                        <span class="station-name">${startStation}</span>
+                                        <span class="station-name">${escapeHtml(startStation)}</span>
                                         ${isFirst ? '<span class="badge badge-start">起点</span>' : ''}
                                     </div>
                                     <div class="segment-line-info">
-                                        <span class="line-badge" style="background-color: ${seg.color};">${seg.line}</span>
-                                        <span class="segment-direction-info">开往 ${endStation} 方向</span>
+                                        <span class="line-badge" style="background-color: ${safeLineColor(seg.color, "var(--accent-color)")};">${escapeHtml(seg.line)}</span>
+                                        <span class="segment-direction-info">开往 ${escapeHtml(endStation)} 方向</span>
                                     </div>
                                 </div>
                             </div>
@@ -2838,12 +2857,12 @@
                                 <div class="point-info">
                                     ${renderSectionDistance(endEdge)}
                                     <div class="station-name-row">
-                                        <span class="station-name">${endStation}</span>
+                                        <span class="station-name">${escapeHtml(endStation)}</span>
                                         ${isLast ? '<span class="badge badge-end">终点</span>' : `<span class="badge badge-transfer">${continuesDirectly ? '直通站' : '换乘站'}</span>`}
                                     </div>
                                     ${!isLast ? `
                                         <div class="transfer-action-info">
-                                            ${continuesDirectly ? '无需下车，直通' : '请换乘'} <span class="next-line-badge" style="background-color: ${nextSegColor};">${nextSegLine}</span>
+                                            ${continuesDirectly ? '无需下车，直通' : '请换乘'} <span class="next-line-badge" style="background-color: ${safeLineColor(nextSegColor, "var(--accent-color)")};">${escapeHtml(nextSegLine)}</span>
                                         </div>
                                     ` : ''}
                                 </div>
@@ -3463,8 +3482,8 @@
             // Reuse the roadbook's color language so line membership is scannable at a glance.
             function renderCentralityLineBadges(lines, cityData = data) {
                 return lines.map(line => {
-                    const color = cityData.edges.find(edge => edge.line === line)?.color || "var(--border-color)";
-                    return `<span class="line-badge centrality-line-badge" style="background-color:${color};">${line}</span>`;
+                    const color = safeLineColor(cityData.edges.find(edge => edge.line === line)?.color);
+                    return `<span class="line-badge centrality-line-badge" style="background-color:${color};">${escapeHtml(line)}</span>`;
                 }).join("");
             }
 
@@ -3738,7 +3757,7 @@
                 });
                 const groups = Object.entries(lineStations).sort(([a], [b]) => a.localeCompare(b, "zh"));
                 const stationGroups = groups.map(([line, stations]) => {
-                    const color = cityData.edges.find(edge => edge.line === line)?.color || "var(--border-color)";
+                    const color = safeLineColor(cityData.edges.find(edge => edge.line === line)?.color);
                     const options = [...stations].sort((a, b) => a.localeCompare(b, "zh")).map(station =>
                         `<option value="${station.replace(/"/g, "&quot;")}">${line} ➜ ${station}</option>`
                     ).join("");
@@ -3746,11 +3765,11 @@
                 }).join("");
                 select.innerHTML = `<option value="">全部车站</option>` + stationGroups;
                 menu.innerHTML = `<button type="button" class="station-menu-all" data-station="">全部车站</button>` + groups.map(([line, stations]) => {
-                    const color = cityData.edges.find(edge => edge.line === line)?.color || "var(--border-color)";
+                    const color = safeLineColor(cityData.edges.find(edge => edge.line === line)?.color);
                     const stationButtons = [...stations].sort((a, b) => a.localeCompare(b, "zh")).map(station =>
-                        `<button type="button" class="station-menu-item" data-station="${station.replace(/"/g, "&quot;")}">${station}</button>`
+                        `<button type="button" class="station-menu-item" data-station="${escapeHtml(station)}">${escapeHtml(station)}</button>`
                     ).join("");
-                    return `<div class="station-menu-group"><button type="button" class="station-menu-line" data-line-toggle="${line.replace(/"/g, "&quot;")}" aria-expanded="false"><span class="station-menu-line-icon" style="background-color:${color};"></span><span>${line}</span><span class="station-menu-chevron">+</span></button><div class="station-menu-stations">${stationButtons}</div></div>`;
+                    return `<div class="station-menu-group"><button type="button" class="station-menu-line" data-line-toggle="${escapeHtml(line)}" aria-expanded="false"><span class="station-menu-line-icon" style="background-color:${color};"></span><span>${escapeHtml(line)}</span><span class="station-menu-chevron">+</span></button><div class="station-menu-stations">${stationButtons}</div></div>`;
                 }).join("");
                 if ([...select.options].some(option => option.value === previousValue)) select.value = previousValue;
                 const selectedLine = cityData.edges.find(edge => edge.u === select.value || edge.v === select.value)?.color;
@@ -4044,7 +4063,7 @@
                     const city = window.subwayDataMap[cityKey];
                     const calculationCity = city && getCalculationCityData(cityKey);
                     const topology = calculationCity?.topology;
-                    if (!city || !calculationCity || !isCityExtremeResultCompatible(entry.result, topology.edges)) {
+                    if (!city || !calculationCity || !isCityExtremeResultCompatible(entry, topology)) {
                         return [];
                     }
                     return [[`${cityKey}|${parsedKey.ruleKey}|${parsedKey.metricKey}`, {
@@ -4099,8 +4118,11 @@
                 return { ruleKey, metricKey: "edges" };
             }
 
-            function isCityExtremeResultCompatible(result, edges) {
+            function isCityExtremeResultCompatible(entry, topology) {
+                const result = entry?.result;
+                const edges = topology?.edges || [];
                 if (!result?.path_edges || !result?.path_stations) return false;
+                if (entry.topologyFingerprint !== window.SolverContract.topologyFingerprint(topology.nodes, edges)) return false;
                 if (result.path_stations.length !== result.path_edges.length + 1) return false;
                 for (let i = 0; i < result.path_edges.length; i++) {
                     const edge = edges[result.path_edges[i]];
@@ -4118,14 +4140,7 @@
             }
 
             function countRouteTransfers(result, edges, topology = calculationTopology) {
-                return result.path_edges.reduce((count, edgeIndex, index) => {
-                    if (index === 0) return count;
-                    const previousEdge = edges[result.path_edges[index - 1]];
-                    const edge = edges[edgeIndex];
-                    const previousLine = previousEdge?.logicalLine || topology.normalizeLine(previousEdge?.line);
-                    const line = edge?.logicalLine || topology.normalizeLine(edge?.line);
-                    return count + (line !== previousLine && !topology.isThroughServiceTransition(previousEdge, edge) ? 1 : 0);
-                }, 0);
+                return window.SubwayRouteRules.countTransfers(result.path_edges.map(edgeIndex => edges[edgeIndex]));
             }
 
             function renderCityExtremeResult(entry) {

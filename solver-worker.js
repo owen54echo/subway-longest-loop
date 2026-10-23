@@ -7,9 +7,20 @@
 // 4. O(1) 绝对最大权重上限剪枝
 // 5. 零内存分配 (Zero-allocation) 的 BFS 连通性与必经站可达性剪枝
 
+if (typeof importScripts === "function") {
+    importScripts("solver-contract.js");
+}
+
 onmessage = function(e) {
     // 接收主线程传递的配置参数
     const config = e.data;
+    if (typeof SolverContract !== "undefined") {
+        const requestValidation = SolverContract.validateRequest(config);
+        if (!requestValidation.ok) {
+            postMessage({ type: "error", errors: requestValidation.errors });
+            return;
+        }
+    }
     const { 
         start_station,          // 起始车站名称
         mode,                   // 模式："loop" (闭环回路) 或 "path" (单向最长路径)
@@ -56,7 +67,7 @@ onmessage = function(e) {
     const edgeU = new Int32Array(E);      // 每条边的一端车站 ID
     const edgeV = new Int32Array(E);      // 每条边的另一端车站 ID
     const edgeLine = new Int32Array(E);   // 每条边所属的地铁线路 ID
-    const edgeWeight = new Float32Array(E); // 每条边的权重 (距离或站数)
+    const edgeWeight = new Float64Array(E); // 每条边的权重 (距离或站数)
     let totalNetworkWeight = 0.0;         // 全网边权重总和，用于计算路径的上界限制
 
     // 记录每个车站的可用度数（当前状态下连接的未访问边的数量），用于 O(1) 死胡同剪枝
@@ -303,6 +314,15 @@ onmessage = function(e) {
     let bestWeight = -1.0;
     let bestStations = [];
 
+    function isBetterCandidate(weight, path) {
+        if (bestWeight < 0) return true;
+        if (typeof SolverContract === "undefined") return weight > bestWeight;
+        return SolverContract.compareResults(
+            { weight, path_edges: path },
+            { weight: bestWeight, path_edges: bestPath }
+        ) > 0;
+    }
+
     const startTime = Date.now();
     const timeoutDuration = config.timeout === null ? Infinity : (config.timeout || 10) * 1000;
     let timeoutReached = false;
@@ -377,7 +397,7 @@ onmessage = function(e) {
     let totalFirstLevel = 0;
     let tempE = head[startId];
     while (tempE !== -1) {
-        totalFirstLevel++;
+        if (!rootEdgeMask || rootEdgeMask[edgeId[tempE]] === 1) totalFirstLevel++;
         tempE = next[tempE];
     }
     if (totalFirstLevel === 0) totalFirstLevel = 1;
@@ -390,10 +410,20 @@ onmessage = function(e) {
     let biconnectedEdgeRejections = 0;
     let forcedCorridorEdges = 0;
     let lastReportedWeight = -1.0;
+    let lastReportedPath = [];
 
     function emitIncumbent() {
-        if (bestWeight <= lastReportedWeight || bestPath.length === 0) return;
+        if (bestPath.length === 0) return;
+        if (typeof SolverContract !== "undefined") {
+            if (lastReportedPath.length > 0 && SolverContract.compareResults(
+                { weight: bestWeight, path_edges: bestPath },
+                { weight: lastReportedWeight, path_edges: lastReportedPath }
+            ) <= 0) return;
+        } else if (bestWeight <= lastReportedWeight) {
+            return;
+        }
         lastReportedWeight = bestWeight;
+        lastReportedPath = bestPath.slice();
         postMessage({
             type: "incumbent",
             path_edges: bestPath,
@@ -410,7 +440,7 @@ onmessage = function(e) {
     }
 
     // A fixed-endpoint simple path is especially sensitive to DFS branch order. Seed it with
-    // a deterministic randomized walk to establish a strong lower bound before exhaustive search.
+    // a bounded deterministic walk to establish a strong lower bound before exhaustive search.
     function seedFixedEndpointSimplePath() {
         if (mode !== "path" || endId === undefined || allow_station_reuse || waypointIds.length ||
             max_transfers !== null || max_lines !== null || !allow_line_reuse) {
@@ -466,7 +496,12 @@ onmessage = function(e) {
             return score;
         }
 
-        while (Date.now() < seedDeadline) {
+        const maxSeedAttempts = timeoutDuration === Infinity
+            ? 128
+            : Math.max(1, Math.min(512, Math.floor(timeoutDuration * 1000 * 2)));
+        let seedAttempt = 0;
+        while (seedAttempt < maxSeedAttempts && Date.now() < seedDeadline) {
+            seedAttempt++;
             seedVisited.fill(0);
             seedVisited[startId] = 1;
             seedStations[0] = startId;
@@ -500,7 +535,7 @@ onmessage = function(e) {
                 pathLength++;
             }
 
-            if (current === endId && pathWeight > bestWeight) {
+            if (current === endId && isBetterCandidate(pathWeight, Array.from(seedEdges.subarray(0, pathLength)))) {
                 bestWeight = pathWeight;
                 bestPath = Array.from(seedEdges.subarray(0, pathLength));
                 bestStations = Array.from(seedStations.subarray(0, pathLength + 1)).map(id => stationIdToName[id]);
@@ -555,20 +590,23 @@ onmessage = function(e) {
         // 回路模式 (loop)：只有当前回到起点并且路径长度大于零，才算是一个合法的“环路候选解”
         if (mode === "loop") {
             if (u === startId && pathLen > 0) {
-                if (isValidCandidate && currentWeight > bestWeight) {
+                if (isValidCandidate && isBetterCandidate(currentWeight, Array.from(currentPath.subarray(0, pathLen)))) {
                     bestWeight = currentWeight;
                     bestPath = Array.from(currentPath.subarray(0, pathLen));
                     bestStations = Array.from(currentStationsPath.subarray(0, pathLen + 1)).map(id => stationIdToName[id]);
                     emitIncumbent();
                 }
-                return;
+                // With station reuse enabled, returning to the start is a valid
+                // intermediate cycle. Continue through unused edges so figure-eight
+                // and other multi-cycle trails are not truncated at the first return.
+                if (!allow_station_reuse) return;
             }
         } else {
             // 普通路径模式 (path)
             if (endId !== undefined) {
                 // 如果指定了终点，必须到达终点且路径长度大于零才算作有效候选解
                 if (u === endId && pathLen > 0) {
-                    if (isValidCandidate && currentWeight > bestWeight) {
+                    if (isValidCandidate && isBetterCandidate(currentWeight, Array.from(currentPath.subarray(0, pathLen)))) {
                         bestWeight = currentWeight;
                         bestPath = Array.from(currentPath.subarray(0, pathLen));
                         bestStations = Array.from(currentStationsPath.subarray(0, pathLen + 1)).map(id => stationIdToName[id]);
@@ -581,7 +619,7 @@ onmessage = function(e) {
                 }
             } else {
                 // 未指定终点：只要路线有效，随时更新当前遍历中权重最大的全局解
-                if (isValidCandidate && currentWeight > bestWeight) {
+                if (isValidCandidate && isBetterCandidate(currentWeight, Array.from(currentPath.subarray(0, pathLen)))) {
                     bestWeight = currentWeight;
                     bestPath = Array.from(currentPath.subarray(0, pathLen));
                     bestStations = Array.from(currentStationsPath.subarray(0, pathLen + 1)).map(id => stationIdToName[id]);
@@ -791,13 +829,14 @@ onmessage = function(e) {
     // 启动求解器搜索
     dfs(startId, 0, 0.0, -1, -1, 0);
 
-    // 将最终计算出的最优解传回主线程
-    postMessage({
+    // 将最终计算出的结果传回主线程。超时结果只能标记为当前最佳，不能宣称全局最优。
+    const finalResult = {
         type: "result",
         path_edges: bestPath,
         path_stations: bestStations,
         weight: bestWeight,
         timeout_reached: timeoutReached,
+        optimality: timeoutReached ? "current_best" : "exact",
         search_stats: {
             explored_states: stepCount,
             bridge_count: bridgeCount,
@@ -805,5 +844,13 @@ onmessage = function(e) {
             biconnected_edge_rejections: biconnectedEdgeRejections,
             forced_corridor_edges: forcedCorridorEdges
         }
-    });
+    };
+    if (typeof SolverContract !== "undefined" && bestPath.length > 0) {
+        const resultValidation = SolverContract.verifyResult(config, finalResult);
+        if (!resultValidation.ok) {
+            postMessage({ type: "error", errors: resultValidation.errors });
+            return;
+        }
+    }
+    postMessage(finalResult);
 };

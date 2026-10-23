@@ -1,6 +1,8 @@
 (function() {
+    const routeRules = window.SubwayRouteRules;
+
     function edgeDistance(edge) {
-        return Number(edge.actualLengthKm ?? edge.straightLengthKm ?? 0);
+        return routeRules ? routeRules.edgeDistance(edge) : Number(edge.actualLengthKm ?? edge.straightLengthKm ?? 0);
     }
 
     function comparePathCost(a, b) {
@@ -8,18 +10,8 @@
     }
 
     function isThroughServiceTransition(previousEdge, nextEdge) {
-        const previousGroups = previousEdge?.throughServiceGroups || [];
-        const nextGroups = nextEdge?.throughServiceGroups || [];
-        const sharedGroup = previousGroups.find(group => nextGroups.includes(group));
-        if (!sharedGroup) return false;
-
-        const previousStations = [previousEdge.mapU || previousEdge.u, previousEdge.mapV || previousEdge.v]
-            .filter(station => previousEdge.throughServiceEndpointGroups?.[station] === sharedGroup);
-        const nextStations = [nextEdge.mapU || nextEdge.u, nextEdge.mapV || nextEdge.v]
-            .filter(station => nextEdge.throughServiceEndpointGroups?.[station] === sharedGroup);
-
-        return previousStations.length > 0 && nextStations.length > 0 &&
-            !previousStations.some(station => nextStations.includes(station));
+        if (routeRules) return routeRules.isThroughServiceTransition(previousEdge, nextEdge);
+        return false;
     }
 
     function createGraph(nodes, edges) {
@@ -156,7 +148,11 @@
             if (!offset) return count;
             const previousEdge = graph.edges[path_edges[offset - 1]];
             const edge = graph.edges[edgeIndex];
-            return edge.line !== previousEdge.line && !isThroughServiceTransition(previousEdge, edge) ? count + 1 : count;
+            const previousLine = routeRules ? routeRules.logicalLine(previousEdge) : previousEdge.line;
+            const currentLine = routeRules ? routeRules.logicalLine(edge) : edge.line;
+            return currentLine !== previousLine && !isThroughServiceTransition(previousEdge, edge)
+                ? count + 1
+                : count;
         }, 0);
 
         return { ok: true, path_stations, path_edges, distanceKm, transfers, source: "custom" };

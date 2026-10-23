@@ -2,6 +2,7 @@ const assert = require("assert");
 const fs = require("fs");
 
 const windowLike = {};
+new Function("window", fs.readFileSync("route-rules.js", "utf8"))(windowLike);
 new Function("window", fs.readFileSync("custom-route.js", "utf8"))(windowLike);
 
 const {

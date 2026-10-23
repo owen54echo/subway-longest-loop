@@ -4,7 +4,7 @@ const fs = require("fs");
 const dataWindow = {};
 new Function("window", fs.readFileSync("subway_data.js", "utf8"))(dataWindow);
 const topologyWindow = {};
-new Function("window", fs.readFileSync("calculation-topology.js", "utf8"))(topologyWindow);
+new Function("window", `${fs.readFileSync("topology-rules.js", "utf8")}\n${fs.readFileSync("route-rules.js", "utf8")}\n${fs.readFileSync("calculation-topology.js", "utf8")}`)(topologyWindow);
 
 for (const cityKey of ["xiamen", "qingdao", "ningbo", "changsha"]) {
     const city = dataWindow.subwayDataMap[cityKey];

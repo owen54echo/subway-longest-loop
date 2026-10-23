@@ -4,17 +4,21 @@ const path = require('path');
 
 const projectDir = __dirname;
 const dataCode = fs.readFileSync(path.join(projectDir, 'subway_data.js'), 'utf8');
+const topologyRulesCode = fs.readFileSync(path.join(projectDir, 'topology-rules.js'), 'utf8');
 const topologyCode = fs.readFileSync(path.join(projectDir, 'calculation-topology.js'), 'utf8');
+const contractCode = fs.readFileSync(path.join(projectDir, 'solver-contract.js'), 'utf8');
 const workerCode = fs.readFileSync(path.join(projectDir, 'solver-worker.js'), 'utf8');
 const dataWindow = new Function('window', `${dataCode}\nreturn window;`)({});
 const cities = dataWindow.subwayDataMap;
 const topologyWindow = {};
-new Function('window', topologyCode)(topologyWindow);
+new Function('window', `${topologyRulesCode}\n${topologyCode}`)(topologyWindow);
+const contractWindow = {};
+new Function('window', contractCode)(contractWindow);
 
 function runSolver(config) {
     let result = null;
     const context = { postMessage: message => { if (message.type === 'result') result = message; }, onmessage: null };
-    new Function(`(function(self) { const postMessage = self.postMessage; let onmessage = null; ${workerCode} self.onmessage = onmessage; })(this);`).call(context);
+    new Function(`(function(self) { const postMessage = self.postMessage; let onmessage = null; ${contractCode}\nconst SolverContract = self.SolverContract;\n${workerCode} self.onmessage = onmessage; })(this);`).call(context);
     context.onmessage({ data: config });
     return result;
 }
@@ -71,6 +75,7 @@ for (const [cityKey, city] of cityEntries) {
                 end_station: null,
                 mode: rule.mode,
                 allow_station_reuse: rule.allowStationReuse,
+                allow_line_reuse: true,
                 max_transfers: null,
                 max_lines: null,
                 waypoints: [],
@@ -84,11 +89,12 @@ for (const [cityKey, city] of cityEntries) {
             if (result.weight > -1 && (!best || result.weight > best.weight)) best = result;
             if (completedRuns % 50 === 0) console.log(`Shard ${shard}: ${completedRuns}/${totalRuns}`);
         }
-        output[cityKey][ruleKey] = {
+    output[cityKey][ruleKey] = {
             result: best,
             total: topology.nodes.length,
             timedOutStarts,
-            searchTimeoutSeconds: timeout
+            searchTimeoutSeconds: timeout,
+            topologyFingerprint: contractWindow.SolverContract.topologyFingerprint(topology.nodes, topology.edges)
         };
         console.log(`Completed ${city.city} / ${ruleKey}`);
     }

@@ -1,0 +1,43 @@
+[
+  {"key": "beijing", "name": "北京市", "adcode": "1100", "pinyin": "beijing"},
+  {"key": "shanghai", "name": "上海市", "adcode": "3100", "pinyin": "shanghai"},
+  {"key": "guangzhou", "name": "广佛（广州+佛山）", "adcode": "4401", "pinyin": "guangzhou"},
+  {"key": "shenzhen", "name": "深圳市", "adcode": "4403", "pinyin": "shenzhen"},
+  {"key": "wuhan", "name": "武汉市", "adcode": "4201", "pinyin": "wuhan"},
+  {"key": "chengdu", "name": "成都市", "adcode": "5101", "pinyin": "chengdu"},
+  {"key": "chongqing", "name": "重庆市", "adcode": "5000", "pinyin": "chongqing"},
+  {"key": "hangzhou", "name": "杭州市（含绍兴、海宁）", "adcode": "3301", "pinyin": "hangzhou"},
+  {"key": "nanjing", "name": "南京市", "adcode": "3201", "pinyin": "nanjing"},
+  {"key": "xian", "name": "西安市", "adcode": "6101", "pinyin": "xian"},
+  {"key": "zhengzhou", "name": "郑州市", "adcode": "4101", "pinyin": "zhengzhou"},
+  {"key": "tianjin", "name": "天津市", "adcode": "1200", "pinyin": "tianjin"},
+  {"key": "suzhou", "name": "苏州市", "adcode": "3205", "pinyin": "suzhou"},
+  {
+    "key": "xiamen",
+    "name": "厦门市",
+    "adcode": "3502",
+    "pinyin": "xiamen",
+    "operational_lines": ["1号线", "2号线", "3号线", "4号线", "6号线"]
+  },
+  {
+    "key": "qingdao",
+    "name": "青岛市",
+    "adcode": "3702",
+    "pinyin": "qingdao",
+    "operational_lines": ["1号线", "2号线", "3号线", "4号线", "6号线", "8号线", "蓝谷快线", "西海岸快线"]
+  },
+  {
+    "key": "ningbo",
+    "name": "宁波市",
+    "adcode": "3302",
+    "pinyin": "ningbo",
+    "operational_lines": ["1号线", "2号线", "3号线", "4号线", "5号线", "6号线", "7号线", "8号线", "12号线"]
+  },
+  {
+    "key": "changsha",
+    "name": "长沙市",
+    "adcode": "4301",
+    "pinyin": "changsha",
+    "operational_lines": ["1号线", "2号线", "3号线", "4号线", "5号线", "6号线", "S2线"]
+  }
+]
