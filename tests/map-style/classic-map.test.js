@@ -36,6 +36,8 @@ assert.ok(html.includes("function refreshStationLabels()"), "Collision-aware lab
 assert.ok(html.includes("window.StationLabelLayout.place"), "Map does not use collision-free label layout");
 assert.ok(!html.includes('leader.setAttribute("class", "station-label-leader")'), "Station label leader lines should not be rendered");
 assert.ok(css.includes(".station-hit-area"), "Station touch target style is missing");
+assert.ok(css.includes(".line-badge-map"), "Line badge style is missing");
+assert.ok(css.includes("pointer-events: none"), "Map badges must not intercept station gestures");
 assert.ok(css.includes("drawer-custom-route-active.drawer-custom-route-collapsed"), "Compact custom drawer style is missing");
 assert.ok(css.includes("height: 96px"), "Compact custom drawer height is missing");
 
