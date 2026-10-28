@@ -27,6 +27,11 @@ assert.ok(html.includes('id="custom-route-compact-count"'), "Compact custom rout
 assert.ok(html.includes('hitArea.setAttribute("class", "station-hit-area")'), "Transparent mobile station hit area is missing");
 assert.ok(html.includes("drawer-custom-route-collapsed"), "Compact custom drawer state is not integrated");
 assert.ok(html.includes('src="station-label-layout.js"'), "Label layout module is not loaded");
+assert.ok(html.includes('src="line-badge-layout.js"'), "Line badge layout module is not loaded");
+assert.ok(html.includes('id="line-badges-group"'), "Line badge SVG layer is missing");
+assert.ok(html.includes("function refreshLineBadges"), "Line badge refresh hook is missing");
+assert.ok(html.includes("LINE_BADGE_MIN_SCALE = 2.0"), "Line badge zoom threshold is missing");
+assert.ok(html.includes("window.LineBadgeLayout.place"), "Line badges do not use collision-aware placement");
 assert.ok(html.includes("function refreshStationLabels()"), "Collision-aware label refresh hook is missing");
 assert.ok(html.includes("window.StationLabelLayout.place"), "Map does not use collision-free label layout");
 assert.ok(!html.includes('leader.setAttribute("class", "station-label-leader")'), "Station label leader lines should not be rendered");

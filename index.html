@@ -639,6 +639,7 @@
     <script src="calculation-topology.js"></script>
     <script src="custom-route.js"></script>
     <script src="station-label-layout.js"></script>
+    <script src="line-badge-layout.js"></script>
     <script src="share-export.js"></script>
     <script src="solver-progress.js"></script>
     <script src="site-runtime.js"></script>
@@ -714,6 +715,8 @@
             let scale = 1.0;
             let translateX = 0;
             let translateY = 0;
+            const LINE_BADGE_MIN_SCALE = 2.0;
+            let lastStationLabelRects = [];
             let isDragging = false;
             let startDragX = 0;
             let startDragY = 0;
@@ -759,6 +762,7 @@
                             <g id="highlight-edges-group"></g>
                             <g id="stations-group"></g>
                             <g id="highlight-stations-group"></g>
+                            <g id="line-badges-group"></g>
                             <g id="labels-group"></g>
                         </g>
                     </svg>
@@ -985,6 +989,145 @@
                     .map(node => ({ left: node.x - 8, top: node.y - 8, right: node.x + 8, bottom: node.y + 8 }));
             }
 
+            function buildStationMarkerRects(nodes, svg) {
+                return nodes
+                    .filter(node => isNodeInCurrentViewport(node, svg))
+                    .map(node => {
+                        const radius = node.lines.length > 1 ? 10 : 7;
+                        return { left: node.x - radius, top: node.y - radius, right: node.x + radius, bottom: node.y + radius };
+                    });
+            }
+
+            function buildHighlightBlockedRects() {
+                const group = document.getElementById("highlight-edges-group");
+                if (!group) return [];
+                return Array.from(group.children).flatMap(child => {
+                    try {
+                        const box = child.getBBox();
+                        const padding = 5;
+                        return [{
+                            left: box.x - padding,
+                            top: box.y - padding,
+                            right: box.x + box.width + padding,
+                            bottom: box.y + box.height + padding
+                        }];
+                    } catch (error) {
+                        return [];
+                    }
+                });
+            }
+
+            function lineBadgeTextColor(color) {
+                const value = String(color || "").replace("#", "");
+                if (![3, 6].includes(value.length) || !/^[0-9a-f]+$/i.test(value)) return "#ffffff";
+                const hex = value.length === 3 ? value.split("").map(part => part + part).join("") : value;
+                const red = parseInt(hex.slice(0, 2), 16);
+                const green = parseInt(hex.slice(2, 4), 16);
+                const blue = parseInt(hex.slice(4, 6), 16);
+                return (red * 299 + green * 587 + blue * 114) / 1000 > 170 ? "#182027" : "#ffffff";
+            }
+
+            function buildLineBadgeCandidates() {
+                const svg = document.getElementById("metro-svg");
+                if (!svg || !window.LineBadgeLayout) return [];
+
+                const candidates = [];
+                data.edges.forEach((edge, index) => {
+                    const from = data.nodes.find(node => node.name === edge.u);
+                    const to = data.nodes.find(node => node.name === edge.v);
+                    if (!from || !to || isStationUnavailable(from) || isStationUnavailable(to)) return;
+                    if (!isNodeInCurrentViewport(from, svg) && !isNodeInCurrentViewport(to, svg)) return;
+
+                    const dx = to.x - from.x;
+                    const dy = to.y - from.y;
+                    const length = Math.hypot(dx, dy);
+                    if (length < 18) return;
+
+                    const tangentX = dx / length;
+                    const tangentY = dy / length;
+                    const normalX = -tangentY;
+                    const normalY = tangentX;
+                    const midpointX = (from.x + to.x) / 2;
+                    const midpointY = (from.y + to.y) / 2;
+                    const line = String(edge.line || "");
+                    const characterCount = Array.from(line).length;
+                    const width = Math.max(32, characterCount * 5 + 14);
+                    const height = 14;
+                    const along = Math.min(24, length * 0.16);
+                    const normalOffset = 24;
+                    const color = safeLineColor(edge.color, "var(--neon-blue)");
+
+                    candidates.push({
+                        id: `line-badge-${line}-${index}`,
+                        line,
+                        color,
+                        x: midpointX,
+                        y: midpointY,
+                        width,
+                        height,
+                        priority: Math.min(length, 180) + Math.min(length / 2, 60),
+                        slots: [
+                            [normalX * normalOffset, normalY * normalOffset, "normal-positive"],
+                            [-normalX * normalOffset, -normalY * normalOffset, "normal-negative"],
+                            [normalX * normalOffset + tangentX * along, normalY * normalOffset + tangentY * along, "shift-positive"],
+                            [-normalX * normalOffset - tangentX * along, -normalY * normalOffset - tangentY * along, "shift-negative"]
+                        ]
+                    });
+                });
+                return candidates;
+            }
+
+            function renderLineBadge(group, item) {
+                const badgeGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                badgeGroup.setAttribute("class", "line-badge-map");
+                badgeGroup.setAttribute("data-line", item.line);
+                badgeGroup.setAttribute("aria-label", `线路 ${item.line}`);
+                badgeGroup.setAttribute("pointer-events", "none");
+
+                const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                rect.setAttribute("class", "line-badge-map-bg");
+                rect.setAttribute("x", item.rect.left);
+                rect.setAttribute("y", item.rect.top);
+                rect.setAttribute("width", item.rect.right - item.rect.left);
+                rect.setAttribute("height", item.rect.bottom - item.rect.top);
+                rect.setAttribute("rx", "4");
+                rect.setAttribute("fill", item.color);
+                rect.setAttribute("stroke", "var(--map-badge-outline)");
+                rect.setAttribute("stroke-width", "1.4");
+                rect.setAttribute("vector-effect", "non-scaling-stroke");
+                badgeGroup.appendChild(rect);
+
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("class", "line-badge-map-text");
+                text.setAttribute("x", (item.rect.left + item.rect.right) / 2);
+                text.setAttribute("y", (item.rect.top + item.rect.bottom) / 2 + 3.5);
+                text.setAttribute("fill", lineBadgeTextColor(item.color));
+                text.setAttribute("font-size", "6");
+                text.setAttribute("font-weight", "700");
+                text.setAttribute("font-family", "inherit");
+                text.setAttribute("text-anchor", "middle");
+                text.textContent = item.line;
+                badgeGroup.appendChild(text);
+                group.appendChild(badgeGroup);
+            }
+
+            function refreshLineBadges(stationLabelRects = lastStationLabelRects) {
+                const badgesGroup = document.getElementById("line-badges-group");
+                const svg = document.getElementById("metro-svg");
+                if (!badgesGroup || !svg || !window.LineBadgeLayout) return;
+                badgesGroup.replaceChildren();
+                if (scale < LINE_BADGE_MIN_SCALE) return;
+
+                const blockedRects = [
+                    ...stationLabelRects,
+                    ...buildStationMarkerRects(data.nodes, svg),
+                    ...buildPriorityMarkerRects(data.nodes),
+                    ...buildHighlightBlockedRects()
+                ];
+                const layout = window.LineBadgeLayout.place(buildLineBadgeCandidates(), blockedRects, { maxPerLine: 1 });
+                layout.placed.forEach(item => renderLineBadge(badgesGroup, item));
+            }
+
             function refreshStationLabels() {
                 const svg = document.getElementById("metro-svg");
                 const labelsGroup = document.getElementById("labels-group");
@@ -1028,6 +1171,8 @@
                     label.setAttribute("fill", isStationUnavailable(node) ? "var(--station-disabled)" : (node.lines.length > 1 || candidate.priority >= 500 ? "var(--text-primary)" : "var(--text-secondary)"));
                     label.setAttribute("opacity", "1");
                 });
+                lastStationLabelRects = layout.placed.map(item => item.rect);
+                refreshLineBadges(lastStationLabelRects);
             }
 
             function getPrimaryStationMarker(stationGroup) {

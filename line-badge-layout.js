@@ -35,6 +35,7 @@
                 placed.push({
                     id: candidate.id,
                     line: candidate.line,
+                    color: candidate.color,
                     rect,
                     x: rect.left,
                     y: rect.top,
