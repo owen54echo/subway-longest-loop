@@ -715,7 +715,7 @@
             let scale = 1.0;
             let translateX = 0;
             let translateY = 0;
-            const LINE_BADGE_MIN_SCALE = 2.0;
+            const LINE_BADGE_MIN_SCALE = 4.0;
             let lastStationLabelRects = [];
             let isDragging = false;
             let startDragX = 0;
@@ -993,7 +993,7 @@
                 return nodes
                     .filter(node => isNodeInCurrentViewport(node, svg))
                     .map(node => {
-                        const radius = node.lines.length > 1 ? 10 : 7;
+                        const radius = node.lines.length > 1 ? 14 : 11;
                         return { left: node.x - radius, top: node.y - radius, right: node.x + radius, bottom: node.y + radius };
                     });
             }
@@ -1022,18 +1022,12 @@
                     const from = data.nodes.find(node => node.name === edge.u);
                     const to = data.nodes.find(node => node.name === edge.v);
                     if (!from || !to || isStationUnavailable(from) || isStationUnavailable(to)) return [];
-                    return [{ x1: from.x, y1: from.y, x2: to.x, y2: to.y, padding: 3 }];
+                    return [{ x1: from.x, y1: from.y, x2: to.x, y2: to.y, padding: 6 }];
                 });
             }
 
-            function lineBadgeTextColor(color) {
-                const value = String(color || "").replace("#", "");
-                if (![3, 6].includes(value.length) || !/^[0-9a-f]+$/i.test(value)) return "#ffffff";
-                const hex = value.length === 3 ? value.split("").map(part => part + part).join("") : value;
-                const red = parseInt(hex.slice(0, 2), 16);
-                const green = parseInt(hex.slice(2, 4), 16);
-                const blue = parseInt(hex.slice(4, 6), 16);
-                return (red * 299 + green * 587 + blue * 114) / 1000 > 170 ? "#182027" : "#ffffff";
+            function lineBadgeTextColor() {
+                return "#ffffff";
             }
 
             function buildLineBadgeCandidates() {
@@ -1109,12 +1103,13 @@
                 const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
                 text.setAttribute("class", "line-badge-map-text");
                 text.setAttribute("x", (item.rect.left + item.rect.right) / 2);
-                text.setAttribute("y", (item.rect.top + item.rect.bottom) / 2 + 3.5);
+                text.setAttribute("y", (item.rect.top + item.rect.bottom) / 2);
                 text.setAttribute("fill", lineBadgeTextColor(item.color));
                 text.setAttribute("font-size", "6");
                 text.setAttribute("font-weight", "700");
                 text.setAttribute("font-family", "inherit");
                 text.setAttribute("text-anchor", "middle");
+                text.setAttribute("dominant-baseline", "middle");
                 text.textContent = item.line;
                 badgeGroup.appendChild(text);
                 group.appendChild(badgeGroup);

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 在地图放大到 `2.0×` 及以上时，为当前视口内能够安全放置的线路显示彩色胶囊线路牌，并保持线路、车站和站名不被遮挡。
+**Goal:** 在地图放大到 `4.0×` 及以上时，为当前视口内能够安全放置的线路显示彩色胶囊线路牌，并保持线路、车站和站名不被遮挡。
 
 **Architecture:** 新增纯布局模块 `line-badge-layout.js`，负责按线路分组、生成线段候选位置和执行矩形碰撞检测；`index.html` 只负责从当前 SVG/城市数据生成候选、测量文字和渲染独立的 `line-badges-group`。复用现有站名布局结果作为阻塞矩形，线路牌不进入路线计算或站点数据。
 
@@ -10,10 +10,11 @@
 
 ## Global Constraints
 
-- 地图缩放比例小于 `2.0` 时线路牌全部隐藏。
+- 地图缩放比例小于 `4.0` 时线路牌全部隐藏。
 - 默认灰色线网和官方线路颜色模式都显示彩色线路牌；线路牌始终使用线路官方颜色。
 - 同一视口同一线路最多显示一个线路牌。
 - 线路、站点、站名和路线高亮优先于线路牌；找不到安全位置时隐藏线路牌。
+- 线路牌文字统一为白色，并使用深色文字描边保证浅色线路牌上的可读性。
 - 线路牌随缩放结束、拖动结束、城市切换、路线高亮和官方颜色开关变化重新布局。
 - 拖动或缩放进行中只更新已有 SVG transform，不在每个指针事件中重新布局。
 - 不新增数据字段，不改变路线求解、站点选择、站名内容和现有颜色开关的业务行为。
@@ -282,4 +283,3 @@ git commit -m "test: cover zoomed line badge behavior"
 ```
 
 Run the full test command again after this commit.
-

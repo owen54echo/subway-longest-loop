@@ -20,6 +20,7 @@
     --station-disabled: #8d8d88;
     --route-backing: #f6f4ee;
     --map-badge-outline: #f6f4ee;
+    --map-badge-text-outline: rgba(0, 0, 0, 0.72);
     
     --state-start: #d92626;
     --state-end: #00aa55;
@@ -58,6 +59,7 @@
     --station-disabled: #626268;
     --route-backing: #0c0c0d;
     --map-badge-outline: #0c0c0d;
+    --map-badge-text-outline: rgba(0, 0, 0, 0.72);
     
     --state-start: #ff2a2a;
     --state-end: #00ff88;
@@ -1511,8 +1513,8 @@ input:checked + .slider:before {
 .line-badge-map-text {
     pointer-events: none;
     paint-order: stroke fill;
-    stroke: var(--map-badge-outline);
-    stroke-width: 1.2px;
+    stroke: var(--map-badge-text-outline);
+    stroke-width: 1.35px;
     stroke-linejoin: round;
 }
 

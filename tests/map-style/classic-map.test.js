@@ -30,13 +30,16 @@ assert.ok(html.includes('src="station-label-layout.js"'), "Label layout module i
 assert.ok(html.includes('src="line-badge-layout.js"'), "Line badge layout module is not loaded");
 assert.ok(html.includes('id="line-badges-group"'), "Line badge SVG layer is missing");
 assert.ok(html.includes("function refreshLineBadges"), "Line badge refresh hook is missing");
-assert.ok(html.includes("LINE_BADGE_MIN_SCALE = 2.0"), "Line badge zoom threshold is missing");
+assert.ok(html.includes("LINE_BADGE_MIN_SCALE = 4.0"), "Line badge zoom threshold is missing");
+assert.ok(html.includes('return "#ffffff";'), "Line badge text should stay white");
+assert.ok(html.includes('text.setAttribute("dominant-baseline", "middle")'), "Line badge text should be vertically centered");
 assert.ok(html.includes("window.LineBadgeLayout.place"), "Line badges do not use collision-aware placement");
 assert.ok(html.includes("function refreshStationLabels()"), "Collision-aware label refresh hook is missing");
 assert.ok(html.includes("window.StationLabelLayout.place"), "Map does not use collision-free label layout");
 assert.ok(!html.includes('leader.setAttribute("class", "station-label-leader")'), "Station label leader lines should not be rendered");
 assert.ok(css.includes(".station-hit-area"), "Station touch target style is missing");
 assert.ok(css.includes(".line-badge-map"), "Line badge style is missing");
+assert.ok(css.includes("--map-badge-text-outline"), "Line badge text outline is missing");
 assert.ok(css.includes("pointer-events: none"), "Map badges must not intercept station gestures");
 assert.ok(css.includes("drawer-custom-route-active.drawer-custom-route-collapsed"), "Compact custom drawer style is missing");
 assert.ok(css.includes("height: 96px"), "Compact custom drawer height is missing");
