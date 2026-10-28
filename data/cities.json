@@ -17,7 +17,7 @@
     "name": "厦门市",
     "adcode": "3502",
     "pinyin": "xiamen",
-    "operational_lines": ["1号线", "2号线", "3号线", "4号线", "6号线"]
+    "operational_lines": ["1号线", "2号线", "3号线"]
   },
   {
     "key": "qingdao",

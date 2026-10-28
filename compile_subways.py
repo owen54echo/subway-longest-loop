@@ -47,6 +47,35 @@ NANJING_LINE_6_STATIONS = [
     {"name": "栖霞山", "lng": 118.945230, "lat": 32.148904, "x": 1470, "y": 182},
 ]
 
+WUHAN_LINE_12_COLOR = "#01A2E2"
+# 2026-10-28 pre-opening snapshot. The official phase-II station order is
+# verified against Wuhan transport notices and the People's Daily Hubei guide.
+# Coordinates for the seven stations absent from the current source snapshot
+# are fixed map anchors; they will be refreshed automatically once the source
+# publishes the completed line after opening.
+WUHAN_LINE_12_PHASE_2_STATIONS = [
+    {"name": "十里铺", "lng": 114.219444, "lat": 30.559320, "x": 761, "y": 746},
+    {"name": "汉钢", "lng": 114.234248, "lat": 30.565434, "x": 795, "y": 675},
+    {"name": "汉西路南", "lng": 114.236333, "lat": 30.578504, "x": 816, "y": 630},
+    {"name": "双墩", "lng": 114.232026, "lat": 30.586660, "x": 838, "y": 602},
+    {"name": "汉西路北", "lng": 114.227951, "lat": 30.600305, "x": 810, "y": 548},
+    {"name": "华安里", "lng": 114.237192, "lat": 30.613451, "x": 860, "y": 493},
+    {"name": "汉口站北广场", "lng": 114.255198, "lat": 30.621419, "x": 918, "y": 388},
+    {"name": "石桥", "lng": 114.265265, "lat": 30.630637, "x": 997, "y": 375},
+    {"name": "中一路", "lng": 114.281162, "lat": 30.639903, "x": 1062, "y": 371},
+    {"name": "后湖四路", "lng": 114.295383, "lat": 30.637774, "x": 1150, "y": 332},
+    {"name": "兴业路", "lng": 114.304220, "lat": 30.641133, "x": 1192, "y": 311},
+    {"name": "百步亭", "lng": 114.317726, "lat": 30.648217, "x": 1258, "y": 321},
+    {"name": "丹水池", "lng": 114.330017, "lat": 30.643386, "x": 1305, "y": 343},
+    {"name": "科普公园", "lng": 114.364928, "lat": 30.617733, "x": 1372, "y": 412},
+]
+
+WUHAN_LINE_12_PHASE_2_PATH = [
+    "墨水湖公园",
+    *[station["name"] for station in WUHAN_LINE_12_PHASE_2_STATIONS],
+    "钢都花园",
+]
+
 def normalize_nanjing_station_name(name, _line_name=None):
     if name == "红山新城·玄武花园城":
         return "红山新城"
@@ -155,6 +184,63 @@ def apply_nanjing_line6(nodes, edges):
     for edge in edges:
         add_edge_distance(edge, nodes)
 
+
+def apply_wuhan_line12_phase2(nodes, edges):
+    """Pre-stage Wuhan Line 12 phase II until the source exposes the full line."""
+    for station in WUHAN_LINE_12_PHASE_2_STATIONS:
+        name = station["name"]
+        node = nodes.get(name)
+        if node is None:
+            nodes[name] = {
+                "name": name,
+                "x": station["x"],
+                "y": station["y"],
+                "lng": station["lng"],
+                "lat": station["lat"],
+                "lines": ["12号线"],
+            }
+            continue
+
+        if "12号线" not in node["lines"]:
+            node["lines"].append("12号线")
+        # Use the manually verified Hangang coordinate even if the current
+        # pre-opening source has a stale or approximate station coordinate.
+        if name == "汉钢":
+            node["lng"] = station["lng"]
+            node["lat"] = station["lat"]
+        else:
+            if node.get("lng") is None:
+                node["lng"] = station["lng"]
+            if node.get("lat") is None:
+                node["lat"] = station["lat"]
+        if not is_finite_number(node.get("x")) or not is_finite_number(node.get("y")):
+            node["x"] = station["x"]
+            node["y"] = station["y"]
+
+    for name in ("墨水湖公园", "钢都花园"):
+        if name in nodes and "12号线" not in nodes[name]["lines"]:
+            nodes[name]["lines"].append("12号线")
+
+    def has_line_edge(left, right):
+        return any(
+            edge.get("line") == "12号线"
+            and {edge.get("u"), edge.get("v")} == {left, right}
+            for edge in edges
+        )
+
+    for left, right in zip(WUHAN_LINE_12_PHASE_2_PATH, WUHAN_LINE_12_PHASE_2_PATH[1:]):
+        if not has_line_edge(left, right):
+            edges.append(add_edge_distance({
+                "u": left,
+                "v": right,
+                "line": "12号线",
+                "color": WUHAN_LINE_12_COLOR,
+            }, nodes))
+
+    for edge in edges:
+        if edge.get("line") == "12号线":
+            add_edge_distance(edge, nodes)
+
 def load_existing_compiled_data(output_js):
     if not os.path.exists(output_js):
         return None
@@ -224,6 +310,20 @@ def patch_existing_nanjing_line6(output_js):
     nodes = {node["name"]: node for node in nanjing["nodes"]}
     apply_nanjing_line6(nodes, nanjing["edges"])
     nanjing["nodes"] = list(nodes.values())
+    write_compiled_data(compiled_data, output_js)
+
+
+def patch_existing_wuhan_line12_phase2(output_js):
+    compiled_data = load_existing_compiled_data(output_js)
+    if not compiled_data or "wuhan" not in compiled_data:
+        raise RuntimeError("Existing subway_data.js does not contain Wuhan data")
+
+    wuhan = compiled_data["wuhan"]
+    nodes = {node["name"]: node for node in wuhan["nodes"]}
+    apply_wuhan_line12_phase2(nodes, wuhan["edges"])
+    wuhan["nodes"] = list(nodes.values())
+    attach_station_ids("wuhan", nodes)
+    validate_compiled_data(compiled_data, [city["key"] for city in CITIES])
     write_compiled_data(compiled_data, output_js)
 
 def load_existing_wiki_by_city(output_js):
@@ -456,6 +556,8 @@ def main():
             
         if key == "nanjing":
             apply_nanjing_line6(nodes, edges)
+        elif key == "wuhan":
+            apply_wuhan_line12_phase2(nodes, edges)
 
         attach_station_ids(key, nodes)
         compiled_data[key] = {
@@ -491,5 +593,9 @@ if __name__ == '__main__':
         target = os.path.join(os.path.dirname(os.path.abspath(__file__)), "subway_data.js")
         patch_existing_nanjing_line6(target)
         print(f"Patched Nanjing Line 6 data in {target}")
+    elif len(sys.argv) > 1 and sys.argv[1] == "--patch-wuhan-line12-phase2":
+        target = os.path.join(os.path.dirname(os.path.abspath(__file__)), "subway_data.js")
+        patch_existing_wuhan_line12_phase2(target)
+        print(f"Patched Wuhan Line 12 phase II data in {target}")
     else:
         main()

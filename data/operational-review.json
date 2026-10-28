@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "1.0",
+  "reviewedAt": "2026-10-23",
+  "method": "以项目的高德地铁原始线路数据为基线，结合城市轨道交通官方公告核对正式运营边界；试乘、试运行、规划和施工中的线路不纳入计算。",
+  "scope": "当前项目收录的17个城市线网",
+  "findings": {
+    "xiamen": {
+      "includedLines": ["1号线", "2号线", "3号线"],
+      "excludedLines": [
+        {
+          "line": "4号线",
+          "state": "public_trial",
+          "reason": "当前资料仍描述为开通初期运营前的公众载客试乘。"
+        },
+        {
+          "line": "6号线",
+          "state": "public_trial",
+          "reason": "当前资料仍描述为开通初期运营前的公众载客试乘。"
+        }
+      ],
+      "sources": [
+        {
+          "publisher": "福建省交通运输厅",
+          "title": "厦门地铁6号线林华段开启公众载客试乘",
+          "url": "https://jtyst.fujian.gov.cn/zwgk/jtyw/mtsy/202609/t20260916_7214318.htm"
+        },
+        {
+          "publisher": "厦门市人大常委会",
+          "title": "厦门市轨道交通建设情况",
+          "url": "https://www.xmrd.gov.cn/rdlz/rdgb/2025/202502/P020250217597253556772.pdf"
+        }
+      ]
+    },
+    "beijing": {
+      "excludedStations": [
+        {
+          "station": "八角游乐园",
+          "state": "temporarily_closed",
+          "calculation": "pass_through"
+        }
+      ],
+      "sources": [
+        {
+          "publisher": "北京地铁",
+          "title": "北京地铁车站运营调整公告",
+          "url": "https://www.bjsubway.com/news/qyxw/yyzd/2026-05-16/129685.html"
+        }
+      ]
+    }
+  },
+  "confirmedRecentOpenings": [
+    {
+      "city": "nanjing",
+      "line": "S2号线(宁马线)",
+      "openedOn": "2026-04-22",
+      "source": "https://www.nanjing.gov.cn/zgnjsjb/jrtt/202604/t20260423_5828426.html"
+    },
+    {
+      "city": "nanjing",
+      "line": "6号线",
+      "openedOn": "2026-09-29",
+      "source": "https://www.nanjing.gov.cn/msxx/202609/t20260929_5919052.html"
+    },
+    {
+      "city": "wuhan",
+      "line": "12号线",
+      "openedOn": "2026-05-01",
+      "source": "https://jtj.wuhan.gov.cn/jtzx/zwdt/202604/t20260430_2759804.shtml"
+    },
+    {
+      "city": "tianjin",
+      "line": "Z4线北段",
+      "openedOn": "2026-01-18",
+      "source": "https://www.teda.gov.cn/contents/21/100321.html"
+    }
+  ],
+  "scheduledOpenings": [
+    {
+      "city": "wuhan",
+      "line": "12号线二期",
+      "expectedOpeningOn": "2026-10-29",
+      "source": "https://www.wuhan.gov.cn/sy/whyw/202610/t20261023_2867429.shtml",
+      "note": "开通前预置；官方公告确认已通过初期运营前安全评估并具备开通条件。"
+    }
+  ]
+}

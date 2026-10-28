@@ -131,7 +131,7 @@ window.subwayDataMap = {
             "reason": "配合北京地铁1号线支线工程施工，列车通过本站不停车。",
             "effectiveFrom": "2025-06-02",
             "expectedResume": "2027-05-03",
-            "reviewedAt": "2026-08-12",
+            "reviewedAt": "2026-10-23",
             "calculation": {
               "mode": "pass_through",
               "line": "1号线八通线",
@@ -37248,7 +37248,8 @@ window.subwayDataMap = {
         "lng": 114.330017,
         "lat": 30.643386,
         "lines": [
-          "1号线"
+          "1号线",
+          "12号线"
         ],
         "stationId": "wuhan:geo:114.330017:30.643386"
       },
@@ -38165,7 +38166,8 @@ window.subwayDataMap = {
         "lng": 114.232026,
         "lat": 30.58666,
         "lines": [
-          "3号线"
+          "3号线",
+          "12号线"
         ],
         "stationId": "wuhan:geo:114.232026:30.586660"
       },
@@ -38275,7 +38277,8 @@ window.subwayDataMap = {
         "lng": 114.30422,
         "lat": 30.641133,
         "lines": [
-          "3号线"
+          "3号线",
+          "12号线"
         ],
         "stationId": "wuhan:geo:114.304220:30.641133"
       },
@@ -38452,7 +38455,8 @@ window.subwayDataMap = {
         "lng": 114.219444,
         "lat": 30.55932,
         "lines": [
-          "4号线"
+          "4号线",
+          "12号线"
         ],
         "stationId": "wuhan:geo:114.219444:30.559320"
       },
@@ -38909,7 +38913,8 @@ window.subwayDataMap = {
         "lng": 114.364928,
         "lat": 30.617733,
         "lines": [
-          "5号线"
+          "5号线",
+          "12号线"
         ],
         "stationId": "wuhan:geo:114.364928:30.617733"
       },
@@ -39108,7 +39113,8 @@ window.subwayDataMap = {
         "lng": 114.265265,
         "lat": 30.630637,
         "lines": [
-          "6号线"
+          "6号线",
+          "12号线"
         ],
         "stationId": "wuhan:geo:114.265265:30.630637"
       },
@@ -39607,7 +39613,8 @@ window.subwayDataMap = {
         "lng": 114.281162,
         "lat": 30.639903,
         "lines": [
-          "8号线"
+          "8号线",
+          "12号线"
         ],
         "stationId": "wuhan:geo:114.281162:30.639903"
       },
@@ -40549,6 +40556,83 @@ window.subwayDataMap = {
           "阳逻线"
         ],
         "stationId": "wuhan:geo:114.619116:30.713671"
+      },
+      {
+        "name": "汉钢",
+        "x": 795,
+        "y": 675,
+        "lng": 114.234248,
+        "lat": 30.565434,
+        "lines": [
+          "12号线"
+        ],
+        "stationId": "wuhan:geo:114.234248:30.565434"
+      },
+      {
+        "name": "汉西路南",
+        "x": 816,
+        "y": 630,
+        "lng": 114.236333,
+        "lat": 30.578504,
+        "lines": [
+          "12号线"
+        ],
+        "stationId": "wuhan:geo:114.236333:30.578504"
+      },
+      {
+        "name": "汉西路北",
+        "x": 810,
+        "y": 548,
+        "lng": 114.227951,
+        "lat": 30.600305,
+        "lines": [
+          "12号线"
+        ],
+        "stationId": "wuhan:geo:114.227951:30.600305"
+      },
+      {
+        "name": "华安里",
+        "x": 860,
+        "y": 493,
+        "lng": 114.237192,
+        "lat": 30.613451,
+        "lines": [
+          "12号线"
+        ],
+        "stationId": "wuhan:geo:114.237192:30.613451"
+      },
+      {
+        "name": "汉口站北广场",
+        "x": 918,
+        "y": 388,
+        "lng": 114.255198,
+        "lat": 30.621419,
+        "lines": [
+          "12号线"
+        ],
+        "stationId": "wuhan:geo:114.255198:30.621419"
+      },
+      {
+        "name": "后湖四路",
+        "x": 1150,
+        "y": 332,
+        "lng": 114.295383,
+        "lat": 30.637774,
+        "lines": [
+          "12号线"
+        ],
+        "stationId": "wuhan:geo:114.295383:30.637774"
+      },
+      {
+        "name": "百步亭",
+        "x": 1258,
+        "y": 321,
+        "lng": 114.317726,
+        "lat": 30.648217,
+        "lines": [
+          "12号线"
+        ],
+        "stationId": "wuhan:geo:114.317726:30.648217"
       }
     ],
     "edges": [
@@ -42805,6 +42889,111 @@ window.subwayDataMap = {
         "line": "阳逻线",
         "color": "#D10195",
         "straightLengthKm": 1.926
+      },
+      {
+        "u": "墨水湖公园",
+        "v": "十里铺",
+        "line": "12号线",
+        "color": "#01A2E2",
+        "straightLengthKm": 1.213
+      },
+      {
+        "u": "十里铺",
+        "v": "汉钢",
+        "line": "12号线",
+        "color": "#01A2E2",
+        "straightLengthKm": 1.572
+      },
+      {
+        "u": "汉钢",
+        "v": "汉西路南",
+        "line": "12号线",
+        "color": "#01A2E2",
+        "straightLengthKm": 1.467
+      },
+      {
+        "u": "汉西路南",
+        "v": "双墩",
+        "line": "12号线",
+        "color": "#01A2E2",
+        "straightLengthKm": 0.996
+      },
+      {
+        "u": "双墩",
+        "v": "汉西路北",
+        "line": "12号线",
+        "color": "#01A2E2",
+        "straightLengthKm": 1.567
+      },
+      {
+        "u": "汉西路北",
+        "v": "华安里",
+        "line": "12号线",
+        "color": "#01A2E2",
+        "straightLengthKm": 1.708
+      },
+      {
+        "u": "华安里",
+        "v": "汉口站北广场",
+        "line": "12号线",
+        "color": "#01A2E2",
+        "straightLengthKm": 1.937
+      },
+      {
+        "u": "汉口站北广场",
+        "v": "石桥",
+        "line": "12号线",
+        "color": "#01A2E2",
+        "straightLengthKm": 1.407
+      },
+      {
+        "u": "石桥",
+        "v": "中一路",
+        "line": "12号线",
+        "color": "#01A2E2",
+        "straightLengthKm": 1.837
+      },
+      {
+        "u": "中一路",
+        "v": "后湖四路",
+        "line": "12号线",
+        "color": "#01A2E2",
+        "straightLengthKm": 1.381
+      },
+      {
+        "u": "后湖四路",
+        "v": "兴业路",
+        "line": "12号线",
+        "color": "#01A2E2",
+        "straightLengthKm": 0.924
+      },
+      {
+        "u": "兴业路",
+        "v": "百步亭",
+        "line": "12号线",
+        "color": "#01A2E2",
+        "straightLengthKm": 1.513
+      },
+      {
+        "u": "百步亭",
+        "v": "丹水池",
+        "line": "12号线",
+        "color": "#01A2E2",
+        "straightLengthKm": 1.293
+      },
+      {
+        "u": "丹水池",
+        "v": "科普公园",
+        "line": "12号线",
+        "color": "#01A2E2",
+        "straightLengthKm": 4.393
+      },
+      {
+        "u": "科普公园",
+        "v": "钢都花园",
+        "line": "12号线",
+        "color": "#01A2E2",
+        "straightLengthKm": 0.765
       }
     ]
   },
@@ -85821,8 +86010,7 @@ window.subwayDataMap = {
         "lng": 118.058588,
         "lat": 24.593633,
         "lines": [
-          "1号线",
-          "6号线"
+          "1号线"
         ],
         "stationId": "xiamen:geo:118.058588:24.593633"
       },
@@ -85877,8 +86065,7 @@ window.subwayDataMap = {
         "lng": 118.073982,
         "lat": 24.636379,
         "lines": [
-          "1号线",
-          "4号线"
+          "1号线"
         ],
         "stationId": "xiamen:geo:118.073982:24.636379"
       },
@@ -85933,8 +86120,7 @@ window.subwayDataMap = {
         "lng": 117.974291,
         "lat": 24.547034,
         "lines": [
-          "2号线",
-          "6号线"
+          "2号线"
         ],
         "stationId": "xiamen:geo:117.974291:24.547034"
       },
@@ -85945,8 +86131,7 @@ window.subwayDataMap = {
         "lng": 117.987705,
         "lat": 24.54604,
         "lines": [
-          "2号线",
-          "6号线"
+          "2号线"
         ],
         "stationId": "xiamen:geo:117.987705:24.546040"
       },
@@ -86355,8 +86540,7 @@ window.subwayDataMap = {
         "lng": 118.226167,
         "lat": 24.571068,
         "lines": [
-          "3号线",
-          "4号线"
+          "3号线"
         ],
         "stationId": "xiamen:geo:118.226167:24.571068"
       },
@@ -86425,226 +86609,6 @@ window.subwayDataMap = {
           "3号线"
         ],
         "stationId": "xiamen:geo:118.279547:24.572393"
-      },
-      {
-        "name": "集美软件园北",
-        "x": 309,
-        "y": 186,
-        "lng": 118.036542,
-        "lat": 24.617429,
-        "lines": [
-          "4号线"
-        ],
-        "stationId": "xiamen:geo:118.036542:24.617429"
-      },
-      {
-        "name": "后溪",
-        "x": 406,
-        "y": 119,
-        "lng": 118.049023,
-        "lat": 24.624478,
-        "lines": [
-          "4号线"
-        ],
-        "stationId": "xiamen:geo:118.049023:24.624478"
-      },
-      {
-        "name": "官浔",
-        "x": 1128,
-        "y": 154,
-        "lng": 118.148552,
-        "lat": 24.652681,
-        "lines": [
-          "4号线"
-        ],
-        "stationId": "xiamen:geo:118.148552:24.652681"
-      },
-      {
-        "name": "丙洲",
-        "x": 1289,
-        "y": 214,
-        "lng": 118.172577,
-        "lat": 24.63768,
-        "lines": [
-          "4号线"
-        ],
-        "stationId": "xiamen:geo:118.172577:24.637680"
-      },
-      {
-        "name": "城场",
-        "x": 1380,
-        "y": 214,
-        "lng": 118.210173,
-        "lat": 24.631283,
-        "lines": [
-          "4号线"
-        ],
-        "stationId": "xiamen:geo:118.210173:24.631283"
-      },
-      {
-        "name": "前浯",
-        "x": 1691,
-        "y": 441,
-        "lng": 118.253566,
-        "lat": 24.561239,
-        "lines": [
-          "4号线"
-        ],
-        "stationId": "xiamen:geo:118.253566:24.561239"
-      },
-      {
-        "name": "角江路",
-        "x": 5,
-        "y": 831,
-        "lng": 117.895407,
-        "lat": 24.501564,
-        "lines": [
-          "6号线"
-        ],
-        "stationId": "xiamen:geo:117.895407:24.501564"
-      },
-      {
-        "name": "角美中心",
-        "x": 6,
-        "y": 774,
-        "lng": 117.892182,
-        "lat": 24.50933,
-        "lines": [
-          "6号线"
-        ],
-        "stationId": "xiamen:geo:117.892182:24.509330"
-      },
-      {
-        "name": "文圃路",
-        "x": 5,
-        "y": 717,
-        "lng": 117.899326,
-        "lat": 24.516799,
-        "lines": [
-          "6号线"
-        ],
-        "stationId": "xiamen:geo:117.899326:24.516799"
-      },
-      {
-        "name": "角海路",
-        "x": 5,
-        "y": 659,
-        "lng": 117.908805,
-        "lat": 24.520746,
-        "lines": [
-          "6号线"
-        ],
-        "stationId": "xiamen:geo:117.908805:24.520746"
-      },
-      {
-        "name": "角美东",
-        "x": 5,
-        "y": 603,
-        "lng": 117.920937,
-        "lat": 24.527225,
-        "lines": [
-          "6号线"
-        ],
-        "stationId": "xiamen:geo:117.920937:24.527225"
-      },
-      {
-        "name": "一农",
-        "x": 5,
-        "y": 545,
-        "lng": 117.947977,
-        "lat": 24.536294,
-        "lines": [
-          "6号线"
-        ],
-        "stationId": "xiamen:geo:117.947977:24.536294"
-      },
-      {
-        "name": "林埭",
-        "x": 5,
-        "y": 488,
-        "lng": 117.957777,
-        "lat": 24.542474,
-        "lines": [
-          "6号线"
-        ],
-        "stationId": "xiamen:geo:117.957777:24.542474"
-      },
-      {
-        "name": "西滨",
-        "x": 284,
-        "y": 501,
-        "lng": 118.020014,
-        "lat": 24.565489,
-        "lines": [
-          "6号线"
-        ],
-        "stationId": "xiamen:geo:118.020014:24.565489"
-      },
-      {
-        "name": "碑头",
-        "x": 368,
-        "y": 468,
-        "lng": 118.02917,
-        "lat": 24.565161,
-        "lines": [
-          "6号线"
-        ],
-        "stationId": "xiamen:geo:118.029170:24.565161"
-      },
-      {
-        "name": "杏滨",
-        "x": 410,
-        "y": 451,
-        "lng": 118.040176,
-        "lat": 24.566025,
-        "lines": [
-          "6号线"
-        ],
-        "stationId": "xiamen:geo:118.040176:24.566025"
-      },
-      {
-        "name": "内茂",
-        "x": 464,
-        "y": 429,
-        "lng": 118.043949,
-        "lat": 24.572406,
-        "lines": [
-          "6号线"
-        ],
-        "stationId": "xiamen:geo:118.043949:24.572406"
-      },
-      {
-        "name": "董任",
-        "x": 520,
-        "y": 406,
-        "lng": 118.047845,
-        "lat": 24.579604,
-        "lines": [
-          "6号线"
-        ],
-        "stationId": "xiamen:geo:118.047845:24.579604"
-      },
-      {
-        "name": "杏林湾",
-        "x": 722,
-        "y": 321,
-        "lng": 118.074829,
-        "lat": 24.602334,
-        "lines": [
-          "6号线"
-        ],
-        "stationId": "xiamen:geo:118.074829:24.602334"
-      },
-      {
-        "name": "华侨大学",
-        "x": 876,
-        "y": 338,
-        "lng": 118.088847,
-        "lat": 24.596637,
-        "lines": [
-          "6号线"
-        ],
-        "stationId": "xiamen:geo:118.088847:24.596637"
       }
     ],
     "edges": [
@@ -87165,167 +87129,6 @@ window.subwayDataMap = {
         "line": "3号线",
         "color": "#027CFF",
         "straightLengthKm": 1.183
-      },
-      {
-        "u": "集美软件园北",
-        "v": "后溪",
-        "line": "4号线",
-        "color": "#FC0601",
-        "straightLengthKm": 1.485
-      },
-      {
-        "u": "后溪",
-        "v": "厦门北站",
-        "line": "4号线",
-        "color": "#FC0601",
-        "straightLengthKm": 2.849
-      },
-      {
-        "u": "厦门北站",
-        "v": "官浔",
-        "line": "4号线",
-        "color": "#FC0601",
-        "straightLengthKm": 7.751
-      },
-      {
-        "u": "官浔",
-        "v": "丙洲",
-        "line": "4号线",
-        "color": "#FC0601",
-        "straightLengthKm": 2.946
-      },
-      {
-        "u": "丙洲",
-        "v": "城场",
-        "line": "4号线",
-        "color": "#FC0601",
-        "straightLengthKm": 3.866
-      },
-      {
-        "u": "城场",
-        "v": "洪坑",
-        "line": "4号线",
-        "color": "#FC0601",
-        "straightLengthKm": 6.888
-      },
-      {
-        "u": "洪坑",
-        "v": "前浯",
-        "line": "4号线",
-        "color": "#FC0601",
-        "straightLengthKm": 2.979
-      },
-      {
-        "u": "角江路",
-        "v": "角美中心",
-        "line": "6号线",
-        "color": "#B93FF5",
-        "straightLengthKm": 0.923
-      },
-      {
-        "u": "角美中心",
-        "v": "文圃路",
-        "line": "6号线",
-        "color": "#B93FF5",
-        "straightLengthKm": 1.101
-      },
-      {
-        "u": "文圃路",
-        "v": "角海路",
-        "line": "6号线",
-        "color": "#B93FF5",
-        "straightLengthKm": 1.055
-      },
-      {
-        "u": "角海路",
-        "v": "角美东",
-        "line": "6号线",
-        "color": "#B93FF5",
-        "straightLengthKm": 1.423
-      },
-      {
-        "u": "角美东",
-        "v": "一农",
-        "line": "6号线",
-        "color": "#B93FF5",
-        "straightLengthKm": 2.915
-      },
-      {
-        "u": "一农",
-        "v": "林埭",
-        "line": "6号线",
-        "color": "#B93FF5",
-        "straightLengthKm": 1.206
-      },
-      {
-        "u": "林埭",
-        "v": "鼎美",
-        "line": "6号线",
-        "color": "#B93FF5",
-        "straightLengthKm": 1.746
-      },
-      {
-        "u": "鼎美",
-        "v": "马銮中心",
-        "line": "6号线",
-        "color": "#B93FF5",
-        "straightLengthKm": 1.361
-      },
-      {
-        "u": "马銮中心",
-        "v": "西滨",
-        "line": "6号线",
-        "color": "#B93FF5",
-        "straightLengthKm": 3.919
-      },
-      {
-        "u": "西滨",
-        "v": "碑头",
-        "line": "6号线",
-        "color": "#B93FF5",
-        "straightLengthKm": 0.927
-      },
-      {
-        "u": "碑头",
-        "v": "杏滨",
-        "line": "6号线",
-        "color": "#B93FF5",
-        "straightLengthKm": 1.117
-      },
-      {
-        "u": "杏滨",
-        "v": "内茂",
-        "line": "6号线",
-        "color": "#B93FF5",
-        "straightLengthKm": 0.806
-      },
-      {
-        "u": "内茂",
-        "v": "董任",
-        "line": "6号线",
-        "color": "#B93FF5",
-        "straightLengthKm": 0.892
-      },
-      {
-        "u": "董任",
-        "v": "官任",
-        "line": "6号线",
-        "color": "#B93FF5",
-        "straightLengthKm": 1.901
-      },
-      {
-        "u": "官任",
-        "v": "杏林湾",
-        "line": "6号线",
-        "color": "#B93FF5",
-        "straightLengthKm": 1.906
-      },
-      {
-        "u": "杏林湾",
-        "v": "华侨大学",
-        "line": "6号线",
-        "color": "#B93FF5",
-        "straightLengthKm": 1.552
       }
     ]
   },

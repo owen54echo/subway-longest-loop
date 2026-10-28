@@ -5,7 +5,7 @@ const dataWindow = {};
 new Function("window", fs.readFileSync("subway_data.js", "utf8"))(dataWindow);
 
 const expectedLines = {
-    xiamen: ["1号线", "2号线", "3号线", "4号线", "6号线"],
+    xiamen: ["1号线", "2号线", "3号线"],
     qingdao: ["1号线", "2号线", "3号线", "4号线", "6号线", "8号线", "蓝谷快线", "西海岸快线"],
     ningbo: ["1号线", "2号线", "3号线", "4号线", "5号线", "6号线", "7号线", "8号线", "12号线"],
     changsha: ["1号线", "2号线", "3号线", "4号线", "5号线", "6号线", "S2线"]

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-08-12",
+  "generatedAt": "2026-10-23",
   "beijing": {
     "八角游乐园": {
       "state": "temporarily_closed",
@@ -8,7 +8,7 @@
       "reason": "配合北京地铁1号线支线工程施工，列车通过本站不停车。",
       "effectiveFrom": "2025-06-02",
       "expectedResume": "2027-05-03",
-      "reviewedAt": "2026-08-12",
+      "reviewedAt": "2026-10-23",
       "calculation": {
         "mode": "pass_through",
         "line": "1号线八通线",
