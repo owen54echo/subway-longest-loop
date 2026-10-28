@@ -1017,6 +1017,15 @@
                 });
             }
 
+            function buildLineBlockedSegments() {
+                return data.edges.flatMap(edge => {
+                    const from = data.nodes.find(node => node.name === edge.u);
+                    const to = data.nodes.find(node => node.name === edge.v);
+                    if (!from || !to || isStationUnavailable(from) || isStationUnavailable(to)) return [];
+                    return [{ x1: from.x, y1: from.y, x2: to.x, y2: to.y, padding: 3 }];
+                });
+            }
+
             function lineBadgeTextColor(color) {
                 const value = String(color || "").replace("#", "");
                 if (![3, 6].includes(value.length) || !/^[0-9a-f]+$/i.test(value)) return "#ffffff";
@@ -1124,7 +1133,10 @@
                     ...buildPriorityMarkerRects(data.nodes),
                     ...buildHighlightBlockedRects()
                 ];
-                const layout = window.LineBadgeLayout.place(buildLineBadgeCandidates(), blockedRects, { maxPerLine: 1 });
+                const layout = window.LineBadgeLayout.place(buildLineBadgeCandidates(), blockedRects, {
+                    maxPerLine: 1,
+                    blockedSegments: buildLineBlockedSegments()
+                });
                 layout.placed.forEach(item => renderLineBadge(badgesGroup, item));
             }
 

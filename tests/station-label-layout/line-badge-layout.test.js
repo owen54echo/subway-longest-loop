@@ -20,4 +20,12 @@ for (let index = 0; index < result.placed.length; index += 1) {
     }
 }
 assert.ok(result.deferred.includes("red-b"));
+
+const segmentResult = place([
+    { id: "segment", line: "3号线", x: 100, y: 100, width: 30, height: 14, priority: 1, slots: [[0, 0, "on-line"], [0, 40, "safe"]] }
+], [], {
+    maxPerLine: 1,
+    blockedSegments: [{ x1: 80, y1: 100, x2: 120, y2: 100, padding: 2 }]
+});
+assert.strictEqual(segmentResult.placed[0].slot, "safe");
 console.log("line badge layout contract ok");
