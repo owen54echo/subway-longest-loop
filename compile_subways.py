@@ -76,6 +76,18 @@ WUHAN_LINE_12_PHASE_2_PATH = [
     "钢都花园",
 ]
 
+CHENGDU_LINE_2_COLOR = "#EE782E"
+# Chengdu Rail Group announced Line 2 service at this station from 2026-10-30.
+# The schematic x/y coordinates preserve the existing map layout; lng/lat are
+# kept for distance estimation and station identity generation.
+CHENGDU_LONGQUANYI_RAILWAY_STATION = {
+    "name": "龙泉驿火车站",
+    "lng": 104.189261,
+    "lat": 30.599484,
+    "x": 1968,
+    "y": 1029,
+}
+
 def normalize_nanjing_station_name(name, _line_name=None):
     if name == "红山新城·玄武花园城":
         return "红山新城"
@@ -241,6 +253,87 @@ def apply_wuhan_line12_phase2(nodes, edges):
         if edge.get("line") == "12号线":
             add_edge_distance(edge, nodes)
 
+
+def apply_chengdu_longquanyi_railway_station(nodes, edges):
+    """Insert the opened Line 2 station without changing the schematic map style."""
+    station = CHENGDU_LONGQUANYI_RAILWAY_STATION
+    name = station["name"]
+    node = nodes.get(name)
+    if node is None:
+        node = {
+            "name": name,
+            "x": station["x"],
+            "y": station["y"],
+            "lng": station["lng"],
+            "lat": station["lat"],
+            "lines": ["2号线"],
+        }
+    else:
+        node["x"] = station["x"]
+        node["y"] = station["y"]
+        node["lng"] = station["lng"]
+        node["lat"] = station["lat"]
+        if "2号线" not in node["lines"]:
+            node["lines"].append("2号线")
+
+    if "成都行政学院" not in nodes or "大面铺" not in nodes:
+        raise ValueError("Chengdu Line 2 anchors are missing")
+
+    ordered_nodes = {}
+    for current_name, current_node in nodes.items():
+        if current_name == name:
+            continue
+        ordered_nodes[current_name] = current_node
+        if current_name == "成都行政学院":
+            ordered_nodes[name] = node
+    nodes.clear()
+    nodes.update(ordered_nodes)
+
+    replacement_edges = [
+        add_edge_distance({
+            "u": "成都行政学院",
+            "v": name,
+            "line": "2号线",
+            "color": CHENGDU_LINE_2_COLOR,
+        }, nodes),
+        add_edge_distance({
+            "u": name,
+            "v": "大面铺",
+            "line": "2号线",
+            "color": CHENGDU_LINE_2_COLOR,
+        }, nodes),
+    ]
+    relevant_pairs = {
+        frozenset(("成都行政学院", "大面铺")),
+        frozenset(("成都行政学院", name)),
+        frozenset((name, "大面铺")),
+    }
+    first_relevant_index = next(
+        (index for index, edge in enumerate(edges)
+         if edge.get("line") == "2号线"
+         and frozenset((edge.get("u"), edge.get("v"))) in relevant_pairs),
+        None,
+    )
+    updated_edges = []
+    inserted = False
+    for index, edge in enumerate(edges):
+        is_relevant = (
+            edge.get("line") == "2号线"
+            and frozenset((edge.get("u"), edge.get("v"))) in relevant_pairs
+        )
+        if is_relevant:
+            if index == first_relevant_index:
+                updated_edges.extend(replacement_edges)
+                inserted = True
+            continue
+        updated_edges.append(edge)
+    if not inserted:
+        updated_edges.extend(replacement_edges)
+    edges[:] = updated_edges
+
+    for edge in edges:
+        add_edge_distance(edge, nodes)
+
 def load_existing_compiled_data(output_js):
     if not os.path.exists(output_js):
         return None
@@ -323,6 +416,20 @@ def patch_existing_wuhan_line12_phase2(output_js):
     apply_wuhan_line12_phase2(nodes, wuhan["edges"])
     wuhan["nodes"] = list(nodes.values())
     attach_station_ids("wuhan", nodes)
+    validate_compiled_data(compiled_data, [city["key"] for city in CITIES])
+    write_compiled_data(compiled_data, output_js)
+
+
+def patch_existing_chengdu_longquanyi_railway_station(output_js):
+    compiled_data = load_existing_compiled_data(output_js)
+    if not compiled_data or "chengdu" not in compiled_data:
+        raise RuntimeError("Existing subway_data.js does not contain Chengdu data")
+
+    chengdu = compiled_data["chengdu"]
+    nodes = {node["name"]: node for node in chengdu["nodes"]}
+    apply_chengdu_longquanyi_railway_station(nodes, chengdu["edges"])
+    attach_station_ids("chengdu", nodes)
+    chengdu["nodes"] = list(nodes.values())
     validate_compiled_data(compiled_data, [city["key"] for city in CITIES])
     write_compiled_data(compiled_data, output_js)
 
@@ -597,5 +704,9 @@ if __name__ == '__main__':
         target = os.path.join(os.path.dirname(os.path.abspath(__file__)), "subway_data.js")
         patch_existing_wuhan_line12_phase2(target)
         print(f"Patched Wuhan Line 12 phase II data in {target}")
+    elif len(sys.argv) > 1 and sys.argv[1] == "--patch-chengdu-longquanyi-railway-station":
+        target = os.path.join(os.path.dirname(os.path.abspath(__file__)), "subway_data.js")
+        patch_existing_chengdu_longquanyi_railway_station(target)
+        print(f"Patched Chengdu Longquanyi Railway Station data in {target}")
     else:
         main()

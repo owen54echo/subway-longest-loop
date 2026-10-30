@@ -43758,6 +43758,17 @@ window.subwayDataMap = {
         "stationId": "chengdu:geo:104.170689:30.597115"
       },
       {
+        "name": "龙泉驿火车站",
+        "x": 1968,
+        "y": 1029,
+        "lng": 104.189261,
+        "lat": 30.599484,
+        "lines": [
+          "2号线"
+        ],
+        "stationId": "chengdu:geo:104.189261:30.599484"
+      },
+      {
         "name": "大面铺",
         "x": 2019,
         "y": 1042,
@@ -47776,10 +47787,17 @@ window.subwayDataMap = {
       },
       {
         "u": "成都行政学院",
+        "v": "龙泉驿火车站",
+        "line": "2号线",
+        "color": "#EE782E",
+        "straightLengthKm": 1.797
+      },
+      {
+        "u": "龙泉驿火车站",
         "v": "大面铺",
         "line": "2号线",
         "color": "#EE782E",
-        "straightLengthKm": 2.976
+        "straightLengthKm": 1.396
       },
       {
         "u": "大面铺",
