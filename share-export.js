@@ -7,7 +7,7 @@
         const distanceKm = Number(Number(route.distanceKm || 0).toFixed(1));
         return Object.freeze({
             cityName: route.cityName,
-            source: route.source === "custom" ? "自定义路线" : "规划路线",
+            source: route.source === "custom" ? "自定义路线" : route.source === "solver" ? "规划路线" : (route.source || "规划路线"),
             isApproximate: Boolean(route.isApproximate),
             stations: [...route.path_stations],
             edges: [...route.path_edges],

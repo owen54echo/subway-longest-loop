@@ -574,7 +574,9 @@ def merge_cities(primary_nodes, primary_edges, secondary_raw, affine_params, lin
                      (e["u"] == v and e["v"] == u and e["line"] == line) 
                      for e in primary_edges)
         if not exists:
-            primary_edges.append(edge)
+            # A shared station keeps the primary city's coordinates, so secondary
+            # edges must use those final coordinates instead of their source copy.
+            primary_edges.append(add_edge_distance(edge, primary_nodes))
 
 def main():
     compiled_data = {}

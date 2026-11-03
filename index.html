@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>地铁路网线路研究</title>
     
     <!-- Google Fonts -->
@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- CSS Style -->
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20261103-review-medium-low-v4">
 </head>
 <body class="theme-dark">
     <div class="app-container">
@@ -45,7 +45,7 @@
         </div>
         
         <!-- Floating city selector tabs -->
-        <div class="city-tab-container" id="city-tab-container" role="tablist" aria-label="选择城市地铁网络">
+        <div class="city-tab-container" id="city-tab-container" role="tablist" aria-label="选择城市地铁网络，左右滑动查看更多城市" title="左右滑动查看更多城市">
         </div>
         
         <!-- Bottom Right floating vertical zoom pill (ref app share/focus panel) -->
@@ -339,7 +339,7 @@
                 <div class="config-pane" id="pane-analysis" style="display:none; flex-direction:column; gap:12px;">
                     <div class="analysis-pane-intro">探索网络结构，不会改变当前路线规划条件。</div>
                     <button class="analysis-action" id="btn-open-matrix" type="button">
-                        <span>直达矩阵</span>
+                        <span>站间最少站数</span>
                         <small>查看站点间最少经过站数</small>
                     </button>
                     <button class="analysis-action" id="btn-open-centrality" type="button">
@@ -350,6 +350,8 @@
                         <span>城市线网之最</span>
                         <small>扫描全城起点，寻找不同规则下的最长路线</small>
                     </button>
+                    <button class="analysis-action" id="btn-open-detour" type="button"><span>绕路之王</span><small>比较站间线网距离和直线距离</small></button>
+                <button class="analysis-action" id="btn-open-failure" type="button"><span>故障影响模拟</span><small>模拟车站、区间或整条线路中断</small></button>
                 </div>
                 
                 <!-- Pane 6: Station Wiki -->
@@ -453,16 +455,16 @@
         <!-- Direct Shortest Path Matrix Modal -->
         <div class="matrix-modal" id="matrix-modal">
             <div class="matrix-header">
-                <span class="matrix-title">直达最少站数表 (按车站数倒序)</span>
+                <span class="matrix-title">站间最少途经站数（含起终点）</span>
                 <div class="matrix-header-right">
                     <label class="analysis-filter-group">城市
-                        <select id="matrix-city-select" class="analysis-select" aria-label="直达矩阵城市"></select>
+                        <select id="matrix-city-select" class="analysis-select" aria-label="站间最少站数城市"></select>
                     </label>
                     <label class="analysis-filter-group">起始车站
                         <span class="station-select-wrap">
                             <span id="matrix-start-line-icon" class="station-line-icon" aria-hidden="true"></span>
                             <button type="button" id="matrix-start-trigger" class="analysis-select analysis-select-trigger" aria-haspopup="listbox" aria-expanded="false">全部车站</button>
-                            <div id="matrix-start-menu" class="station-select-menu" role="listbox" aria-label="直达矩阵起始车站"></div>
+                            <div id="matrix-start-menu" class="station-select-menu" role="listbox" aria-label="站间最少站数起始车站"></div>
                             <select id="matrix-start-select" class="analysis-select-hidden" aria-hidden="true" tabindex="-1"></select>
                         </span>
                     </label>
@@ -472,7 +474,7 @@
                 </div>
             </div>
             <div class="matrix-warning" id="matrix-warning">
-                ⚠️ 满足条件的路线过多，已限流仅展示前 500 条最长直达路线。请输入更大的筛选值过滤。
+                ⚠️ 满足条件的路线过多，已限流仅展示前 500 条站对。请输入更大的筛选值过滤。
             </div>
             <div class="matrix-body" id="matrix-body">
                 <!-- Dynamic list table populated by Javascript -->
@@ -554,6 +556,7 @@
 
 
 
+            <p class="centrality-scroll-hint">左右滑动查看全部指标，车站名称保持可见</p>
             <div class="matrix-body" id="centrality-body" style="flex:1;overflow-y:auto;">
                 <!-- Dynamic table populated by JS -->
             </div>
@@ -629,8 +632,8 @@
             <div class="share-large-viewer-scroll"><img id="share-large-viewer-image" alt="完整路线大图"></div>
         </div>
 
-    <script src="subway_data.js"></script>
-    <script src="city_extremes_results.js"></script>
+    <script src="subway_data.js?v=20261102-all-cities"></script>
+    <script src="city_extremes_results.js?v=20261102-hangzhou-refresh"></script>
     <script src="mobile-map-interaction.js"></script>
     <script src="topology-rules.js"></script>
     <script src="route-rules.js"></script>
@@ -641,6 +644,8 @@
     <script src="station-label-layout.js"></script>
     <script src="line-badge-layout.js"></script>
     <script src="share-export.js"></script>
+    <script src="network-research-core.js?v=20261102-all-cities"></script>
+    <script src="network-research-ui.js?v=20261103-review-medium-low-v4"></script>
     <script src="solver-progress.js"></script>
     <script src="site-runtime.js"></script>
     <script src="analytics-client.js"></script>
@@ -672,6 +677,8 @@
             const selectedAvoids = new Set();
             const activeWorkers = new Set();
             let activeSolverSession = null;
+            let researchController = null;
+            let researchPreviousView = null;
             let isCustomRouteMode = false;
             let customRouteGraph = window.CustomRoute.createGraph(calculationTopology.nodes, calculationTopology.edges);
             let customRouteDraft = window.CustomRoute.createDraft();
@@ -1370,6 +1377,7 @@
                     if (isCustomRouteMode && customRouteDraft.segments.length && !window.confirm("切换城市会放弃当前自定义路线，是否继续？")) {
                         return;
                     }
+                    researchController?.close();
                     
                     // Highlight active tab
                     document.querySelectorAll(".city-tab").forEach(t => {
@@ -1479,7 +1487,7 @@
                 if (paneId === "drawer-wiki" || paneId === "drawer-custom-route") {
                     drawerTitle.textContent = title;
                 } else {
-                    drawerTitle.textContent = title + "设置";
+                    drawerTitle.textContent = (paneId === "drawer-analysis" || paneId === "drawer-roadbook") ? title : title + "设置";
                 }
                 drawer.classList.toggle("drawer-rules-active", paneId === "drawer-rules");
                 drawer.classList.toggle("drawer-custom-route-active", paneId === "drawer-custom-route");
@@ -2607,7 +2615,7 @@
                 const result = currentConfirmedResult.result;
                 return window.RouteShare.createSnapshot({
                     cityName: data.city || document.querySelector(`.city-tab[data-value="${selectedCity}"]`)?.textContent || "地铁",
-                    source: confirmedRouteSource,
+                    source: result.researchLabel || confirmedRouteSource,
                     path_stations: result.path_stations,
                     path_edges: result.path_edges,
                     distanceKm: calculateRouteDistanceKm(result.path_edges, currentConfirmedResult.edges),
@@ -2888,6 +2896,8 @@
             }
 
             function displayResults(result, filteredEdges, { trackGeneration = false } = {}) {
+                document.getElementById("research-map-overlay")?.remove();
+                if (!result.researchLabel) updateFloatingOverlay();
                 lastResultStations = result.path_stations;
                 currentConfirmedResult = { result: { ...result }, edges: filteredEdges };
                 if (result.source !== "custom") confirmedRouteSource = "solver";
@@ -3023,7 +3033,13 @@
                     `;
                 });
 
-                roadbookList.innerHTML = roadbookHtml || `<div style="font-size:12px; color:var(--text-muted); text-align:center; padding:20px 0;">暂无路线</div>`;
+                roadbookList.innerHTML = (result.researchLabel ? `<div class="research-note">${escapeHtml(result.researchLabel)} · 研究结果 <button id="research-return" type="button">返回排行</button> <button id="research-restore-view" type="button">恢复视角</button></div>` : "") + (roadbookHtml || `<div style="font-size:12px; color:var(--text-muted); text-align:center; padding:20px 0;">暂无路线</div>`);
+                document.getElementById("research-return")?.addEventListener("click", () => researchController?.showResults());
+                document.getElementById("research-restore-view")?.addEventListener("click", () => {
+                    if (!researchPreviousView) return;
+                    ({ scale, translateX, translateY } = researchPreviousView);
+                    updateViewportTransform();
+                });
 
                 highlightPathOnSvgMap(result, filteredEdges);
             }
@@ -3732,11 +3748,17 @@
                     rows.forEach((r, idx) => {
                         const displayBet = r.bet.toFixed(5);
                         const displayRW = r.rw.toFixed(5);
+                        const mobileMetric = {
+                            deg: `度数 ${r.deg}`,
+                            bet: `介数 ${displayBet}`,
+                            rw: `随机游走介数 ${displayRW}`,
+                            cov: `${coverageLabel} ${r.cov}`
+                        }[centralitySortCol] || '';
                         const rankBadge = idx < 3
                             ? `<span style="color:${rankColors[idx]};margin-right:5px;font-size:10px;">#${idx+1}</span>`
                             : '';
                         html += `<tr class="centrality-row" data-station="${r.name}" style="cursor:pointer;">
-                            <td style="padding:8px 12px 8px 16px;font-weight:bold;color:var(--text-primary);">${rankBadge}${r.name}</td>
+                            <td style="padding:8px 12px 8px 16px;font-weight:bold;color:var(--text-primary);">${rankBadge}${r.name}<span class="centrality-mobile-metric">${mobileMetric}</span></td>
                             <td style="padding:8px 12px;"><div class="centrality-line-badges">${renderCentralityLineBadges(r.line, analysisData)}</div></td>
                             <td style="text-align:center;padding:8px;font-weight:bold;color:var(--text-primary);font-variant-numeric:tabular-nums;">${r.deg}</td>
                             <td style="text-align:center;padding:8px;font-weight:bold;color:var(--text-primary);font-variant-numeric:tabular-nums;">${displayBet}</td>
@@ -4094,7 +4116,7 @@
                 }
 
                 if (displayedPairs.length === 0) {
-                    document.getElementById("matrix-body").innerHTML = `<div style="padding:40px; text-align:center; color:var(--text-muted); font-size:12px;">在该过滤条件下无满足条件的直达路线。请降低筛选值。</div>`;
+                    document.getElementById("matrix-body").innerHTML = `<div style="padding:40px; text-align:center; color:var(--text-muted); font-size:12px;">在该过滤条件下无满足条件的站对。请降低筛选值。</div>`;
                     return;
                 }
 
@@ -4103,7 +4125,7 @@
                     <tr>
                         <th style="padding-left:16px;">起始站</th>
                         <th style="padding-left:16px;">终点站</th>
-                        <th style="width:140px; text-align:center;">经过最少车站数</th>
+                        <th style="width:140px; text-align:center;">最少途经站数（含起终点）</th>
                     </tr>
                 `;
 
@@ -4503,6 +4525,76 @@
                     arrow.textContent = "▼";
                 }
             };
+
+            researchController = window.NetworkResearchUI.init({
+                city: () => selectedCity,
+                raw: () => data,
+                topology: () => calculationTopology,
+                showRoute: (result, edges, research) => {
+                    if (activeSolverSession) { alert("请先完成或取消当前路线计算。"); return false; }
+                    if (isCustomRouteMode && !leaveCustomRouteMode()) return false;
+                    researchPreviousView = { scale, translateX, translateY };
+                    displayResults(result, edges);
+                    const viewport = document.getElementById("map-viewport-group");
+                    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                    group.id = "research-map-overlay";
+                    group.setAttribute("pointer-events", "none");
+                    const findNode = name => data.nodes.find(n => calculationTopology.getMapStationNames(name).includes(n.name));
+                    const createMark = (node, color) => {
+                        if (!node) return;
+                        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                        for (const [key, value] of Object.entries({cx:node.x, cy:node.y, r:12, fill:"none", stroke:color, "stroke-width":3})) circle.setAttribute(key, value);
+                        group.appendChild(circle);
+                    };
+                    if (research.detour) {
+                        const a = findNode(research.pair.a), b = findNode(research.pair.b);
+                        if (a && b) {
+                            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                            for (const [key, value] of Object.entries({x1:a.x, y1:a.y, x2:b.x, y2:b.y, stroke:"#e88b32", "stroke-width":2, "stroke-dasharray":"6 5"})) line.setAttribute(key, value);
+                            group.appendChild(line);
+                        }
+                    } else if (research.fault?.type === "station") {
+                        research.fault.names.forEach(name => createMark(data.nodes.find(n => n.name === name), "#e34b4b"));
+                    } else if (research.fault?.type === "edge") {
+                        for (const index of research.fault.indices) {
+                            const edge = data.edges[index];
+                            const a = data.nodes.find(n => n.name === edge?.u), b = data.nodes.find(n => n.name === edge?.v);
+                            if (!a || !b) continue;
+                            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                            for (const [key, value] of Object.entries({x1:a.x, y1:a.y, x2:b.x, y2:b.y, stroke:"#e34b4b", "stroke-width":5, "stroke-dasharray":"5 4"})) line.setAttribute(key, value);
+                            group.appendChild(line);
+                        }
+                    }
+                    viewport?.appendChild(group);
+                    openDrawer("drawer-roadbook", "路书");
+                    mapStatusText.textContent = "正在查看研究路线";
+                    mapStatusOverlay.style.display = "flex";
+                    const routeCity = selectedCity;
+                    requestAnimationFrame(() => {
+                        if (selectedCity !== routeCity || !document.getElementById("research-map-overlay")) return;
+                        const svg = document.getElementById("metro-svg");
+                        const matrix = svg?.getScreenCTM();
+                        const points = result.path_stations.map(findNode).filter(node => node && Number.isFinite(node.x) && Number.isFinite(node.y));
+                        if (!matrix || points.length < 2) return;
+                        const rect = svg.getBoundingClientRect();
+                        const left = rect.left + (innerWidth > 1024 ? drawer.offsetWidth + 48 : 24);
+                        const right = rect.right - 24;
+                        const top = rect.top + (innerWidth > 1024 ? 48 : 100);
+                        const bottom = rect.bottom - (innerWidth > 1024 ? 48 : drawer.offsetHeight + 100);
+                        if (right <= left || bottom <= top) return;
+                        const inverse = matrix.inverse();
+                        const a = new DOMPoint(left, top).matrixTransform(inverse);
+                        const b = new DOMPoint(right, bottom).matrixTransform(inverse);
+                        const xs = points.map(node => node.x), ys = points.map(node => node.y);
+                        const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+                        scale = Math.max(0.1, Math.min(4, (b.x - a.x) / Math.max(maxX - minX + 100, 1), (b.y - a.y) / Math.max(maxY - minY + 100, 1)));
+                        translateX = (a.x + b.x) / 2 - (minX + maxX) / 2 * scale;
+                        translateY = (a.y + b.y) / 2 - (minY + maxY) / 2 * scale;
+                        updateViewportTransform();
+                    });
+                    return true;
+                }
+            });
 
             // Initialize rendering
             renderSvgMap();

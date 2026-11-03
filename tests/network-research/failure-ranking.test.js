@@ -1,0 +1,24 @@
+const assert = require('assert');
+const fs = require('fs');
+const vm = require('vm');
+const sandbox = {setTimeout, console};
+sandbox.self = sandbox;
+let last;
+sandbox.postMessage = data => { if (data.type === 'done' || data.type === 'error') last = data; };
+const context = vm.createContext(sandbox);
+sandbox.importScripts = (...paths) => paths.forEach(path => vm.runInContext(fs.readFileSync(path,'utf8'),context));
+vm.runInContext(fs.readFileSync('network-failure-ranking-worker.js','utf8'),context);
+const nodes = ['A','B','C'].map((name,i) => ({name,lat:0,lng:i*0.01,lines:['L']}));
+const edges = [{u:'A',v:'B',line:'L'}, {u:'B',v:'C',line:'L'}];
+(async () => {
+    await sandbox.onmessage({data:{city:'test',nodes,edges}});
+    assert.equal(last.type,'done');
+    const b = last.station.find(item => item.name === 'B');
+    assert.equal(b.disconnected,1);
+    assert.equal(b.endpointPairs,2);
+    assert.equal(b.longer,0);
+    assert.equal(last.line[0].disconnected,3);
+    assert.equal(last.station[0].name,'B');
+    assert.equal(last.stationTotal,3);
+    console.log('failure ranking tests passed');
+})().catch(error => {console.error(error); process.exitCode = 1;});

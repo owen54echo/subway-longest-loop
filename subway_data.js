@@ -29297,14 +29297,14 @@ window.subwayDataMap = {
         "v": "北滘公园",
         "line": "佛山3号线",
         "color": "#0065B3",
-        "straightLengthKm": 2.308
+        "straightLengthKm": 2.298
       },
       {
         "u": "北滘公园",
         "v": "高村",
         "line": "佛山3号线",
         "color": "#0065B3",
-        "straightLengthKm": 2.454
+        "straightLengthKm": 2.448
       },
       {
         "u": "高村",
@@ -62076,14 +62076,14 @@ window.subwayDataMap = {
         "v": "梅山广场",
         "line": "绍兴2号线",
         "color": "#2249A3",
-        "straightLengthKm": 1.804
+        "straightLengthKm": 1.937
       },
       {
         "u": "梅山广场",
         "v": "后墅路",
         "line": "绍兴2号线",
         "color": "#2249A3",
-        "straightLengthKm": 1.244
+        "straightLengthKm": 1.152
       },
       {
         "u": "后墅路",
