@@ -2978,3 +2978,92 @@ input:checked + .slider:before {
 .research-search-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
 .research-search-pair { display: inline-flex; align-items: center; gap: 5px; flex-wrap: wrap; }
 .research-search-results p { margin: 0; font-size: 13px; }
+
+/* A compact credit stays in place in either view; the map itself has no extra legend. */
+.geographic-credit { position:absolute; left:6px; bottom:3px; z-index:8; font-size:10px; line-height:1.4; color:var(--text-secondary); text-decoration:none; }
+.geographic-credit:hover, .geographic-credit:focus-visible { text-decoration:underline; }
+#btn-geographic:disabled { opacity:.38; cursor:not-allowed; }
+
+/* Direction analysis keeps the data prominent and uses the same surfaces as analysis dialogs. */
+.rose-modal { max-width: 1040px; }
+.rose-scroll { overflow: auto; padding: 20px 4px 28px; color: var(--text-primary); }
+.rose-toolbar { display: flex; align-items: end; flex-wrap: wrap; gap: 14px 22px; }
+.rose-toolbar > label { display: grid; gap: 6px; color: var(--text-secondary); font-size: 12px; }
+.rose-toolbar .analysis-select { min-width: 160px; min-height: 42px; font-size: 14px; }
+.rose-status { margin-top: 16px; color: var(--text-secondary); font-size: 13px; }
+.rose-status:empty { display: none; }
+.rose-overview { display: flex; align-items: end; justify-content: space-between; gap: 20px; padding: 23px 0 18px; border-bottom: 1px solid var(--border-color); }
+.rose-eyebrow { color: var(--text-secondary); font-size: 12px; }
+.rose-overview h2 { margin: 6px 0; font-size: 22px; font-weight: 650; }
+.rose-overview p { margin: 0; color: var(--text-secondary); font-size: 12px; line-height: 1.6; }
+.rose-body { display: grid; grid-template-columns: minmax(260px, 1.1fr) minmax(260px, 0.9fr); gap: 32px; padding: 18px 0 10px; }
+.rose-figure { min-width: 0; align-self: start; text-align: center; }
+.rose-svg { display: block; width: 100%; max-width: 430px; height: auto; margin: auto; }
+.rose-grid circle, .rose-grid path { fill: none; stroke: var(--border-color); stroke-width: 1; }
+.rose-labels { fill: var(--text-secondary); font-size: 12px; font-family: inherit; }
+.rose-caption { margin: 2px 0 0; color: var(--text-secondary); font-size: 12px; }
+.rose-details { min-width: 0; }
+.rose-section-head { display: flex; justify-content: space-between; align-items: start; gap: 8px; padding: 8px 0 12px; border-bottom: 1px solid var(--border-color); }
+.rose-section-head h3 { margin: 0; font-size: 15px; }
+.rose-distance-note { margin-left: 6px; color: var(--text-secondary); font-size: 11px; font-weight: 400; }
+.rose-section-head p { margin: 6px 0 0; color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
+.rose-section-head button { border: 0; padding: 6px; color: var(--text-primary); background: transparent; font: inherit; cursor: pointer; }
+.rose-legend { max-height: 380px; overflow: auto; }
+.rose-line { width: 100%; min-height: 38px; display: flex; align-items: center; gap: 10px; padding: 7px 8px; border: 0; border-bottom: 1px solid var(--border-color); background: transparent; color: var(--text-primary); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+.rose-line:hover, .rose-line.is-selected { background: var(--input-bg); }
+.rose-line:focus-visible, .rose-section-head button:focus-visible { outline: 2px solid var(--state-end); outline-offset: -2px; }
+.rose-swatch { flex: 0 0 10px; width: 10px; height: 10px; border-radius: 50%; }
+.rose-line-name { flex: 1; }
+.rose-line-km { color: var(--text-secondary); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rose-empty { padding: 40px 10px; color: var(--text-secondary); text-align: center; font-size: 13px; }
+.rose-method { margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 15px; color: var(--text-secondary); font-size: 12px; line-height: 1.7; }
+.rose-method summary { color: var(--text-primary); cursor: pointer; }
+@media (max-width: 700px) {
+    .rose-scroll { padding-top: 12px; }
+    .rose-toolbar { gap: 10px; }
+    .rose-toolbar > label { flex: 1 1 120px; }
+    .rose-toolbar .analysis-select { width: 100%; min-width: 0; }
+    .rose-overview { align-items: start; padding-top: 15px; }
+    .rose-overview h2 { font-size: 18px; }
+    .rose-body { grid-template-columns: 1fr; gap: 12px; }
+    .rose-svg { max-width: 330px; }
+    .rose-legend { max-height: none; }
+    .rose-line { min-height: 44px; }
+}
+
+/* Direction chart: calm frame and a clear visual hierarchy around the line colors. */
+.rose-modal { max-width: 1060px; }
+.rose-scroll { padding-top: 18px; }
+.rose-toolbar { gap: 12px; }
+.rose-overview { padding: 16px 0 12px; }
+.rose-overview h2 { margin: 5px 0 2px; font-size: 24px; letter-spacing: -.02em; }
+.rose-body { grid-template-columns: minmax(280px, 1.08fr) minmax(270px, .92fr); gap: 28px; padding-top: 16px; align-items: start; }
+.rose-figure { padding: 17px 18px 16px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 14px !important; }
+.rose-figure-heading { display: flex; justify-content: space-between; gap: 8px; color: var(--text-secondary); font-size: 11px; text-align: left; }
+.rose-figure-heading span:first-child { color: var(--text-primary); font-size: 12px; font-weight: 600; }
+.rose-svg { max-width: 320px; margin: 4px auto 2px; }
+.rose-grid circle, .rose-grid path { stroke: var(--text-secondary); stroke-opacity: .20; stroke-width: .8; }
+.rose-petals path { transition: opacity .16s ease; }
+.rose-center circle:first-child { fill: var(--panel-bg); stroke: var(--text-secondary); stroke-opacity: .28; stroke-width: .8; }
+.rose-center path { fill: none; stroke: var(--text-secondary); stroke-opacity: .55; stroke-width: .8; }
+.rose-center circle:last-child { fill: var(--text-primary); }
+.rose-labels { fill: var(--text-primary); font-size: 11px; font-weight: 600; }
+.rose-caption { margin: 4px 0 0; font-size: 11px; line-height: 1.5; }
+.rose-section-head { align-items: center; padding: 3px 0 16px; }
+.rose-section-head h3 { font-size: 15px; }
+.rose-distance-note { display: inline-block; margin-left: 7px; }
+.rose-section-head p { margin-top: 8px; }
+.rose-legend { max-height: 390px; }
+.rose-line { min-height: 42px; padding: 8px 6px; gap: 12px; }
+.rose-swatch { flex-basis: 12px; width: 12px; height: 12px; }
+.rose-line-name { font-weight: 500; }
+.rose-line-km { font-size: 12px; }
+@media (max-width: 700px) {
+    .rose-overview { padding-top: 16px; }
+    .rose-overview h2 { font-size: 20px; }
+    .rose-body { grid-template-columns: 1fr; gap: 22px; padding-top: 16px; }
+    .rose-figure { padding: 14px 12px; }
+    .rose-svg { max-width: 310px; }
+    .rose-legend { max-height: none; }
+    .rose-line { min-height: 44px; }
+}

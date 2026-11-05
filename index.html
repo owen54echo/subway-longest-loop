@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- CSS Style -->
-    <link rel="stylesheet" href="styles.css?v=20261103-review-medium-low-v4">
+    <link rel="stylesheet" href="styles.css?v=20261105-rose-v6">
 </head>
 <body class="theme-dark">
     <div class="app-container">
@@ -42,7 +42,11 @@
                     <path d="M8.5 14h7"></path>
                 </svg>
             </button>
+            <button class="btn-float" id="btn-geographic" title="切换地理走向" aria-label="切换地理走向" aria-pressed="false">
+                <svg viewBox="0 0 24 24" width="17" height="17" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"></path><path d="M9 3v15M15 6v15"></path></svg>
+            </button>
         </div>
+        <a class="geographic-credit" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a>
         
         <!-- Floating city selector tabs -->
         <div class="city-tab-container" id="city-tab-container" role="tablist" aria-label="选择城市地铁网络，左右滑动查看更多城市" title="左右滑动查看更多城市">
@@ -350,6 +354,7 @@
                         <span>城市线网之最</span>
                         <small>扫描全城起点，寻找不同规则下的最长路线</small>
                     </button>
+                    <button class="analysis-action" id="btn-open-rose" type="button"><span>方向玫瑰图</span><small>按线路颜色探索城市轨道走向</small></button>
                     <button class="analysis-action" id="btn-open-detour" type="button"><span>绕路之王</span><small>比较站间线网距离和直线距离</small></button>
                 <button class="analysis-action" id="btn-open-failure" type="button"><span>故障影响模拟</span><small>模拟车站、区间或整条线路中断</small></button>
                 </div>
@@ -632,8 +637,8 @@
             <div class="share-large-viewer-scroll"><img id="share-large-viewer-image" alt="完整路线大图"></div>
         </div>
 
-    <script src="subway_data.js?v=20261102-all-cities"></script>
-    <script src="city_extremes_results.js?v=20261102-hangzhou-refresh"></script>
+    <script src="subway_data.js?v=20261105-foshan-stations-v1"></script>
+    <script src="city_extremes_results.js?v=20261105-guangfo-correction-v1"></script>
     <script src="mobile-map-interaction.js"></script>
     <script src="topology-rules.js"></script>
     <script src="route-rules.js"></script>
@@ -646,6 +651,9 @@
     <script src="share-export.js"></script>
     <script src="network-research-core.js?v=20261102-all-cities"></script>
     <script src="network-research-ui.js?v=20261103-review-medium-low-v4"></script>
+    <script src="geographic-view.js?v=20261105-all-cities-v1"></script>
+    <script src="orientation-rose.js?v=20261105-1"></script>
+    <script src="orientation-rose-ui.js?v=20261105-9"></script>
     <script src="solver-progress.js"></script>
     <script src="site-runtime.js"></script>
     <script src="analytics-client.js"></script>
@@ -673,6 +681,24 @@
             let routeMode = "path";
             let optimizeMetric = "edges";
             let showOfficialLineColors = false;
+            let geographicView = null;
+            let geographicPending = false;
+            const geographicDataPromises = new Map();
+            const geographicButton = document.getElementById("btn-geographic");
+            function syncGeographicControl() {
+                geographicButton.disabled = geographicPending;
+                geographicButton.setAttribute("aria-pressed", geographicView ? "true" : "false");
+                geographicButton.classList.toggle("active", !!geographicView);
+                const name = geographicView ? "返回线网示意图" : "切换地理走向";
+                geographicButton.title = name; geographicButton.setAttribute("aria-label", name);
+            }
+            function mapEdgeShape(edge) {
+                const u = data.nodes.find(n => n.name === edge.u), v = data.nodes.find(n => n.name === edge.v);
+                if (!u || !v) return null;
+                return geographicView ? geographicView.points(edge) : {estimated:false, points:[u,v]};
+            }
+            function mapPolyline(points) { return points.map(p => `${p.x},${p.y}`).join(" "); }
+
             const selectedWaypoints = new Set();
             const selectedAvoids = new Set();
             const activeWorkers = new Set();
@@ -792,16 +818,23 @@
                     const uNode = nodes.find(n => n.name === edge.u);
                     const vNode = nodes.find(n => n.name === edge.v);
                     if (uNode && vNode) {
-                        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                        line.setAttribute("x1", uNode.x);
-                        line.setAttribute("y1", uNode.y);
-                        line.setAttribute("x2", vNode.x);
-                        line.setAttribute("y2", vNode.y);
+                        const shape = mapEdgeShape(edge);
+                        if (!shape) return;
+                        const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+                        line.setAttribute("points", mapPolyline(shape.points));
+                        line.setAttribute("fill", "none");
+                        if (shape.estimated) { line.setAttribute("stroke-dasharray", "7 6"); line.dataset.geometry = "estimated"; }
+                        else if (geographicView) line.dataset.geometry = "osm";
+                        const description = document.createElementNS("http://www.w3.org/2000/svg", "title");
+                        description.textContent = `${edge.line} ${edge.u}—${edge.v}${shape.estimated ? "：站间直线估算" : geographicView ? "：OSM 候选走向" : ""}`;
+                        line.appendChild(description);
                         line.setAttribute("class", "metro-line");
+                        line.setAttribute("aria-hidden", "true");
                         line.setAttribute("stroke", showOfficialLineColors
                             ? safeLineColor(edge.color, "var(--base-line-color)")
                             : "var(--base-line-color)");
                         line.setAttribute("stroke-width", "4.5");
+                        if (geographicView) line.setAttribute("stroke-width", "7");
                         line.setAttribute("stroke-linecap", "round");
                         line.setAttribute("stroke-linejoin", "round");
                         line.setAttribute("opacity", showOfficialLineColors ? "0.92" : "0.78");
@@ -1389,7 +1422,9 @@
                     tab.scrollIntoView({ block: "nearest", inline: "center" });
                     
                     selectedCity = selected;
+                    geographicView = null;
                     data = window.subwayDataMap[selectedCity];
+                    syncGeographicControl();
                     calculationTopology = getCalculationCityData(selectedCity).topology;
                     isCustomRouteMode = false;
                     appContainer.classList.remove("custom-route-mode");
@@ -3105,23 +3140,23 @@
                             const uNode = data.nodes.find(n => n.name === segment.u);
                             const vNode = data.nodes.find(n => n.name === segment.v);
                             if (!uNode || !vNode) return;
-                            // A dark backing separates the active route at crossings without a glow.
-                            const backingLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                            backingLine.setAttribute("x1", uNode.x);
-                            backingLine.setAttribute("y1", uNode.y);
-                            backingLine.setAttribute("x2", vNode.x);
-                            backingLine.setAttribute("y2", vNode.y);
+                            const shape = mapEdgeShape(segment);
+                            if (!shape) return;
+                            // Use exactly the same geometry for the selected route and base map.
+                            const backingLine = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+                            backingLine.setAttribute("points", mapPolyline(shape.points));
+                            backingLine.setAttribute("fill", "none");
+                            if (shape.estimated) backingLine.setAttribute("stroke-dasharray", "7 6");
                             backingLine.setAttribute("stroke", "var(--route-backing)");
                             backingLine.setAttribute("stroke-width", "8");
                             backingLine.setAttribute("stroke-linecap", "round");
                             backingLine.setAttribute("opacity", "0.95");
                             hlEdgesGroup.appendChild(backingLine);
 
-                            const routeLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                            routeLine.setAttribute("x1", uNode.x);
-                            routeLine.setAttribute("y1", uNode.y);
-                            routeLine.setAttribute("x2", vNode.x);
-                            routeLine.setAttribute("y2", vNode.y);
+                            const routeLine = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+                            routeLine.setAttribute("points", mapPolyline(shape.points));
+                            routeLine.setAttribute("fill", "none");
+                            if (shape.estimated) routeLine.setAttribute("stroke-dasharray", "7 6");
                             routeLine.setAttribute("stroke", segment.color || edge.color);
                             routeLine.setAttribute("stroke-width", "5.5");
                             routeLine.setAttribute("stroke-linecap", "round");
@@ -3374,7 +3409,11 @@
                             const fromPoint = mapPoint(segment.u);
                             const toPoint = mapPoint(segment.v);
                             if (fromPoint && cruisePathPoints.at(-1)?.name !== segment.u) cruisePathPoints.push(fromPoint);
-                            if (toPoint) cruisePathPoints.push(toPoint);
+                            const shape = geographicView && mapEdgeShape(segment);
+                            if (shape && toPoint) {
+                                shape.points.slice(1, -1).forEach(point => cruisePathPoints.push({ ...point, name: segment.u, cruiseFrom: segment.u, cruiseTo: segment.v, cruiseColor: segment.color }));
+                            }
+                            if (toPoint) cruisePathPoints.push(geographicView ? { ...toPoint, cruiseFrom: segment.u, cruiseTo: segment.v, cruiseColor: segment.color } : toPoint);
                         });
                     });
                 } else {
@@ -3405,12 +3444,12 @@
                         (edge.u === p2.name && edge.v === p1.name)
                     );
                     cruiseSegments.push({
-                        from: p1,
-                        to: p2,
+                        from: p2.cruiseFrom ? { ...p1, name: p2.cruiseFrom } : p1,
+                        to: p2.cruiseTo ? { ...p2, name: p2.cruiseTo } : p2,
                         dx: dx,
                         dy: dy,
                         length: len || 1.0,
-                        color: routeEdge && routeEdge.color ? routeEdge.color : "var(--state-end)"
+                        color: p2.cruiseColor || (routeEdge && routeEdge.color ? routeEdge.color : "var(--state-end)")
                     });
                 }
 
@@ -4477,6 +4516,38 @@
             cityExtremesRunButton.addEventListener("click", runCityExtremeSearch);
             cityExtremesCancelButton.addEventListener("click", cancelCityExtremeRun);
 
+            geographicButton.addEventListener("click", async () => {
+                if (geographicPending) return;
+                if (geographicView) { geographicView = null; data = window.subwayDataMap[selectedCity]; }
+                else {
+                    geographicPending = true; syncGeographicControl();
+                    const requestedCity = selectedCity;
+                    try {
+                        if (!geographicDataPromises.has(requestedCity)) {
+                            const file = requestedCity === "guangzhou" ? "guangfo" : requestedCity;
+                            geographicDataPromises.set(requestedCity, fetch(`data/geometry/${file}.json?v=20261105-all-cities-v2`).then(response => {
+                                if (!response.ok) throw new Error("地理走向数据加载失败");
+                                return response.json();
+                            }));
+                        }
+                        const geometry = await geographicDataPromises.get(requestedCity);
+                        if (selectedCity !== requestedCity) return;
+                        geographicView = window.GeographicView.create(window.subwayDataMap[requestedCity], geometry);
+                        data = geographicView.data;
+                    } catch (error) {
+                        geographicDataPromises.delete(requestedCity);
+                        console.error("地理走向加载失败", error);
+                        if (selectedCity === requestedCity) alert("地理走向暂时无法加载，请稍后重试。");
+                        return;
+                    } finally { geographicPending = false; syncGeographicControl(); }
+                }
+                stopCruise(); mapPopup.style.display = "none"; syncGeographicControl(); renderSvgMap();
+                if (isCustomRouteMode) renderCustomDraftPreview();
+                else if (currentConfirmedResult) highlightPathOnSvgMap(currentConfirmedResult.result, currentConfirmedResult.edges);
+                refreshStationLabels();
+            });
+            syncGeographicControl();
+
             // Theme click toggle
             document.getElementById("btn-theme").addEventListener("click", () => {
                 document.body.classList.toggle("theme-dark");
@@ -4489,6 +4560,9 @@
                 btn.setAttribute("aria-pressed", showOfficialLineColors ? "true" : "false");
                 btn.setAttribute("title", showOfficialLineColors ? "关闭线路官方颜色" : "显示线路官方颜色");
                 renderSvgMap();
+                if (isCustomRouteMode) renderCustomDraftPreview();
+                else if (currentConfirmedResult) highlightPathOnSvgMap(currentConfirmedResult.result, currentConfirmedResult.edges);
+                refreshStationLabels();
             });
 
             // Toggle tooltip info bubble
@@ -4526,6 +4600,8 @@
                 }
             };
 
+            window.OrientationRoseUI.init(() => selectedCity);
+
             researchController = window.NetworkResearchUI.init({
                 city: () => selectedCity,
                 raw: () => data,
@@ -4560,8 +4636,10 @@
                             const edge = data.edges[index];
                             const a = data.nodes.find(n => n.name === edge?.u), b = data.nodes.find(n => n.name === edge?.v);
                             if (!a || !b) continue;
-                            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                            for (const [key, value] of Object.entries({x1:a.x, y1:a.y, x2:b.x, y2:b.y, stroke:"#e34b4b", "stroke-width":5, "stroke-dasharray":"5 4"})) line.setAttribute(key, value);
+                            const shape = mapEdgeShape(edge);
+                            if (!shape) continue;
+                            const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+                            for (const [key, value] of Object.entries({points:mapPolyline(shape.points), fill:"none", stroke:"#e34b4b", "stroke-width":5, "stroke-dasharray":"5 4"})) line.setAttribute(key, value);
                             group.appendChild(line);
                         }
                     }

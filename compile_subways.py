@@ -137,6 +137,32 @@ def add_edge_distance(edge, nodes):
         edge["straightLengthKm"] = round(distance, 3)
     return edge
 
+def correct_foshan_station_coordinates(nodes, edges):
+    """Repair a known swapped coordinate pair without changing schematic positions.
+
+    The source snapshot puts Xiaodedong at Luocun and vice versa. Only repair the
+    known reversed values; a changed source must not be silently overwritten.
+    """
+    east = nodes.get("孝德东")
+    west = nodes.get("罗村")
+    if not east or not west:
+        return False
+    expected_east = (113.069282, 23.067205)
+    expected_west = (113.051999, 23.066987)
+    def near(node, position):
+        return (is_finite_number(node.get("lng")) and is_finite_number(node.get("lat"))
+                and abs(node["lng"] - position[0]) < 0.0001
+                and abs(node["lat"] - position[1]) < 0.0001)
+    if not (near(east, expected_west) and near(west, expected_east)):
+        return False
+    for coordinate in ("lng", "lat"):
+        east[coordinate], west[coordinate] = west[coordinate], east[coordinate]
+    for edge in edges:
+        if edge.get("u") in ("孝德东", "罗村") or edge.get("v") in ("孝德东", "罗村"):
+            add_edge_distance(edge, nodes)
+    return True
+
+
 def is_finite_number(value):
     return isinstance(value, (int, float)) and math.isfinite(value)
 
@@ -641,6 +667,7 @@ def main():
                 return name
                 
             merge_cities(nodes, edges, foshan_raw, affine_gz_fs, line_rename_foshan)
+            correct_foshan_station_coordinates(nodes, edges)
             
         elif key == "hangzhou" and shaoxing_raw:
             print("Merging Shaoxing into Hangzhou network...")

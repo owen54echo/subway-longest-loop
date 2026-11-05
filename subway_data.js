@@ -26273,23 +26273,23 @@ window.subwayDataMap = {
         "name": "孝德东",
         "x": 291.8,
         "y": 1177.1,
-        "lng": 113.051999,
-        "lat": 23.066987,
-        "lines": [
-          "佛山3号线"
-        ],
-        "stationId": "guangzhou:geo:113.051999:23.066987"
-      },
-      {
-        "name": "罗村",
-        "x": 240.7,
-        "y": 1178.4,
         "lng": 113.069282,
         "lat": 23.067205,
         "lines": [
           "佛山3号线"
         ],
         "stationId": "guangzhou:geo:113.069282:23.067205"
+      },
+      {
+        "name": "罗村",
+        "x": 240.7,
+        "y": 1178.4,
+        "lng": 113.051999,
+        "lat": 23.066987,
+        "lines": [
+          "佛山3号线"
+        ],
+        "stationId": "guangzhou:geo:113.051999:23.066987"
       },
       {
         "name": "佛山西站",
@@ -29423,7 +29423,7 @@ window.subwayDataMap = {
         "v": "孝德东",
         "line": "佛山3号线",
         "color": "#0065B3",
-        "straightLengthKm": 3.449
+        "straightLengthKm": 1.774
       },
       {
         "u": "孝德东",
@@ -29437,7 +29437,7 @@ window.subwayDataMap = {
         "v": "佛山西站",
         "line": "佛山3号线",
         "color": "#0065B3",
-        "straightLengthKm": 3.87
+        "straightLengthKm": 2.311
       },
       {
         "u": "佛山西站",
