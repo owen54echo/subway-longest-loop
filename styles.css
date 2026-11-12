@@ -2923,9 +2923,8 @@ input:checked + .slider:before {
 @media (max-width: 1024px) {
     .detour-mobile-hint { display: block; margin: 0 2px 6px; color: var(--text-secondary); font-size: 12px; }
     .detour-table { border-collapse: separate; border-spacing: 0; }
-    .detour-table th:first-child, .detour-table td:first-child { position: sticky; left: 0; z-index: 2; width: 48px; min-width: 48px; background: var(--input-bg); }
-    .detour-table th:nth-child(2), .detour-table td:nth-child(2) { position: sticky; left: 48px; z-index: 2; background: var(--input-bg); }
-    .detour-table th:first-child, .detour-table th:nth-child(2) { z-index: 3; }
+    .detour-table th:nth-child(2), .detour-table td:nth-child(2) { position: sticky; left: 0; z-index: 2; background: var(--input-bg); }
+    .detour-table th:nth-child(2) { z-index: 3; }
 }
 @media (max-width: 768px) {
     #centrality-modal .matrix-close { min-width: 44px; min-height: 44px; }
