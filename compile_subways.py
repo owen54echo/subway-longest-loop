@@ -184,6 +184,44 @@ def attach_station_ids(city_key, nodes):
         node["stationId"] = station_id
 
 
+# Official opening: 2026-11-12, Jingkou to Liangjiang Film City only.
+# Existing interchange coordinates and schematic anchors are preserved.
+CHONGQING_LINE_15_COLOR = "#2249A3"
+CHONGQING_LINE_15_NAMES = [
+    "井口", "礼学路", "金山寺", "欢乐谷", "重光立交", "重光", "金福路", "金童路", "果塘路",
+    "西南政法大学", "宝圣湖", "双龙湖", "江北机场T3航站楼", "天堡", "龙港大道", "复盛", "福惠大道", "两江影视城",
+]
+CHONGQING_LINE_15_NEW_STATIONS = [
+    {"name": "井口", "lng": 106.452870, "lat": 29.661183, "x": 783, "y": 509},
+    {"name": "礼学路", "lng": 106.474279, "lat": 29.675308, "x": 887, "y": 508},
+    {"name": "重光立交", "lng": 106.516401, "lat": 29.649540, "x": 1261, "y": 594},
+    {"name": "金福路", "lng": 106.548139, "lat": 29.640889, "x": 1396, "y": 595},
+    {"name": "果塘路", "lng": 106.585583, "lat": 29.646953, "x": 1523, "y": 506},
+    {"name": "西南政法大学", "lng": 106.596228, "lat": 29.665052, "x": 1608, "y": 477},
+    {"name": "双龙湖", "lng": 106.624634, "lat": 29.704857, "x": 1872, "y": 457},
+    {"name": "天堡", "lng": 106.758041, "lat": 29.681563, "x": 2177, "y": 502},
+    {"name": "龙港大道", "lng": 106.772749, "lat": 29.667180, "x": 2299, "y": 561},
+    {"name": "福惠大道", "lng": 106.814960, "lat": 29.669448, "x": 2602, "y": 573},
+    {"name": "两江影视城", "lng": 106.822934, "lat": 29.688633, "x": 2602, "y": 477},
+]
+
+
+def apply_chongqing_line15(nodes, edges):
+    """Add only the verified opened section; preserve existing station metadata."""
+    for station in CHONGQING_LINE_15_NEW_STATIONS:
+        if station["name"] not in nodes:
+            nodes[station["name"]] = {**station, "lines": []}
+    missing = [name for name in CHONGQING_LINE_15_NAMES if name not in nodes]
+    if missing:
+        raise ValueError(f"重庆 15 号线换乘站不存在: {missing}")
+    for name in CHONGQING_LINE_15_NAMES:
+        if "15号线" not in nodes[name]["lines"]:
+            nodes[name]["lines"].append("15号线")
+    edges[:] = [edge for edge in edges if edge.get("line") != "15号线"]
+    for u, v in zip(CHONGQING_LINE_15_NAMES, CHONGQING_LINE_15_NAMES[1:]):
+        edges.append(add_edge_distance({"u": u, "v": v, "line": "15号线", "color": CHONGQING_LINE_15_COLOR}, nodes))
+
+
 def apply_nanjing_line6(nodes, edges):
     """Add the verified Line 6 contract without rebuilding unrelated cities."""
     for station in NANJING_LINE_6_STATIONS:
@@ -419,6 +457,19 @@ def validate_compiled_data(compiled_data, expected_city_keys):
         dangling = [edge for edge in edges if edge.get("u") not in node_names or edge.get("v") not in node_names]
         if dangling:
             raise ValueError(f"Compiled city {city_key} contains {len(dangling)} dangling edges")
+
+def patch_existing_chongqing_line15(output_js):
+    compiled_data = load_existing_compiled_data(output_js)
+    if not compiled_data or "chongqing" not in compiled_data:
+        raise RuntimeError("Existing subway_data.js does not contain Chongqing data")
+    city = compiled_data["chongqing"]
+    nodes = {node["name"]: node for node in city["nodes"]}
+    apply_chongqing_line15(nodes, city["edges"])
+    attach_station_ids("chongqing", nodes)
+    city["nodes"] = list(nodes.values())
+    validate_compiled_data(compiled_data, [city["key"] for city in CITIES])
+    write_compiled_data(compiled_data, output_js)
+
 
 def patch_existing_nanjing_line6(output_js):
     compiled_data = load_existing_compiled_data(output_js)
@@ -694,6 +745,8 @@ def main():
             apply_nanjing_line6(nodes, edges)
         elif key == "wuhan":
             apply_wuhan_line12_phase2(nodes, edges)
+        elif key == "chongqing":
+            apply_chongqing_line15(nodes, edges)
 
         attach_station_ids(key, nodes)
         compiled_data[key] = {
@@ -725,7 +778,11 @@ def main():
     print(f"Successfully compiled all cities and saved to {output_js}!")
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1 and sys.argv[1] == "--patch-nanjing-line6":
+    if len(sys.argv) > 1 and sys.argv[1] == "--patch-chongqing-line15":
+        target = os.path.join(PROJECT_DIR, "subway_data.js")
+        patch_existing_chongqing_line15(target)
+        print(f"Patched Chongqing Line 15 data in {target}")
+    elif len(sys.argv) > 1 and sys.argv[1] == "--patch-nanjing-line6":
         target = os.path.join(os.path.dirname(os.path.abspath(__file__)), "subway_data.js")
         patch_existing_nanjing_line6(target)
         print(f"Patched Nanjing Line 6 data in {target}")

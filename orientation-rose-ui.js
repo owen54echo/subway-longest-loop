@@ -67,7 +67,7 @@
             try {
                 if(!cache.has(city)) {
                     const file=city==='guangzhou'?'guangfo':city;
-                    cache.set(city,fetch(`data/geometry/${file}.json?v=20261105-all-cities-v2`).then(r=>{if(!r.ok) throw new Error('数据加载失败');return r.json();}));
+                    cache.set(city,fetch(`data/geometry/${file}.json?v=20261112-chongqing15-v1`).then(r=>{if(!r.ok) throw new Error('数据加载失败');return r.json();}));
                 }
                 const data=await cache.get(city); if(current!==requestId) return;
                 geometry=data; lineSelect.value=''; render();
