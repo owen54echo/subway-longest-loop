@@ -318,6 +318,25 @@ def apply_wuhan_line12_phase2(nodes, edges):
             add_edge_distance(edge, nodes)
 
 
+def exclude_chengdu_lujia_unopened(nodes, edges):
+    """Keep the S3 through connection, excluding the unopened Lujia stop."""
+    name, line = '芦葭', 'S3(资阳)线'
+    if name not in nodes:
+        return
+    incident = [edge for edge in edges if name in (edge.get('u'), edge.get('v'))]
+    if len(incident) != 2 or any(edge.get('line') != line for edge in incident):
+        raise ValueError('芦葭站连接关系已变化，需重新核验运营状态')
+    neighbors = {edge['v'] if edge['u'] == name else edge['u'] for edge in incident}
+    if neighbors != {'福田', '资阳临空'} or any(n not in nodes for n in neighbors):
+        raise ValueError('芦葭站相邻车站已变化，需重新核验运营状态')
+    insert_at = min(i for i, edge in enumerate(edges) if edge in incident)
+    replacement = add_edge_distance({'u': '福田', 'v': '资阳临空', 'line': line,
+                                     'color': incident[0]['color']}, nodes)
+    edges[:] = [edge for edge in edges if edge not in incident]
+    edges.insert(insert_at, replacement)
+    del nodes[name]
+
+
 def apply_chengdu_longquanyi_railway_station(nodes, edges):
     """Insert the opened Line 2 station without changing the schematic map style."""
     station = CHENGDU_LONGQUANYI_RAILWAY_STATION
@@ -468,6 +487,19 @@ def patch_existing_chongqing_line15(output_js):
     attach_station_ids("chongqing", nodes)
     city["nodes"] = list(nodes.values())
     validate_compiled_data(compiled_data, [city["key"] for city in CITIES])
+    write_compiled_data(compiled_data, output_js)
+
+
+def patch_existing_chengdu_lujia_unopened(output_js):
+    compiled_data = load_existing_compiled_data(output_js)
+    if not compiled_data or 'chengdu' not in compiled_data:
+        raise RuntimeError('Existing subway_data.js does not contain Chengdu data')
+    city = compiled_data['chengdu']
+    nodes = {node['name']: node for node in city['nodes']}
+    exclude_chengdu_lujia_unopened(nodes, city['edges'])
+    attach_station_ids('chengdu', nodes)
+    city['nodes'] = list(nodes.values())
+    validate_compiled_data(compiled_data, [c['key'] for c in CITIES])
     write_compiled_data(compiled_data, output_js)
 
 
@@ -747,6 +779,8 @@ def main():
             apply_wuhan_line12_phase2(nodes, edges)
         elif key == "chongqing":
             apply_chongqing_line15(nodes, edges)
+        elif key == "chengdu":
+            exclude_chengdu_lujia_unopened(nodes, edges)
 
         attach_station_ids(key, nodes)
         compiled_data[key] = {
@@ -794,5 +828,9 @@ if __name__ == '__main__':
         target = os.path.join(os.path.dirname(os.path.abspath(__file__)), "subway_data.js")
         patch_existing_chengdu_longquanyi_railway_station(target)
         print(f"Patched Chengdu Longquanyi Railway Station data in {target}")
+    elif len(sys.argv) > 1 and sys.argv[1] == "--patch-chengdu-lujia-unopened":
+        target = os.path.join(PROJECT_DIR, "subway_data.js")
+        patch_existing_chengdu_lujia_unopened(target)
+        print(f"Patched unopened Chengdu Lujia station in {target}")
     else:
         main()

@@ -14,5 +14,5 @@ assert.ok(!city.nodes.some(n=>n.name==='曾家'&&n.lines.includes('15号线')));
 for(const edge of edges){assert.equal(edge.color,'#2249A3');assert.ok(edge.straightLengthKm>0);}
 const geometry=JSON.parse(fs.readFileSync('data/geometry/chongqing.json','utf8'));
 for(const name of names)assert.ok(geometry.positions[name]?.every(Number.isFinite),name);
-for(const e of edges)assert.ok(geometry.missing.includes([e.line,e.u,e.v].join('\t')),'unverified line shape must remain marked estimated');
+for(const e of edges){ const key=[e.line,e.u,e.v].join('\t'); if((e.u==='宝圣湖'&&e.v==='双龙湖') || (e.u==='江北机场T3航站楼'&&e.v==='天堡')) assert.ok(geometry.segments[key], 'reviewed OSM track should be present'); else assert.ok(geometry.missing.includes(key),'unverified line shape must remain marked estimated'); }
 console.log('Chongqing 15 Line stations, transfers and fallback geometry passed');

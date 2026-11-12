@@ -1,0 +1,30 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const geo = require('../../geographic-view.js');
+const rose = require('../../orientation-rose.js');
+const w = {};
+new Function('window', fs.readFileSync('subway_data.js', 'utf8'))(w);
+const city = w.subwayDataMap.chongqing;
+const data = JSON.parse(fs.readFileSync('data/geometry/chongqing.json', 'utf8'));
+const overlay = JSON.parse(fs.readFileSync('data/geometry/chongqing-long-segments.json', 'utf8'));
+const view = geo.create(city, data);
+assert.equal(Object.keys(overlay.segments).length, 5);
+for (const [key, candidate] of Object.entries(overlay.segments)) {
+  assert.deepEqual(data.segments[key], candidate);
+  assert.ok(!data.missing.includes(key));
+  assert.ok(data.meta.sources[candidate.source]);
+  assert.deepEqual(candidate.points[0], data.positions[candidate.u]);
+  assert.deepEqual(candidate.points.at(-1), data.positions[candidate.v]);
+  assert.ok(candidate.points.length >= 3);
+  const edge = city.edges.find(e => e.line === candidate.line && e.u === candidate.u && e.v === candidate.v);
+  assert.ok(edge, key);
+  const projected = view.points(edge);
+  assert.equal(projected.estimated, false);
+  assert.equal(projected.points.length, candidate.points.length);
+}
+for (const key of ['2号线\t白居寺\t大江']) assert.ok(data.missing.includes(key), key);
+const result = rose.analyze(city, data, { includeEstimated: true });
+assert.equal(result.totalSegments, city.edges.length);
+assert.ok(result.lines.some(line => line.name === '15号线' && line.km > 0));
+assert.equal(data.meta.matchedSegments, Object.keys(data.segments).length);
+console.log('Chongqing long-segment geometry and orientation integration passed');

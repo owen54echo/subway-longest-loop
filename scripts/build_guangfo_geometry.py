@@ -6,6 +6,10 @@ Snapshots are standard OpenStreetMap API relation/<id>/full XML; provenance is r
 This does not modify subway_data.js. OSM data is ODbL, see output metadata.
 """
 import collections, datetime, heapq, json, math, pathlib, statistics, sys, xml.etree.ElementTree as ET
+try:
+    from long_geometry_overrides import apply_reviewed_long_segments
+except ModuleNotFoundError:
+    from scripts.long_geometry_overrides import apply_reviewed_long_segments
 ROOT=pathlib.Path(__file__).resolve().parent.parent
 IDS={'13103097':'南海有轨电车1号线','13239401':'18号线','13604443':'佛山2号线','13987999':'22号线','15054264':'佛山3号线','19283541':'10号线','19283544':'12号线','7390450':'2号线','7480669':'1号线','7483883':'5号线','7422204':'8号线','7520751':'7号线','8338723':'14号线','8378350':'14号线支线(知识城线)','7285816':'6号线','6728313':'13号线','18132492':'11号线','9607953':'4号线','9611404':'APM线','9171918':'21号线','2646091':'广佛线','9841061':'3号线','444000':'3号线','7935591':'9号线'}
 ALIASES={'礌岗':'𧒽岗','机场南(1号航站楼)':'机场南','机场北(T2)':'机场北','林岳东(2号线)':'林岳东'}
@@ -93,6 +97,7 @@ def main():
             simplified=simplify(pts,20);geometry[key]={'line':line,'u':u,'v':v,'points':[[round(p[0],6),round(p[1],6)] for p in simplified],'source':rid,'osmLengthM':round(length)}
     allkeys={f"{e['line']}\t{e['u']}\t{e['v']}" for e in edges}; missing=sorted(allkeys-set(geometry));
     out={'meta':{'city':'guangzhou','generated':'2026-11-05','source':'© OpenStreetMap contributors','license':'ODbL','licenseUrl':'https://www.openstreetmap.org/copyright','approach':'Project station coordinates are treated as approximately GCJ-02, inverse-transformed to WGS84 only for display; OSM stop positions adopted only after proximity checks. This is an unverified coordinate assumption, not a survey.','matchedSegments':len(geometry),'totalSegments':len(allkeys),'matchedStations':len(chosen),'totalStations':len(project),'sources':sources},'positions':{k:[round(v[0],6),round(v[1],6)] for k,v in positions.items()},'osmStations':sorted(chosen),'segments':geometry,'unresolved':unresolved,'missing':missing}
+    out=apply_reviewed_long_segments(out,'guangfo')
     target=ROOT/'data/geometry/guangfo.json';target.write_text(json.dumps(out,ensure_ascii=False,separators=(',',':'))+'\n');print('edges',len(allkeys),'matched',len(geometry),'fallback',len(missing),'stations',len(chosen),'/',len(project),'conflicts',len(unresolved),'rejections',dict(reject));print('conflict sample',unresolved[:12]);print('by line');
     for line,es in byline.items():
         keys={f"{line}\t{e['u']}\t{e['v']}" for e in es};print(line,len(keys & set(geometry)),'/',len(keys))

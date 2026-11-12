@@ -1,0 +1,403 @@
+<?xml version='1.0' encoding='utf-8'?>
+<osm version="0.6" generator="OpenStreetMap API snapshot"><node id="11658164400" visible="true" version="10" changeset="184986791" timestamp="2026-07-02T16:33:41Z" user="davidxuang" uid="7140810" lat="29.6437554" lon="106.5444466">
+  <tag k="name" v="金福路" />
+  <tag k="name:en" v="Jinfu Road" />
+  <tag k="name:zh" v="金福路" />
+  <tag k="network" v="重庆轨道交通" />
+  <tag k="network:en" v="Chongqing Rail Transit" />
+  <tag k="network:short" v="CRT" />
+  <tag k="network:wikidata" v="Q1190894" />
+  <tag k="network:zh" v="重庆轨道交通" />
+  <tag k="operator" v="重庆轨道交通运营" />
+  <tag k="operator:wikidata" v="Q136485962" />
+  <tag k="public_transport" v="stop_position" />
+  <tag k="railway" v="stop" />
+  <tag k="subway" v="yes" />
+ </node>
+ <node id="11658164401" visible="true" version="6" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6436686" lon="106.5490124" />
+ <node id="11658164425" visible="true" version="6" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6754075" lon="106.5970688" />
+ <node id="11658164434" visible="true" version="6" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6999934" lon="106.6178593" />
+ <node id="11658164438" visible="true" version="6" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7081871" lon="106.6210022" />
+ <node id="12453071731" visible="true" version="9" changeset="184986791" timestamp="2026-07-02T16:33:41Z" user="davidxuang" uid="7140810" lat="29.6451349" lon="106.5633709">
+  <tag k="name" v="金童路" />
+  <tag k="name:en" v="Jintonglu" />
+  <tag k="name:zh" v="金童路" />
+  <tag k="network" v="重庆轨道交通" />
+  <tag k="network:en" v="Chongqing Rail Transit" />
+  <tag k="network:short" v="CRT" />
+  <tag k="network:wikidata" v="Q1190894" />
+  <tag k="network:zh" v="重庆轨道交通" />
+  <tag k="operator" v="重庆轨道交通运营" />
+  <tag k="operator:wikidata" v="Q136485962" />
+  <tag k="public_transport" v="stop_position" />
+  <tag k="railway" v="stop" />
+  <tag k="subway" v="yes" />
+ </node>
+ <node id="13053466649" visible="true" version="6" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7123752" lon="106.6425423" />
+ <node id="13053466650" visible="true" version="6" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7121853" lon="106.6444132" />
+ <node id="13053466651" visible="true" version="6" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7118895" lon="106.6462612" />
+ <node id="13053466652" visible="true" version="6" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7097922" lon="106.6217438" />
+ <node id="13053466653" visible="true" version="5" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7101528" lon="106.6219845" />
+ <node id="13053466654" visible="true" version="6" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7108289" lon="106.6225458" />
+ <node id="13053466655" visible="true" version="6" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7114399" lon="106.6232083" />
+ <node id="13053466656" visible="true" version="6" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7117124" lon="106.6235711" />
+ <node id="13053466657" visible="true" version="6" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7121911" lon="106.6243502" />
+ <node id="13053466658" visible="true" version="6" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7125837" lon="106.6252146" />
+ <node id="13053466659" visible="true" version="6" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7127357" lon="106.6256525" />
+ <node id="13053466660" visible="true" version="6" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7129686" lon="106.6265839" />
+ <node id="13053466661" visible="true" version="6" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7130909" lon="106.6275300" />
+ <node id="13053466662" visible="true" version="6" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7131113" lon="106.6280249" />
+ <node id="13053466664" visible="true" version="5" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6977375" lon="106.6170955" />
+ <node id="13053466665" visible="true" version="5" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6966808" lon="106.6168337" />
+ <node id="13053466666" visible="true" version="5" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6902023" lon="106.6151597" />
+ <node id="13053466667" visible="true" version="5" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6895126" lon="106.6148458" />
+ <node id="13053466668" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6888497" lon="106.6144824" />
+ <node id="13053466669" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6882182" lon="106.6140734" />
+ <node id="13053466670" visible="true" version="5" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6875937" lon="106.6136013" />
+ <node id="13053466671" visible="true" version="5" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6849434" lon="106.6105989" />
+ <node id="13053466672" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6698968" lon="106.5931010" />
+ <node id="13053466673" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6721099" lon="106.5939092" />
+ <node id="13053466674" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6725609" lon="106.5941714" />
+ <node id="13053466675" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6729996" lon="106.5944651" />
+ <node id="13053466676" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6738228" lon="106.5951443" />
+ <node id="13053466677" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6745621" lon="106.5959336" />
+ <node id="13053466678" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6644178" lon="106.5916139" />
+ <node id="13053466679" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6638870" lon="106.5914308" />
+ <node id="13053466680" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6628994" lon="106.5909873" />
+ <node id="13053466681" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6615442" lon="106.5901590" />
+ <node id="13053466682" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6563312" lon="106.5878212" />
+ <node id="13053466683" visible="true" version="3" changeset="181339725" timestamp="2026-04-14T20:01:07Z" user="davidxuang" uid="7140810" lat="29.6579150" lon="106.5881753" />
+ <node id="13053466684" visible="true" version="2" changeset="181339725" timestamp="2026-04-14T20:01:07Z" user="davidxuang" uid="7140810" lat="29.6591797" lon="106.5886637" />
+ <node id="13053466685" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6602382" lon="106.5893052" />
+ <node id="13053466687" visible="true" version="3" changeset="181339725" timestamp="2026-04-14T20:01:07Z" user="davidxuang" uid="7140810" lat="29.6554606" lon="106.5876174" />
+ <node id="13053466688" visible="true" version="3" changeset="181339725" timestamp="2026-04-14T20:01:07Z" user="davidxuang" uid="7140810" lat="29.6548453" lon="106.5874323" />
+ <node id="13053466689" visible="true" version="3" changeset="181339725" timestamp="2026-04-14T20:01:07Z" user="davidxuang" uid="7140810" lat="29.6541577" lon="106.5871185" />
+ <node id="13053466690" visible="true" version="3" changeset="181339725" timestamp="2026-04-14T20:01:07Z" user="davidxuang" uid="7140810" lat="29.6534817" lon="106.5867001" />
+ <node id="13053466691" visible="true" version="3" changeset="181339725" timestamp="2026-04-14T20:01:07Z" user="davidxuang" uid="7140810" lat="29.6529969" lon="106.5863085" />
+ <node id="13053466692" visible="true" version="3" changeset="181339725" timestamp="2026-04-14T20:01:07Z" user="davidxuang" uid="7140810" lat="29.6522603" lon="106.5855333" />
+ <node id="13053466693" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6512218" lon="106.5840252" />
+ <node id="13053466694" visible="true" version="3" changeset="181339725" timestamp="2026-04-14T20:01:07Z" user="davidxuang" uid="7140810" lat="29.6468173" lon="106.5761885" />
+ <node id="13053466695" visible="true" version="3" changeset="181339725" timestamp="2026-04-14T20:01:07Z" user="davidxuang" uid="7140810" lat="29.6464817" lon="106.5751263" />
+ <node id="13053466696" visible="true" version="3" changeset="181339725" timestamp="2026-04-14T20:01:07Z" user="davidxuang" uid="7140810" lat="29.6462789" lon="106.5742117" />
+ <node id="13053466697" visible="true" version="3" changeset="181339725" timestamp="2026-04-14T20:01:07Z" user="davidxuang" uid="7140810" lat="29.6461343" lon="106.5731522" />
+ <node id="13053466698" visible="true" version="3" changeset="181339725" timestamp="2026-04-14T20:01:07Z" user="davidxuang" uid="7140810" lat="29.6460271" lon="106.5721303" />
+ <node id="13053466699" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6458359" lon="106.5709719" />
+ <node id="13053466700" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6444046" lon="106.5525126" />
+ <node id="13053466701" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6447292" lon="106.5542286" />
+ <node id="13053466702" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6448184" lon="106.5549923" />
+ <node id="13053466705" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6437883" lon="106.5495947" />
+ <node id="13053466712" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6441383" lon="106.5419508" />
+ <node id="13053466713" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6443137" lon="106.5412212" />
+ <node id="13053466714" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6445311" lon="106.5405010" />
+ <node id="13053466715" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6450871" lon="106.5391324" />
+ <node id="13053466716" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6463170" lon="106.5370443" />
+ <node id="13053466718" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6502918" lon="106.5299807" />
+ <node id="13053466719" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6500738" lon="106.5306567" />
+ <node id="13053466720" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6495423" lon="106.5319374" />
+ <node id="13053466721" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6487702" lon="106.5333074" />
+ <node id="13053466722" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6483372" lon="106.5339725" />
+ <node id="13363084380" visible="true" version="5" changeset="191507227" timestamp="2026-11-05T11:39:57Z" user="Claudius Henrichs" uid="18069" lat="29.6510019" lon="106.5250207">
+  <tag k="name" v="重光" />
+  <tag k="name:en" v="Chongguang" />
+  <tag k="public_transport" v="stop_position" />
+  <tag k="railway" v="stop" />
+  <tag k="subway" v="yes" />
+ </node>
+ <node id="13363084382" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6498548" lon="106.5817321">
+  <tag k="name" v="果塘路" />
+  <tag k="public_transport" v="stop_position" />
+  <tag k="railway" v="stop" />
+  <tag k="subway" v="yes" />
+ </node>
+ <node id="13363084385" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6676835" lon="106.5925045">
+  <tag k="name" v="西南政法大学" />
+  <tag k="public_transport" v="stop_position" />
+  <tag k="railway" v="stop" />
+  <tag k="subway" v="yes" />
+ </node>
+ <node id="13363084389" visible="true" version="5" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6801070" lon="106.6037358">
+  <tag k="name" v="宝圣湖" />
+  <tag k="public_transport" v="stop_position" />
+  <tag k="railway" v="stop" />
+  <tag k="subway" v="yes" />
+ </node>
+ <node id="13363084391" visible="true" version="6" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7074786" lon="106.6207309">
+  <tag k="name" v="绣湖路" />
+  <tag k="public_transport" v="stop_position" />
+  <tag k="railway" v="stop" />
+  <tag k="subway" v="yes" />
+ </node>
+ <node id="13363084394" visible="true" version="7" changeset="191507227" timestamp="2026-11-05T11:39:57Z" user="Claudius Henrichs" uid="18069" lat="29.7106492" lon="106.6513038">
+  <tag k="name" v="江北机场T3航站楼" />
+  <tag k="name:en" v="Terminal 3 of Jiangbei Airport" />
+  <tag k="public_transport" v="stop_position" />
+  <tag k="railway" v="stop" />
+  <tag k="subway" v="yes" />
+ </node>
+ <node id="13680956926" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6449379" lon="106.5612546">
+  <tag k="railway" v="switch" />
+ </node>
+ <node id="13680956928" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6658115" lon="106.5920008">
+  <tag k="railway" v="switch" />
+  <tag k="railway:maxspeed:diverging" v="45" />
+  <tag k="railway:switch:frog_number" v="1/12" />
+ </node>
+ <node id="13680956935" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6695242" lon="106.5930003">
+  <tag k="railway" v="switch" />
+  <tag k="railway:maxspeed:diverging" v="45" />
+  <tag k="railway:switch:frog_number" v="1/12" />
+ </node>
+ <node id="13680987949" visible="true" version="5" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7112686" lon="106.6489488" />
+ <node id="13680987965" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6989612" lon="106.6174744" />
+ <node id="13680987966" visible="true" version="5" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7130382" lon="106.6295075" />
+ <node id="13680987968" visible="true" version="6" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7114998" lon="106.6480556" />
+ <node id="13680987979" visible="true" version="5" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6924048" lon="106.6158175" />
+ <node id="13680987980" visible="true" version="5" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6909060" lon="106.6154185" />
+ <node id="13680987981" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6859445" lon="106.6119494" />
+ <node id="13680987982" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6711573" lon="106.5934800" />
+ <node id="13680987983" visible="true" version="2" changeset="181339725" timestamp="2026-04-14T20:01:08Z" user="davidxuang" uid="7140810" lat="29.6586516" lon="106.5884113" />
+ <node id="13680987984" visible="true" version="2" changeset="181339725" timestamp="2026-04-14T20:01:08Z" user="davidxuang" uid="7140810" lat="29.6517941" lon="106.5848789" />
+ <node id="13680987985" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6486306" lon="106.5796804" />
+ <node id="13680987986" visible="true" version="2" changeset="181339725" timestamp="2026-04-14T20:01:08Z" user="davidxuang" uid="7140810" lat="29.6471856" lon="106.5770468" />
+ <node id="13680987987" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6448219" lon="106.5593798" />
+ <node id="13680987988" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6448592" lon="106.5575029" />
+ <node id="13680987989" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6448685" lon="106.5557501" />
+ <node id="13680987992" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6438609" lon="106.5436806" />
+ <node id="13680987996" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6508180" lon="106.5268613" />
+ <node id="13680987997" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6504643" lon="106.5292968" />
+ <node id="13680987998" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6498244" lon="106.5313084" />
+ <node id="13680987999" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6492276" lon="106.5325443" />
+ <node id="13680988000" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6447887" lon="106.5398043" />
+ <node id="13680988210" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6448505" lon="106.5602099" />
+ <node id="13680988213" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6435882" lon="106.5485631" />
+ <node id="13680988214" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6435235" lon="106.5481225" />
+ <node id="13680988216" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6434704" lon="106.5472314" />
+ <node id="13680988218" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6434786" lon="106.5467895" />
+ <node id="13680988220" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6436374" lon="106.5452995" />
+ <node id="13728364153" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7104975" lon="106.6222507" />
+ <node id="13728364154" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7094055" lon="106.6215239" />
+ <node id="13728364159" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6864549" lon="106.6125351" />
+ <node id="13728364165" visible="true" version="4" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7101579" lon="106.6531735">
+  <tag k="railway" v="switch" />
+ </node>
+ <node id="13729072734" visible="true" version="3" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6913469" lon="106.6155519" />
+ <node id="13950504024" visible="true" version="3" changeset="184883201" timestamp="2026-06-30T23:10:31Z" user="残阳逐流" uid="21856063" lat="29.7030974" lon="106.6190501">
+  <tag k="bus" v="yes" />
+  <tag k="name" v="绿梦广场" />
+  <tag k="name:en" v="Lyumeng Square" />
+  <tag k="name:zh" v="绿梦广场" />
+  <tag k="public_transport" v="stop_position" />
+ </node>
+ <node id="13964381713" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7125219" lon="106.6361332" />
+ <node id="13964381714" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7124754" lon="106.6373080" />
+ <node id="13964381715" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7124660" lon="106.6383903" />
+ <node id="13964381716" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7124556" lon="106.6407023" />
+ <node id="13964381717" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7124634" lon="106.6397652" />
+ <node id="13964381744" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7111428" lon="106.6228656" />
+ <node id="13964381745" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7119646" lon="106.6239546" />
+ <node id="13964381746" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7123967" lon="106.6247687" />
+ <node id="13964381747" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7128656" lon="106.6261138" />
+ <node id="13964381748" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7130443" lon="106.6270613" />
+ <node id="13964381749" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7130880" lon="106.6288443" />
+ <node id="13964381750" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7131072" lon="106.6283977" />
+ <node id="13964381759" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7090479" lon="106.6213515" />
+ <node id="13964381761" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.7086988" lon="106.6212023" />
+ <node id="13964381763" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6870094" lon="106.6130917" />
+ <node id="13964381765" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6854476" lon="106.6113060" />
+ <node id="13964381768" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6856847" lon="106.6116225" />
+ <node id="13964381769" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6734261" lon="106.5947950" />
+ <node id="13964381770" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6741998" lon="106.5955232" />
+ <node id="13964381774" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6716450" lon="106.5936812" />
+ <node id="13964381775" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6748907" lon="106.5963518" />
+ <node id="13964381777" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6625719" lon="106.5908052" />
+ <node id="13964381778" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6621768" lon="106.5905665" />
+ <node id="13964381781" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6633818" lon="106.5912236" />
+ <node id="13964381783" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6653664" lon="106.5918808" />
+ <node id="13964381796" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6570206" lon="106.5879647" />
+ <node id="13964381798" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6448764" lon="106.5567291" />
+ <node id="13964381799" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6448776" lon="106.5562128" />
+ <node id="13964381802" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6445649" lon="106.5532959" />
+ <node id="13964381803" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6446570" lon="106.5537833" />
+ <node id="13964381806" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6448344" lon="106.5585510" />
+ <node id="13964381810" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6434856" lon="106.5476887" />
+ <node id="13964381814" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6435036" lon="106.5464187" />
+ <node id="13964381816" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6435421" lon="106.5460318" />
+ <node id="13964381817" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6454257" lon="106.5384740" />
+ <node id="13964381818" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6456862" lon="106.5380294" />
+ <node id="13964381821" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6440107" lon="106.5426482" />
+ <node id="13964381823" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6489916" lon="106.5329506" />
+ <node id="13964381826" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6506029" lon="106.5285954" />
+ <node id="13964381829" visible="true" version="1" changeset="184571416" timestamp="2026-06-25T08:29:42Z" user="davidxuang" uid="7140810" lat="29.6506886" lon="106.5280308" />
+ <node id="14023103594" visible="true" version="1" changeset="185930347" timestamp="2026-07-17T21:51:30Z" user="残阳逐流" uid="21856063" lat="29.7033817" lon="106.6191592" />
+ <way id="1365014780" visible="true" version="18" changeset="191507227" timestamp="2026-11-05T11:39:57Z" user="Claudius Henrichs" uid="18069">
+  <nd ref="13728364165" />
+  <nd ref="13363084394" />
+  <nd ref="13680987949" />
+  <nd ref="13680987968" />
+  <nd ref="13053466651" />
+  <nd ref="13053466650" />
+  <nd ref="13053466649" />
+  <nd ref="13964381716" />
+  <nd ref="13964381717" />
+  <nd ref="13964381715" />
+  <nd ref="13964381714" />
+  <nd ref="13964381713" />
+  <nd ref="13680987966" />
+  <nd ref="13964381749" />
+  <nd ref="13964381750" />
+  <nd ref="13053466662" />
+  <nd ref="13053466661" />
+  <nd ref="13964381748" />
+  <nd ref="13053466660" />
+  <nd ref="13964381747" />
+  <nd ref="13053466659" />
+  <nd ref="13053466658" />
+  <nd ref="13964381746" />
+  <nd ref="13053466657" />
+  <nd ref="13964381745" />
+  <nd ref="13053466656" />
+  <nd ref="13053466655" />
+  <nd ref="13964381744" />
+  <nd ref="13053466654" />
+  <nd ref="13728364153" />
+  <nd ref="13053466653" />
+  <nd ref="13053466652" />
+  <nd ref="13728364154" />
+  <nd ref="13964381759" />
+  <nd ref="13964381761" />
+  <nd ref="11658164438" />
+  <nd ref="13363084391" />
+  <nd ref="14023103594" />
+  <nd ref="13950504024" />
+  <nd ref="11658164434" />
+  <nd ref="13680987965" />
+  <nd ref="13053466664" />
+  <nd ref="13053466665" />
+  <nd ref="13680987979" />
+  <nd ref="13729072734" />
+  <nd ref="13680987980" />
+  <nd ref="13053466666" />
+  <nd ref="13053466667" />
+  <nd ref="13053466668" />
+  <nd ref="13053466669" />
+  <nd ref="13053466670" />
+  <nd ref="13964381763" />
+  <nd ref="13728364159" />
+  <nd ref="13680987981" />
+  <nd ref="13964381768" />
+  <nd ref="13964381765" />
+  <nd ref="13053466671" />
+  <nd ref="13363084389" />
+  <nd ref="11658164425" />
+  <nd ref="13964381775" />
+  <nd ref="13053466677" />
+  <nd ref="13964381770" />
+  <nd ref="13053466676" />
+  <nd ref="13964381769" />
+  <nd ref="13053466675" />
+  <nd ref="13053466674" />
+  <nd ref="13053466673" />
+  <nd ref="13964381774" />
+  <nd ref="13680987982" />
+  <nd ref="13053466672" />
+  <nd ref="13680956935" />
+  <nd ref="13363084385" />
+  <nd ref="13680956928" />
+  <nd ref="13964381783" />
+  <nd ref="13053466678" />
+  <nd ref="13053466679" />
+  <nd ref="13964381781" />
+  <nd ref="13053466680" />
+  <nd ref="13964381777" />
+  <nd ref="13964381778" />
+  <nd ref="13053466681" />
+  <nd ref="13053466685" />
+  <nd ref="13053466684" />
+  <nd ref="13680987983" />
+  <nd ref="13053466683" />
+  <nd ref="13964381796" />
+  <nd ref="13053466682" />
+  <nd ref="13053466687" />
+  <nd ref="13053466688" />
+  <nd ref="13053466689" />
+  <nd ref="13053466690" />
+  <nd ref="13053466691" />
+  <nd ref="13053466692" />
+  <nd ref="13680987984" />
+  <nd ref="13053466693" />
+  <nd ref="13363084382" />
+  <nd ref="13680987985" />
+  <nd ref="13680987986" />
+  <nd ref="13053466694" />
+  <nd ref="13053466695" />
+  <nd ref="13053466696" />
+  <nd ref="13053466697" />
+  <nd ref="13053466698" />
+  <nd ref="13053466699" />
+  <nd ref="12453071731" />
+  <nd ref="13680956926" />
+  <nd ref="13680988210" />
+  <nd ref="13680987987" />
+  <nd ref="13964381806" />
+  <nd ref="13680987988" />
+  <nd ref="13964381798" />
+  <nd ref="13964381799" />
+  <nd ref="13680987989" />
+  <nd ref="13053466702" />
+  <nd ref="13053466701" />
+  <nd ref="13964381803" />
+  <nd ref="13964381802" />
+  <nd ref="13053466700" />
+  <nd ref="13053466705" />
+  <nd ref="11658164401" />
+  <nd ref="13680988213" />
+  <nd ref="13680988214" />
+  <nd ref="13964381810" />
+  <nd ref="13680988216" />
+  <nd ref="13680988218" />
+  <nd ref="13964381814" />
+  <nd ref="13964381816" />
+  <nd ref="13680988220" />
+  <nd ref="11658164400" />
+  <nd ref="13680987992" />
+  <nd ref="13964381821" />
+  <nd ref="13053466712" />
+  <nd ref="13053466713" />
+  <nd ref="13053466714" />
+  <nd ref="13680988000" />
+  <nd ref="13053466715" />
+  <nd ref="13964381817" />
+  <nd ref="13964381818" />
+  <nd ref="13053466716" />
+  <nd ref="13053466722" />
+  <nd ref="13053466721" />
+  <nd ref="13964381823" />
+  <nd ref="13680987999" />
+  <nd ref="13053466720" />
+  <nd ref="13680987998" />
+  <nd ref="13053466719" />
+  <nd ref="13053466718" />
+  <nd ref="13680987997" />
+  <nd ref="13964381826" />
+  <nd ref="13964381829" />
+  <nd ref="13680987996" />
+  <nd ref="13363084380" />
+  <tag k="electrified" v="contact_line" />
+  <tag k="frequency" v="50" />
+  <tag k="gauge" v="1435" />
+  <tag k="layer" v="-4" />
+  <tag k="maxspeed" v="120" />
+  <tag k="name" v="15号线" />
+  <tag k="name:en" v="Line 15" />
+  <tag k="name:zh" v="15号线" />
+  <tag k="operator" v="重庆轨道交通运营" />
+  <tag k="operator:wikidata" v="Q136485962" />
+  <tag k="railway" v="subway" />
+  <tag k="railway:ato" v="uto" />
+  <tag k="railway:cbtc" v="RF" />
+  <tag k="ref" v="15" />
+  <tag k="tunnel" v="yes" />
+  <tag k="usage" v="main" />
+  <tag k="voltage" v="25000" />
+ </way>
+ </osm>

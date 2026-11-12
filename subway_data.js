@@ -43848,17 +43848,6 @@ window.subwayDataMap = {
         "stationId": "chengdu:geo:104.387506:30.278160"
       },
       {
-        "name": "芦葭",
-        "x": 2059,
-        "y": 1779,
-        "lng": 104.441771,
-        "lat": 30.25548,
-        "lines": [
-          "S3(资阳)线"
-        ],
-        "stationId": "chengdu:geo:104.441771:30.255480"
-      },
-      {
         "name": "资阳临空",
         "x": 2083,
         "y": 1827,
@@ -47836,17 +47825,10 @@ window.subwayDataMap = {
       },
       {
         "u": "福田",
-        "v": "芦葭",
-        "line": "S3(资阳)线",
-        "color": "#B5B5B6",
-        "straightLengthKm": 5.79
-      },
-      {
-        "u": "芦葭",
         "v": "资阳临空",
         "line": "S3(资阳)线",
         "color": "#B5B5B6",
-        "straightLengthKm": 16.546
+        "straightLengthKm": 22.295
       },
       {
         "u": "资阳临空",

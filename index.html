@@ -637,8 +637,8 @@
             <div class="share-large-viewer-scroll"><img id="share-large-viewer-image" alt="完整路线大图"></div>
         </div>
 
-    <script src="subway_data.js?v=20261112-chongqing15-v1"></script>
-    <script src="city_extremes_results.js?v=20261112-chongqing15-v1"></script>
+    <script src="subway_data.js?v=20261112-lujia-v1"></script>
+    <script src="city_extremes_results.js?v=20261112-lujia-v1"></script>
     <script src="mobile-map-interaction.js"></script>
     <script src="topology-rules.js"></script>
     <script src="route-rules.js"></script>
@@ -653,7 +653,7 @@
     <script src="network-research-ui.js?v=20261103-review-medium-low-v4"></script>
     <script src="geographic-view.js?v=20261105-all-cities-v1"></script>
     <script src="orientation-rose.js?v=20261105-1"></script>
-    <script src="orientation-rose-ui.js?v=20261112-chongqing15-v1"></script>
+    <script src="orientation-rose-ui.js?v=20261112-lujia-v1"></script>
     <script src="solver-progress.js"></script>
     <script src="site-runtime.js"></script>
     <script src="analytics-client.js"></script>
@@ -4525,7 +4525,7 @@
                     try {
                         if (!geographicDataPromises.has(requestedCity)) {
                             const file = requestedCity === "guangzhou" ? "guangfo" : requestedCity;
-                            geographicDataPromises.set(requestedCity, fetch(`data/geometry/${file}.json?v=20261112-chongqing15-v1`).then(response => {
+                            geographicDataPromises.set(requestedCity, fetch(`data/geometry/${file}.json?v=20261112-lujia-v1`).then(response => {
                                 if (!response.ok) throw new Error("地理走向数据加载失败");
                                 return response.json();
                             }));

@@ -6,6 +6,10 @@ Snapshots are standard OpenStreetMap API relation/<id>/full XML; provenance is r
 This does not modify subway_data.js. OSM data is ODbL, see output metadata.
 """
 import collections, datetime, heapq, json, math, pathlib, statistics, sys, xml.etree.ElementTree as ET
+try:
+    from long_geometry_overrides import apply_reviewed_long_segments
+except ModuleNotFoundError:
+    from scripts.long_geometry_overrides import apply_reviewed_long_segments
 ROOT=pathlib.Path(__file__).resolve().parent.parent
 IDS={} # Loaded from the checked source mapping for each city.
 ALIASES={'礌岗':'𧒽岗','机场南(1号航站楼)':'机场南','机场北(T2)':'机场北','林岳东(2号线)':'林岳东'}
@@ -44,6 +48,21 @@ def simplify(points,tolerance=20):
     v=[dev(p) for p in points[1:-1]]; i=max(range(len(v)),key=v.__getitem__)
     if v[i]<=tolerance:return [a,b]
     return simplify(points[:i+2],tolerance)[:-1]+simplify(points[i+1:],tolerance)
+def apply_chongqing_long_segments(out):
+    """Apply reviewed track slices only to the station positions they were matched to."""
+    overlay=json.loads((ROOT/'data/geometry/chongqing-long-segments.json').read_text())
+    for name,expected in overlay['stationPositions'].items():
+        if out['positions'].get(name)!=expected:
+            raise ValueError(f'重庆长区间端点 {name} 已变更，需重新核验轨迹')
+    for key,segment in overlay['segments'].items():
+        if key not in out['missing'] or key in out['segments']:
+            raise ValueError(f'重庆长区间 {key} 已变化，需重新核验轨迹')
+        out['segments'][key]=segment
+        out['missing'].remove(key)
+    out['meta']['sources'].update(overlay['sources'])
+    out['meta']['matchedSegments']=len(out['segments'])
+    out['meta']['approach']+=' Chongqing long segments include curated OSM tracks matched to existing station positions; endpoints retain the existing positions.'
+    return out
 def main():
     global IDS
     source=pathlib.Path(sys.argv[1]); city_key=sys.argv[2]
@@ -105,6 +124,8 @@ def main():
             simplified=simplify(pts,20);geometry[key]={'line':line,'u':u,'v':v,'points':[[round(p[0],6),round(p[1],6)] for p in simplified],'source':rid,'osmLengthM':round(length)}
     allkeys={f"{e['line']}\t{e['u']}\t{e['v']}" for e in edges}; missing=sorted(allkeys-set(geometry));
     out={'meta':{'city':city_key,'generated':('2026-11-12' if city_key=='chongqing' else '2026-11-05'),'source':'© OpenStreetMap contributors','license':'ODbL','licenseUrl':'https://www.openstreetmap.org/copyright','approach':'Project coordinates are approximately GCJ-02 except verified already-WGS84 Nanjing Line 6 anchors; inverse transformation is only for display. OSM stop positions are adopted only after proximity checks; this is not a survey.','matchedSegments':len(geometry),'totalSegments':len(allkeys),'matchedStations':len(chosen),'totalStations':len(project),'sources':sources},'positions':{k:[round(v[0],6),round(v[1],6)] for k,v in positions.items()},'osmStations':sorted(chosen),'segments':geometry,'unresolved':unresolved,'missing':missing}
+    if city_key=='chongqing':out=apply_chongqing_long_segments(out)
+    out=apply_reviewed_long_segments(out,city_key)
     target=ROOT/'data/geometry'/f'{city_key}.json';target.write_text(json.dumps(out,ensure_ascii=False,separators=(',',':'))+'\n');print('edges',len(allkeys),'matched',len(geometry),'fallback',len(missing),'stations',len(chosen),'/',len(project),'conflicts',len(unresolved),'rejections',dict(reject));print('conflict sample',unresolved[:12]);print('by line');
     for line,es in byline.items():
         keys={f"{line}\t{e['u']}\t{e['v']}" for e in es};print(line,len(keys & set(geometry)),'/',len(keys))
