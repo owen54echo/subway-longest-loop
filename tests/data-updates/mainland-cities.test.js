@@ -5,7 +5,7 @@ const dataWindow = {};
 new Function("window", fs.readFileSync("subway_data.js", "utf8"))(dataWindow);
 
 const expectedLines = {
-    xiamen: ["1号线", "2号线", "3号线"],
+    xiamen: ["1号线", "2号线", "3号线", "4号线", "6号线"],
     qingdao: ["1号线", "2号线", "3号线", "4号线", "6号线", "8号线", "蓝谷快线", "西海岸快线"],
     ningbo: ["1号线", "2号线", "3号线", "4号线", "5号线", "6号线", "7号线", "8号线", "12号线"],
     changsha: ["1号线", "2号线", "3号线", "4号线", "5号线", "6号线", "S2线"]
@@ -16,7 +16,7 @@ for (const [cityKey, lines] of Object.entries(expectedLines)) {
     assert(city, `${cityKey} 应接入地铁数据`);
 
     const actualLines = [...new Set(city.edges.map(edge => edge.line))].sort();
-    assert.deepStrictEqual(actualLines, [...lines].sort(), `${cityKey} 只能包含正式运营线路`);
+    assert.deepStrictEqual(actualLines, [...lines].sort(), `${cityKey} 的线路范围应匹配已收录线路`);
 
     for (const node of city.nodes) {
         assert(Number.isFinite(node.x) && Number.isFinite(node.y), `${cityKey} 的 ${node.name} 应有地图坐标`);

@@ -37,7 +37,7 @@
           <div class="rose-scroll"><div class="rose-toolbar"><label>城市 <select id="rose-city" class="analysis-select" aria-label="选择方向玫瑰图城市"></select></label><label>线路 <select id="rose-line" class="analysis-select" aria-label="选择线路"><option value="">全部线路</option></select></label></div>
           <div id="rose-status" class="rose-status" role="status" aria-live="polite"></div><div id="rose-content" hidden><div class="rose-overview"><div><span class="rose-eyebrow">线网走向分布</span><h2 id="rose-city-title"></h2></div></div>
           <div class="rose-body"><div class="rose-figure"><div class="rose-figure-heading"><span>方位分布</span><span>16 个方向</span></div><div id="rose-chart"></div><p class="rose-caption">扇形面积表示长度 · 相反方向各分配一半</p></div><div class="rose-details"><div class="rose-section-head"><div><h3>线路构成 <small class="rose-distance-note">距离为估算值</small></h3><p id="rose-insight"></p></div><button id="rose-all" type="button">显示全部</button></div><div id="rose-legend" class="rose-legend"></div></div></div>
-          <details class="rose-method"><summary>统计口径</summary><p>按线路折线的每一段计算方向，以长度加权；共划分 16 个方位。线路视作双向，长度均分至相反方向，合计不会重复计算。相同区间若属于不同线路，分别计入对应线路。估算区间按站间直线纳入；长度用于观察方向，不是运营里程。OSM 走向已进行自动匹配检查，未逐段人工核实。</p></details></div></div>`;
+          <details class="rose-method"><summary>统计口径</summary><p>按线路折线的每一段计算方向，以长度加权；共划分 16 个方位。线路视作双向，长度均分至相反方向，合计不会重复计算。相同区间若属于不同线路，分别计入对应线路。估算区间按站间直线纳入；长度用于观察方向，不是运营里程。OSM 走向已进行自动匹配检查，未逐段人工核实。</p><p>地理走向数据：<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a>，采用 ODbL 许可。</p></details></div></div>`;
         document.body.appendChild(modal);
         const $=id=>modal.querySelector('#rose-'+id), cache=new Map();
         let activeCity='',geometry=null,requestId=0,focusOrigin=null;
@@ -67,7 +67,7 @@
             try {
                 if(!cache.has(city)) {
                     const file=city==='guangzhou'?'guangfo':city;
-                    cache.set(city,fetch(`data/geometry/${file}.json?v=20261112-lujia-v1`).then(r=>{if(!r.ok) throw new Error('数据加载失败');return r.json();}));
+                    cache.set(city,fetch(`data/geometry/${file}.json?v=20261115-xiamen-46-v1`).then(r=>{if(!r.ok) throw new Error('数据加载失败');return r.json();}));
                 }
                 const data=await cache.get(city); if(current!==requestId) return;
                 geometry=data; lineSelect.value=''; render();

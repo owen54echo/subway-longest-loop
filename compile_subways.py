@@ -222,6 +222,21 @@ def apply_chongqing_line15(nodes, edges):
         edges.append(add_edge_distance({"u": u, "v": v, "line": "15号线", "color": CHONGQING_LINE_15_COLOR}, nodes))
 
 
+def apply_xiamen_lines_4_6(nodes, edges):
+    """Include the confirmed passenger trial sections, excluding skipped stations."""
+    with open(os.path.join(PROJECT_DIR, 'data', 'xiamen-lines-4-6.json'), encoding='utf-8') as file:
+        lines = json.load(file)
+    for line_name, spec in lines.items():
+        for station in spec['stations']:
+            node = nodes.setdefault(station['name'], {**station, 'lines': []})
+            if line_name not in node['lines']:
+                node['lines'].append(line_name)
+        edges[:] = [edge for edge in edges if edge.get('line') != line_name]
+        for left, right in zip(spec['stations'], spec['stations'][1:]):
+            edges.append(add_edge_distance({'u': left['name'], 'v': right['name'],
+                                            'line': line_name, 'color': spec['color']}, nodes))
+
+
 def apply_nanjing_line6(nodes, edges):
     """Add the verified Line 6 contract without rebuilding unrelated cities."""
     for station in NANJING_LINE_6_STATIONS:
@@ -487,6 +502,19 @@ def patch_existing_chongqing_line15(output_js):
     attach_station_ids("chongqing", nodes)
     city["nodes"] = list(nodes.values())
     validate_compiled_data(compiled_data, [city["key"] for city in CITIES])
+    write_compiled_data(compiled_data, output_js)
+
+
+def patch_existing_xiamen_lines_4_6(output_js):
+    compiled_data = load_existing_compiled_data(output_js)
+    if not compiled_data or 'xiamen' not in compiled_data:
+        raise RuntimeError('Existing subway_data.js does not contain Xiamen data')
+    city = compiled_data['xiamen']
+    nodes = {node['name']: node for node in city['nodes']}
+    apply_xiamen_lines_4_6(nodes, city['edges'])
+    attach_station_ids('xiamen', nodes)
+    city['nodes'] = list(nodes.values())
+    validate_compiled_data(compiled_data, [c['key'] for c in CITIES])
     write_compiled_data(compiled_data, output_js)
 
 
@@ -781,6 +809,8 @@ def main():
             apply_chongqing_line15(nodes, edges)
         elif key == "chengdu":
             exclude_chengdu_lujia_unopened(nodes, edges)
+        elif key == "xiamen":
+            apply_xiamen_lines_4_6(nodes, edges)
 
         attach_station_ids(key, nodes)
         compiled_data[key] = {
@@ -812,7 +842,11 @@ def main():
     print(f"Successfully compiled all cities and saved to {output_js}!")
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1 and sys.argv[1] == "--patch-chongqing-line15":
+    if len(sys.argv) > 1 and sys.argv[1] == "--patch-xiamen-lines-4-6":
+        target = os.path.join(PROJECT_DIR, 'subway_data.js')
+        patch_existing_xiamen_lines_4_6(target)
+        print(f'Patched Xiamen Lines 4 and 6 in {target}')
+    elif len(sys.argv) > 1 and sys.argv[1] == "--patch-chongqing-line15":
         target = os.path.join(PROJECT_DIR, "subway_data.js")
         patch_existing_chongqing_line15(target)
         print(f"Patched Chongqing Line 15 data in {target}")

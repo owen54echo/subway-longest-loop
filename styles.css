@@ -2933,7 +2933,8 @@ input:checked + .slider:before {
     #centrality-body .matrix-table { min-width: 760px !important; border-collapse: separate; border-spacing: 0; }
     #centrality-body .matrix-table th, #centrality-body .matrix-table td { white-space: nowrap; }
     #centrality-body .matrix-table th { height: 44px; }
-    #centrality-body .matrix-table th:first-child, #centrality-body .matrix-table td:first-child { position: sticky; left: 0; z-index: 2; background: var(--panel-bg); }
+    #centrality-body .matrix-table th:first-child, #centrality-body .matrix-table td:first-child:not([colspan]) { position: sticky; left: 0; z-index: 2; background: var(--panel-bg); }
+    #centrality-body .matrix-table th:first-child { z-index: 11; }
     #centrality-body .centrality-line-badges { flex-wrap: wrap; min-width: 170px; }
     #centrality-body .centrality-mobile-metric:not(:empty) { display: block; margin-top: 3px; color: var(--text-secondary); font-size: 12px; font-weight: 400; }
 }
@@ -2979,8 +2980,8 @@ input:checked + .slider:before {
 .research-search-results p { margin: 0; font-size: 13px; }
 
 /* A compact credit stays in place in either view; the map itself has no extra legend. */
-.geographic-credit { position:absolute; left:6px; bottom:3px; z-index:8; font-size:10px; line-height:1.4; color:var(--text-secondary); text-decoration:none; }
-.geographic-credit:hover, .geographic-credit:focus-visible { text-decoration:underline; }
+.geographic-credit { position:absolute; left:50%; top:calc(env(safe-area-inset-top, 0px) + 8px); transform:translateX(-50%); z-index:100; max-width:calc(100% - 32px); padding:6px 10px; border:1px solid var(--border-color); border-radius:8px; background:var(--panel-bg); color:var(--text-primary); font-size:11px; line-height:1.4; text-align:center; pointer-events:none; animation:geographic-credit-hide 5s forwards; }
+@keyframes geographic-credit-hide { 0%, 98% { opacity:1; visibility:visible; } 100% { opacity:0; visibility:hidden; } }
 #btn-geographic:disabled { opacity:.38; cursor:not-allowed; }
 
 /* Direction analysis keeps the data prominent and uses the same surfaces as analysis dialogs. */
@@ -3017,6 +3018,7 @@ input:checked + .slider:before {
 .rose-empty { padding: 40px 10px; color: var(--text-secondary); text-align: center; font-size: 13px; }
 .rose-method { margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 15px; color: var(--text-secondary); font-size: 12px; line-height: 1.7; }
 .rose-method summary { color: var(--text-primary); cursor: pointer; }
+.rose-method a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 @media (max-width: 700px) {
     .rose-scroll { padding-top: 12px; }
     .rose-toolbar { gap: 10px; }

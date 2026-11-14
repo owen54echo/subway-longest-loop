@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- CSS Style -->
-    <link rel="stylesheet" href="styles.css?v=20261112-detour-scroll-v1">
+    <link rel="stylesheet" href="styles.css?v=20261115-centrality-scroll-v1">
 </head>
 <body class="theme-dark">
     <div class="app-container">
@@ -46,7 +46,7 @@
                 <svg viewBox="0 0 24 24" width="17" height="17" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"></path><path d="M9 3v15M15 6v15"></path></svg>
             </button>
         </div>
-        <a class="geographic-credit" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a>
+        <div class="geographic-credit">地理走向数据：© OpenStreetMap contributors</div>
         
         <!-- Floating city selector tabs -->
         <div class="city-tab-container" id="city-tab-container" role="tablist" aria-label="选择城市地铁网络，左右滑动查看更多城市" title="左右滑动查看更多城市">
@@ -637,8 +637,8 @@
             <div class="share-large-viewer-scroll"><img id="share-large-viewer-image" alt="完整路线大图"></div>
         </div>
 
-    <script src="subway_data.js?v=20261112-lujia-v1"></script>
-    <script src="city_extremes_results.js?v=20261112-lujia-v1"></script>
+    <script src="subway_data.js?v=20261115-xiamen-46-v1"></script>
+    <script src="city_extremes_results.js?v=20261115-xiamen-46-v1"></script>
     <script src="mobile-map-interaction.js"></script>
     <script src="topology-rules.js"></script>
     <script src="route-rules.js"></script>
@@ -653,7 +653,7 @@
     <script src="network-research-ui.js?v=20261103-review-medium-low-v4"></script>
     <script src="geographic-view.js?v=20261105-all-cities-v1"></script>
     <script src="orientation-rose.js?v=20261105-1"></script>
-    <script src="orientation-rose-ui.js?v=20261112-lujia-v1"></script>
+    <script src="orientation-rose-ui.js?v=20261115-xiamen-46-v1"></script>
     <script src="solver-progress.js"></script>
     <script src="site-runtime.js"></script>
     <script src="analytics-client.js"></script>
@@ -4525,7 +4525,7 @@
                     try {
                         if (!geographicDataPromises.has(requestedCity)) {
                             const file = requestedCity === "guangzhou" ? "guangfo" : requestedCity;
-                            geographicDataPromises.set(requestedCity, fetch(`data/geometry/${file}.json?v=20261112-lujia-v1`).then(response => {
+                            geographicDataPromises.set(requestedCity, fetch(`data/geometry/${file}.json?v=20261115-xiamen-46-v1`).then(response => {
                                 if (!response.ok) throw new Error("地理走向数据加载失败");
                                 return response.json();
                             }));
