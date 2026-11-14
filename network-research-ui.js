@@ -10,7 +10,7 @@
         const $ = id => modal.querySelector('#research-'+id);
         let worker = null, rankingWorker = null, mode = '', result = null, base = null, changed = null, scenario = '', fault = null, visible = 50, city = '', segmentPaths = [];
         const rankingCache = new Map();
-        let detourSortField = 'hops', detourSortAscending = false, focusOrigin = null, groups, rankingScroll = 0, resultScroll = 0, selectedPairIndex = null;
+        let detourSortField = 'hops', detourSortAscending = false, focusOrigin = null, groups, rankingScroll = 0, resultScroll = 0, selectedPairIndex = null, selectedRank = null;
         const cancel = () => { if (worker) {worker.terminate(); worker = null;} };
         const stopRanking = () => { if (rankingWorker) {rankingWorker.terminate(); rankingWorker = null;} };
         function close() {
@@ -49,7 +49,7 @@
         function reset() { cancel(); result = null; selectedPairIndex = null; $('results').innerHTML = ''; $('chart').innerHTML = ''; $('status').textContent = ''; $('progress').hidden = true; if (mode === 'failure') $('rankings').hidden = false; const cancelButton = $('cancel'); if (cancelButton) cancelButton.hidden = true; const retry = $('retry'); if (retry) retry.hidden = true; }
         function open(nextMode) {
             focusOrigin = document.activeElement;
-            reset(); stopRanking(); mode = nextMode; city = api.city(); $('rankings').innerHTML = ''; $('rankings').hidden = nextMode !== 'failure'; base = api.topology(); changed = null; visible = nextMode === 'detour' ? 10 : 50;
+            reset(); stopRanking(); selectedRank = null; mode = nextMode; city = api.city(); $('rankings').innerHTML = ''; $('rankings').hidden = nextMode !== 'failure'; base = api.topology(); changed = null; visible = nextMode === 'detour' ? 10 : 50;
             groups = lineGroups();
             detourSortField = 'hops'; detourSortAscending = false;
             $('title').textContent = (mode === 'detour' ? '绕路之王' : '故障影响模拟') + ' · ' + api.raw().city;
@@ -172,20 +172,22 @@
                 if (rankingWorker !== activeRankingWorker) return;
                 if (data.type === 'progress') { $('ranking-progress').textContent = `正在逐一模拟：${data.current} / ${data.total} 个车站和线路`; $('ranking-bar').max = data.total; $('ranking-bar').value = data.current; }
                 if (data.type === 'error') { $('ranking-progress').textContent = `排行计算失败：${data.message}`; stopRanking(); $('ranking-cancel').textContent = '重新计算排行'; $('ranking-cancel').onclick = startRanking; }
-                if (data.type === 'done') { rankingCache.set(city, data); stopRanking(); renderRankings(data); }
+                if (data.type === 'done') { rankingCache.set(city, data); stopRanking(); renderRankings(data, true); }
             };
             rankingWorker.onerror = () => { if (rankingWorker !== activeRankingWorker) return; if ($('ranking-progress')) $('ranking-progress').textContent = '排行计算失败，请重试。'; stopRanking(); if ($('ranking-cancel')) { $('ranking-cancel').textContent = '重新计算排行'; $('ranking-cancel').onclick = startRanking; } };
             const raw = api.raw();
             rankingWorker.postMessage({city, nodes:raw.nodes, edges:raw.edges});
         }
-        function renderRankings(data) {
-            const table = (label, entries, station) => `<section class="research-ranking-table"><h4>${label}</h4><div class="research-table-scroll"><table><thead><tr><th>排名</th><th>${station ? '车站' : '线路'}</th><th>新增不可达站对</th><th>绕行站对</th>${station ? '<th>停用站相关站对</th>' : ''}</tr></thead><tbody>${entries.map((item,i) => `<tr><td>${i+1}</td><td>${esc(item.name)} <button type="button" class="research-rank-action" data-sim-kind="${station ? 'station' : 'line'}" data-sim-name="${esc(item.name)}">模拟</button></td><td>${item.disconnected.toLocaleString()}</td><td>${item.longer.toLocaleString()}</td>${station ? `<td>${item.endpointPairs.toLocaleString()}</td>` : ''}</tr>`).join('')}</tbody></table></div></section>`;
+        function renderRankings(data, reveal = false) {
+            const table = (label, entries, station) => `<section class="research-ranking-table"><h4>${label}</h4><div class="research-table-scroll"><table><thead><tr><th>排名</th><th>${station ? '车站' : '线路'}</th><th>新增不可达站对</th><th>绕行站对</th>${station ? '<th>停用站相关站对</th>' : ''}</tr></thead><tbody>${entries.map((item,i) => `<tr${selectedRank?.kind === (station ? 'station' : 'line') && selectedRank.name === item.name ? ' class="research-selected"' : ''}><td>${i+1}</td><td>${esc(item.name)} <button type="button" class="research-rank-action" data-sim-kind="${station ? 'station' : 'line'}" data-sim-name="${esc(item.name)}">模拟</button></td><td>${item.disconnected.toLocaleString()}</td><td>${item.longer.toLocaleString()}</td>${station ? `<td>${item.endpointPairs.toLocaleString()}</td>` : ''}</tr>`).join('')}</tbody></table></div></section>`;
             $('rankings').innerHTML = `<div class="research-rank-panel"><div class="research-section-heading"><div><h3>哪些故障影响最大？</h3></div><span>各前 10 名</span></div><details class="research-note research-explainer"><summary>排行口径</summary><p>分别模拟 ${data.stationTotal} 个车站完全停用和 ${data.lineTotal} 条线路中断。先按新增不可达站对数排序，数量相同时按最少区间增加的站对数排序；相同数值按名称排列。车站排行不把停用站作为起终点的站对计入前两列，该数量单独列出。线路按列表中单独列出的名称分别模拟。结果是当前线网拓扑推演，不代表实际客流或故障概率。</p></details><div class="research-rank-grid">${table('车站 TOP 10',data.station,true)}${table('线路 TOP 10',data.line,false)}</div></div>`;
             $('rankings').querySelectorAll('[data-sim-kind]').forEach(button => button.onclick = () => simulateRanked(button.dataset.simKind, button.dataset.simName));
+            if (reveal) window.InteractionPolish?.revealRows($('rankings'), '.research-ranking-table tbody tr');
         }
         function simulateRanked(kind, name) {
             const line = kind === 'station' ? [...groups].find(([, group]) => group.stations.has(name))?.[0] : name;
             if (!line || !groups.has(line)) { $('status').textContent = '无法定位该对象，请手动选择线路。'; return; }
+            selectedRank = {kind, name};
             rankingScroll = modal.querySelector('.research-scroll').scrollTop;
             $('kind').value = kind; $('kind').onchange();
             $('line').value = line; $('line').onchange();
@@ -262,18 +264,18 @@
                 if (worker !== activeWorker) return;
                 if (data.type === 'progress') { $('status').textContent = `正在分析：${data.current} / ${data.total} 个起点`; $('progress').max = data.total; $('progress').value = data.current; }
                 if (data.type === 'error') { $('status').textContent = `计算失败：${data.message}`; cancel(); $('progress').hidden = true; $('cancel').hidden = true; $('retry').hidden = false; }
-                if (data.type === 'done') { result = data; visible = mode === 'detour' ? 10 : 50; cancel(); $('progress').hidden = true; $('cancel').hidden = true; render(); }
+                if (data.type === 'done') { result = data; visible = mode === 'detour' ? 10 : 50; cancel(); $('progress').hidden = true; $('cancel').hidden = true; render(true); }
             };
             worker.onerror = () => { if (worker !== activeWorker) return; $('status').textContent = '计算失败，请重试。'; cancel(); $('progress').hidden = true; $('cancel').hidden = true; $('retry').hidden = false; };
             worker.postMessage(payload);
         }
-        function render() {
+        function render(reveal = false) {
             if (!result) return;
             const s = result.stats;
             if (mode === 'failure') renderChart(result.pairs, s.disconnected);
             $('status').innerHTML = mode === 'detour'
                 ? `<p class="research-result-scope">直线距离不超过 2 公里 · 共 ${result.pairs.length.toLocaleString()} 对</p><details class="research-result-detail"><summary>筛选统计</summary><p>${s.tooFar.toLocaleString()} 对超过 2 公里；${s.invalid.toLocaleString()} 对同址、坐标缺失或几何数据异常。</p></details>`
-                : `<div class="research-result-title">${esc(scenario)}</div><div class="research-result-scope">基线可达 ${s.baselinePairs.toLocaleString()} 对 · 停用站作为端点的 ${s.endpointPairs.toLocaleString()} 对另计</div><div class="research-summary"><div><span>新增不可达站对</span><strong>${s.disconnected.toLocaleString()}</strong><small>对</small></div><div><span>最少区间增加</span><strong>${s.longer.toLocaleString()}</strong><small>对</small></div><div><span>未变化</span><strong>${s.unchanged.toLocaleString()}</strong><small>对</small></div></div><div class="research-result-detail">连通分组：${s.beforeComponents.length} → ${s.afterComponents.length}</div>`;
+                : `<div class="research-result-title">${esc(scenario)}</div><div class="research-result-scope">基线可达 ${s.baselinePairs.toLocaleString()} 对 · 停用站作为端点的 ${s.endpointPairs.toLocaleString()} 对另计</div><div class="research-summary"><div><span>新增不可达站对</span><strong data-motion-value="${s.disconnected}">${s.disconnected.toLocaleString()}</strong><small>对</small></div><div><span>最少区间增加</span><strong data-motion-value="${s.longer}">${s.longer.toLocaleString()}</strong><small>对</small></div><div><span>未变化</span><strong data-motion-value="${s.unchanged}">${s.unchanged.toLocaleString()}</strong><small>对</small></div></div><div class="research-result-detail">连通分组：${s.beforeComponents.length} → ${s.afterComponents.length}</div>`;
             let view = result.pairs.map((pair,index) => ({pair,index}));
             if (mode === 'detour') { const direction = detourSortAscending ? 1 : -1; view.sort((a,b) => direction * (a.pair[detourSortField] - b.pair[detourSortField]) || b.pair.km-a.pair.km || a.pair.a.localeCompare(b.pair.a,'zh') || a.pair.b.localeCompare(b.pair.b,'zh')); }
             if (mode === 'failure') { modal.querySelector('.research-filter').hidden = false; if ($('filter').value !== 'all') view = view.filter(({pair}) => pair.kind === $('filter').value); }
@@ -284,6 +286,10 @@
                 const sortLabel = {ratio:'绕行系数', direct:'直线距离', km:'最短地铁估算', hops:'最少区间', lineCount:'线路数（最短距离）'}[detourSortField];
                 $('results').innerHTML = `<div class="research-section-heading"><div><h3>绕路排行 ${visible <= 10 && !detourSortAscending && (detourSortField === 'hops' || detourSortField === 'km') ? 'TOP 10' : ''}</h3><p class="research-sort-current">按${sortLabel}${detourSortAscending ? '升序' : '降序'}</p></div><span>共 ${view.length.toLocaleString()} 对</span></div><p class="detour-mobile-hint">左右滑动选择排序指标</p><div class="detour-table-scroll"><table class="detour-table"><thead><tr><th>排名</th><th>站对</th>${header('ratio','绕行系数')}${header('direct','直线距离')}${header('km','最短地铁估算')}${header('hops','最少区间')}${header('lineCount','线路数·距离路线')}<th>查看路线</th></tr></thead><tbody>${tableRows}</tbody></table></div>`;
             } else $('results').innerHTML = rows ? `<div class="research-section-heading"><div><h3>受影响的站对</h3></div><span>${view.length.toLocaleString()} 对</span></div>${rows}` : '<p class="research-empty">没有符合条件的站对。</p>';
+            if (reveal) {
+                window.InteractionPolish?.animateCounts($('status'));
+                window.InteractionPolish?.revealRows($('results'), mode === 'detour' ? '.detour-table tbody tr' : '.research-row');
+            }
             if (visible < view.length) $('results').insertAdjacentHTML('beforeend', `<button id="research-more" type="button">显示更多（剩余 ${view.length-visible} 对）</button>`);
             $('results').querySelectorAll('[data-sort]').forEach(button => button.onclick = () => {
                 const field = button.dataset.sort;

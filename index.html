@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- CSS Style -->
-    <link rel="stylesheet" href="styles.css?v=20261115-centrality-scroll-v1">
+    <link rel="stylesheet" href="styles.css?v=20261115-interaction-v1">
 </head>
 <body class="theme-dark">
     <div class="app-container">
@@ -341,22 +341,21 @@
 
                 <!-- Pane 5: Network analysis tools stay separate from the route-planning flow. -->
                 <div class="config-pane" id="pane-analysis" style="display:none; flex-direction:column; gap:12px;">
-                    <div class="analysis-pane-intro">探索网络结构，不会改变当前路线规划条件。</div>
+                    <div class="analysis-pane-intro">从线路出发，发现城市的另一种连接。</div>
+                    <div class="analysis-card-grid">
                     <button class="analysis-action" id="btn-open-matrix" type="button">
-                        <span>站间最少站数</span>
-                        <small>查看站点间最少经过站数</small>
+                        <span class="analysis-card-mark" aria-hidden="true"><svg viewBox="0 0 80 48"><path d="M8 12H72M8 24H72M8 36H72M20 7V41M40 7V41M60 7V41"/><circle cx="20" cy="12" r="3"/><circle cx="40" cy="24" r="3"/><circle cx="60" cy="36" r="3"/></svg></span><span class="analysis-card-copy"><span>站间最少站数</span><small>查看站点之间的连接</small></span><span class="analysis-card-arrow" aria-hidden="true">↗</span>
                     </button>
                     <button class="analysis-action" id="btn-open-centrality" type="button">
-                        <span>中心性排行</span>
-                        <small>查看网络枢纽和覆盖能力</small>
+                        <span class="analysis-card-mark" aria-hidden="true"><svg viewBox="0 0 80 48"><path d="M10 10L40 24 13 39M40 24L68 8M40 24L70 38"/><circle cx="40" cy="24" r="5"/><circle cx="10" cy="10" r="3"/><circle cx="13" cy="39" r="3"/><circle cx="68" cy="8" r="3"/><circle cx="70" cy="38" r="3"/></svg></span><span class="analysis-card-copy"><span>中心性排行</span><small>发现网络中的关键车站</small></span><span class="analysis-card-arrow" aria-hidden="true">↗</span>
                     </button>
-                    <button class="analysis-action" id="btn-open-city-extremes" type="button">
-                        <span>城市线网之最</span>
-                        <small>扫描全城起点，寻找不同规则下的最长路线</small>
+                    <button class="analysis-action analysis-card-featured" id="btn-open-city-extremes" type="button">
+                        <span class="analysis-card-mark" aria-hidden="true"><svg viewBox="0 0 80 48"><path d="M17 24C17 11 27 6 40 6S63 12 63 24 53 42 40 42 17 37 17 24Z"/><circle cx="17" cy="24" r="3"/><circle cx="40" cy="6" r="3"/><circle cx="63" cy="24" r="3"/><circle cx="40" cy="42" r="3"/></svg></span><span class="analysis-card-copy"><span>城市线网之最</span><small>探索每座城市的最长路线</small></span><span class="analysis-card-arrow" aria-hidden="true">↗</span>
                     </button>
-                    <button class="analysis-action" id="btn-open-rose" type="button"><span>方向玫瑰图</span><small>按线路颜色探索城市轨道走向</small></button>
-                    <button class="analysis-action" id="btn-open-detour" type="button"><span>绕路之王</span><small>比较站间线网距离和直线距离</small></button>
-                <button class="analysis-action" id="btn-open-failure" type="button"><span>故障影响模拟</span><small>模拟车站、区间或整条线路中断</small></button>
+                    <button class="analysis-action" id="btn-open-rose" type="button"><span class="analysis-card-mark" aria-hidden="true"><svg viewBox="0 0 80 48"><path d="M40 4V44M20 24H60M26 10L54 38M54 10L26 38"/><circle cx="40" cy="24" r="14"/><circle cx="40" cy="24" r="3"/></svg></span><span class="analysis-card-copy"><span>方向玫瑰图</span><small>按线路颜色探索轨道走向</small></span><span class="analysis-card-arrow" aria-hidden="true">↗</span></button>
+                    <button class="analysis-action" id="btn-open-detour" type="button"><span class="analysis-card-mark" aria-hidden="true"><svg viewBox="0 0 80 48"><path d="M12 32H68" stroke-dasharray="3 4"/><path d="M12 32V14H40V7H59V20H68V32"/><circle cx="12" cy="32" r="3"/><circle cx="68" cy="32" r="3"/></svg></span><span class="analysis-card-copy"><span>绕路之王</span><small>相隔很近，却要绕行很远</small></span><span class="analysis-card-arrow" aria-hidden="true">↗</span></button>
+                    <button class="analysis-action" id="btn-open-failure" type="button"><span class="analysis-card-mark" aria-hidden="true"><svg viewBox="0 0 80 48"><path d="M8 24H31M49 24H72M31 24L36 17M44 31L49 24"/><circle cx="8" cy="24" r="3"/><circle cx="72" cy="24" r="3"/><path d="M40 12V20M40 29V31"/></svg></span><span class="analysis-card-copy"><span>故障影响模拟</span><small>看看中断如何改变线网</small></span><span class="analysis-card-arrow" aria-hidden="true">↗</span></button>
+                    </div>
                 </div>
                 
                 <!-- Pane 6: Station Wiki -->
@@ -654,6 +653,7 @@
     <script src="geographic-view.js?v=20261105-all-cities-v1"></script>
     <script src="orientation-rose.js?v=20261105-1"></script>
     <script src="orientation-rose-ui.js?v=20261115-xiamen-46-v1"></script>
+    <script src="interaction-polish.js?v=20261115-1"></script>
     <script src="solver-progress.js"></script>
     <script src="site-runtime.js"></script>
     <script src="analytics-client.js"></script>
@@ -1525,6 +1525,7 @@
                     drawerTitle.textContent = (paneId === "drawer-analysis" || paneId === "drawer-roadbook") ? title : title + "设置";
                 }
                 drawer.classList.toggle("drawer-rules-active", paneId === "drawer-rules");
+                drawer.classList.toggle("drawer-analysis-active", paneId === "drawer-analysis");
                 drawer.classList.toggle("drawer-custom-route-active", paneId === "drawer-custom-route");
                 if (paneId !== "drawer-roadbook") {
                     drawer.classList.remove("drawer-roadbook-expanded");
@@ -1548,6 +1549,7 @@
             function closeDrawer() {
                 drawer.classList.remove("open");
                 drawer.classList.remove("drawer-rules-active");
+                drawer.classList.remove("drawer-analysis-active");
                 drawer.classList.remove("drawer-custom-route-active");
                 drawer.classList.remove("drawer-custom-route-collapsed");
                 drawer.classList.remove("drawer-roadbook-expanded");
@@ -3678,6 +3680,7 @@
 
             let centralitySortCol = "value";
             let centralitySortAsc = false;
+            let centralityLastSelection = null;
 
             function getStationLines(stationName, cityData = data) {
                 const node = cityData.nodes.find(n => n.name === stationName);
@@ -3796,7 +3799,7 @@
                         const rankBadge = idx < 3
                             ? `<span style="color:${rankColors[idx]};margin-right:5px;font-size:10px;">#${idx+1}</span>`
                             : '';
-                        html += `<tr class="centrality-row" data-station="${r.name}" style="cursor:pointer;">
+                        html += `<tr class="centrality-row${centralityLastSelection?.city === centralitySelectedCity && centralityLastSelection.name === r.name ? ' research-selected' : ''}" data-station="${r.name}" tabindex="0" aria-label="在地图查看${r.name}" style="cursor:pointer;">
                             <td style="padding:8px 12px 8px 16px;font-weight:bold;color:var(--text-primary);">${rankBadge}${r.name}<span class="centrality-mobile-metric">${mobileMetric}</span></td>
                             <td style="padding:8px 12px;"><div class="centrality-line-badges">${renderCentralityLineBadges(r.line, analysisData)}</div></td>
                             <td style="text-align:center;padding:8px;font-weight:bold;color:var(--text-primary);font-variant-numeric:tabular-nums;">${r.deg}</td>
@@ -3827,8 +3830,12 @@
                 });
 
                 body.querySelectorAll(".centrality-row").forEach(row => {
+                    row.addEventListener("keydown", event => {
+                        if (event.key === "Enter" || event.key === " ") { event.preventDefault(); row.click(); }
+                    });
                     row.addEventListener("click", () => {
                         const stName = row.getAttribute("data-station");
+                        centralityLastSelection = {city: centralitySelectedCity, name: stName, top: body.scrollTop, left: body.scrollLeft};
                         document.getElementById("centrality-modal").style.display = "none";
                         if (centralitySelectedCity !== selectedCity) {
                             const cityTab = document.querySelector(`.city-tab[data-value="${centralitySelectedCity}"]`);
@@ -3873,11 +3880,15 @@
                 closeDrawer();
                 centralitySelectedCity = selectedCity;
                 document.getElementById("centrality-city-select").value = centralitySelectedCity;
-                // Default sorting to betweenness descending
-                centralitySortCol = "bet";
-                centralitySortAsc = false;
+                if (centralityLastSelection?.city !== selectedCity) {
+                    centralitySortCol = "bet";
+                    centralitySortAsc = false;
+                }
                 document.getElementById("centrality-modal").style.display = "flex";
                 renderCentralityTable();
+                if (centralityLastSelection?.city === selectedCity) {
+                    document.getElementById("centrality-body").scrollTo(centralityLastSelection.left, centralityLastSelection.top);
+                }
             }
 
             document.getElementById("btn-centrality-close").addEventListener("click", () => {
@@ -4375,12 +4386,16 @@
                         <div class="city-extremes-metric"><span>优化目标</span><strong>${entry.metric.label}</strong></div>
                         <div class="city-extremes-metric"><span>起点</span><strong>${start}</strong></div>
                         <div class="city-extremes-metric"><span>${entry.rule.mode === "loop" ? "闭环站点" : "终点"}</span><strong>${end}</strong></div>
-                        <div class="city-extremes-metric"><span>经过区间 / 换乘</span><strong>${result.path_edges.length} / ${countRouteTransfers(result, routeEdges, entry.topology)}</strong></div>
-                        <div class="city-extremes-metric"><span>估算距离</span><strong>${formatDistanceKm(routeDistanceKm)}</strong></div>
-                        <div class="city-extremes-metric"><span>途经车站</span><strong>${stations.length}</strong></div>
-                        <div class="city-extremes-metric"><span>涉及线路</span><strong>${new Set(result.path_edges.map(id => routeEdges[id]?.line)).size}</strong></div>
+                        <div class="city-extremes-metric"><span>经过区间 / 换乘</span><strong><span class="motion-count" data-motion-value="${result.path_edges.length}">${result.path_edges.length}</span> / <span class="motion-count" data-motion-value="${countRouteTransfers(result, routeEdges, entry.topology)}">${countRouteTransfers(result, routeEdges, entry.topology)}</span></strong></div>
+                        <div class="city-extremes-metric"><span>估算距离</span><strong><span class="motion-count" data-motion-value="${routeDistanceKm}" data-motion-decimals="1">${routeDistanceKm.toFixed(1)}</span> km</strong></div>
+                        <div class="city-extremes-metric"><span>途经车站</span><strong><span class="motion-count" data-motion-value="${stations.length}">${stations.length}</span></strong></div>
+                        <div class="city-extremes-metric"><span>涉及线路</span><strong><span class="motion-count" data-motion-value="${new Set(result.path_edges.map(id => routeEdges[id]?.line)).size}">${new Set(result.path_edges.map(id => routeEdges[id]?.line)).size}</span></strong></div>
                         <button class="btn-primary" id="btn-view-city-extreme" type="button">在地图查看并打开路书</button>
                     </div>`;
+                if (!entry.motionShown) {
+                    entry.motionShown = true;
+                    window.InteractionPolish?.animateCounts(cityExtremesResult);
+                }
                 document.getElementById("btn-view-city-extreme").addEventListener("click", () => viewCityExtremeOnMap(entry));
             }
 
