@@ -82,7 +82,18 @@
         select.addEventListener('change',()=>load(select.value));
         lineSelect.addEventListener('change',render);
         $('all').addEventListener('click',()=>{lineSelect.value='';render();});
-        $('legend').addEventListener('click',e=>{const btn=e.target.closest('button[data-line]');if(!btn)return;lineSelect.value=lineSelect.value===btn.dataset.line?'':btn.dataset.line;render();lineSelect.focus();});
+        $('legend').addEventListener('click',e=>{
+            const btn=e.target.closest('button[data-line]'); if(!btn)return;
+            const name=btn.dataset.line, scroll=modal.querySelector('.rose-scroll');
+            const scrollTop=scroll.scrollTop, legendTop=$('legend').scrollTop;
+            lineSelect.value=lineSelect.value===name?'':name;
+            render();
+            // The legend is rebuilt during render: restore focus to the replacement
+            // button without sending mobile users back to the top of the dialog.
+            const replacement=[...$('legend').querySelectorAll('button[data-line]')].find(item=>item.dataset.line===name);
+            replacement?.focus({preventScroll:true});
+            $('legend').scrollTop=legendTop; scroll.scrollTop=scrollTop;
+        });
         modal.addEventListener('keydown',e=>{
             if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close();return;}
             if(e.key!=='Tab')return;
