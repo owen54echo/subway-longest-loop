@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- CSS Style -->
-    <link rel="stylesheet" href="styles.css?v=20261115-unified-ui-v1">
+    <link rel="stylesheet" href="styles.css?v=20261115-centrality-mobile-v1">
 </head>
 <body class="theme-dark">
     <div class="app-container">
@@ -491,7 +491,7 @@
             <div class="matrix-header" style="flex-direction:row;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border-color);">
                 <span class="matrix-title" style="display:flex;align-items:center;gap:8px;">
                     车站中心性排行榜
-                    <button id="btn-centrality-help-toggle" style="background:transparent;border:1px solid var(--border-color);border-radius:4px;color:var(--text-secondary);font-size:10px;padding:2px 8px;cursor:pointer;display:flex;align-items:center;gap:4px;">
+                    <button id="btn-centrality-help-toggle" aria-expanded="false" aria-controls="centrality-help-card" style="background:transparent;border:1px solid var(--border-color);border-radius:4px;color:var(--text-secondary);font-size:10px;padding:2px 8px;cursor:pointer;display:flex;align-items:center;gap:4px;">
                         ❓ 指标说明
                     </button>
                 </span>
@@ -3941,6 +3941,7 @@
                     e.stopPropagation();
                     const isHidden = helpCard.style.display === "none";
                     helpCard.style.display = isHidden ? "block" : "none";
+                    helpBtn.setAttribute("aria-expanded", String(isHidden));
                 });
             }
 

@@ -3212,6 +3212,11 @@ tr.polish-reveal > td:not(:first-child):not(:nth-child(2)) { animation: polish-r
 #centrality-modal .matrix-header > div { flex-wrap: wrap; gap: 10px 16px !important; }
 #centrality-modal .matrix-close { position: absolute; top: 0; right: 0; }
 #centrality-modal .matrix-header input[type='number'], #centrality-modal .centrality-city-filter .analysis-select { min-height: 40px; }
+@media (max-width: 768px) {
+    #centrality-modal .matrix-header { flex-wrap: nowrap; }
+    #centrality-modal .matrix-header > .matrix-title { flex: none; }
+    #centrality-help-card { max-height: min(200px, 25dvh) !important; touch-action: pan-y; -webkit-overflow-scrolling: touch; }
+}
 .matrix-body, .research-rank-panel, .research-chart, .detour-table-scroll, .rose-figure, .city-extremes-metric {
     border: 1px solid var(--border-color);
     border-radius: 14px !important;
